@@ -6,6 +6,10 @@ Dienstleistungen und Güter. Bei Interesse wird die Hochschul-E-Mail-Adresse
 des Inserenten angezeigt; die weitere Kommunikation findet außerhalb der
 Plattform statt.
 
+Figma:
+
+https://www.figma.com/make/vaEARPyhfvFIfzMZo79NDR/Mobile-Landing-Page-Design--Copy-?t=Um2UIN1WmiPhP7VK-1
+
 ## Contents
 
 1. [Requirements](#requirements)
