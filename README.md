@@ -2,9 +2,10 @@
 
 Hochschulinterne Vermittlungsplattform für Studierende und Mitarbeitende der
 Hochschule Reutlingen. Nutzer veröffentlichen Angebote und Gesuche für
-Dienstleistungen und Güter. Bei Interesse wird die Hochschul-E-Mail-Adresse
+Dienstleistungen und Güter. Auf den Detailseiten wird die Hochschul-E-Mail-Adresse
 des Inserenten angezeigt; die weitere Kommunikation findet außerhalb der
-Plattform statt.
+Plattform statt. Der Zugriff auf alle Inhalte ist auf authentifizierte
+Hochschulangehörige beschränkt.
 
 Figma:
 
@@ -45,6 +46,9 @@ https://www.figma.com/make/vaEARPyhfvFIfzMZo79NDR/Mobile-Landing-Page-Design--Co
 | Auth        | Custom magic link with JWT session  |
 | Email       | Resend                              |
 | Validation  | Zod                                 |
+| Styling     | Tailwind CSS 4                      |
+| Icons       | lucide-react                        |
+| i18n        | i18next + react-i18next (EN/DE/FR/TR/ES) |
 | Hosting     | Vercel                              |
 
 Auth.js (formerly NextAuth) was evaluated but not adopted. Its built-in
@@ -58,12 +62,21 @@ of minimal data retention.
     src/
       app/                       App Router
         (auth)/                  login, email confirmation, token verification
-        (platform)/              auth-gated pages for offers and requests
-        api/                     route handlers (send-link, logout, healthz)
-      actions/                   server actions for create / update / delete
-      components/                reusable UI
+        (platform)/              auth-gated pages: marketplace (/), /new, /meine
+        api/                     route handlers (send-link, healthz)
+        layout.tsx               root layout with i18n provider
+      actions/                   server actions: auth.ts (logout), listings.ts
+      components/                designer-owned UI (mirrors Figma package layout)
+        layout/                  Header, Footer, LanguageButton
+        marketplace/             ModeToggle, CategoryTab(s), ListingCard,
+                                 PaginationControls, DisclaimerOverlay
+        Marketplace.tsx          state-owning client wrapper
+      data/icons.tsx             tag → icon map (designer-owned)
+      i18n/                      translations.ts, init, client provider
       db/                        Drizzle client and schema
-      lib/                       auth, session, email, validation, rate limiting
+      lib/                       env, auth, session, email, validators, rate-limit
+      types.ts                   Listing, Mode, Category (mirrors Figma types)
+      constants.ts               INSTITUTION_NAME, SUBTITLE, CARD_SHADOW
       middleware.ts              route gate for the (platform) group
     drizzle/                     generated SQL migrations
     public/                      static assets
@@ -72,28 +85,44 @@ of minimal data retention.
     package.json
     tsconfig.json
 
+The component layout under `src/components/` (and the supporting
+`data/`, `i18n/`, `types.ts`, `constants.ts` files at the `src/` root)
+deliberately mirror the Figma reference package one-to-one. The intent
+is that any future design refresh can be applied as a file-level
+overwrite rather than a manual port. See *Component architecture* in
+`BUILD.MD` for the full prop contracts and the drag-and-drop
+philosophy.
+
 The application is organised in four areas.
 
 **Routing.** All routes live under `src/app/` and follow the Next.js
 App Router conventions. Two route groups separate concerns: `(auth)`
 covers the unauthenticated pages (login form, email-sent screen, token
-verification endpoint), and `(platform)` covers the authenticated pages
-for browsing, creating, and managing listings. Route handlers under
-`src/app/api/` expose the magic-link issuing endpoint, the logout
-endpoint, and a liveness probe.
+verification endpoint), and `(platform)` covers the authenticated
+pages — the marketplace at `/`, listing creation at `/new`, and
+own-listings management at `/meine`. Route handlers under
+`src/app/api/` expose the magic-link issuing endpoint and a liveness
+probe; logout is implemented as a Server Action so that Next.js
+provides Origin-based CSRF protection automatically.
 
-**Persistence.** `src/db/schema.ts` defines the three tables
-(`angebote`, `gesuche`, `magic_tokens`) and `src/db/client.ts`
-initialises the Drizzle client against the Neon HTTP driver. Generated
-SQL migrations are written to `drizzle/` at the repository root by
-Drizzle Kit.
+**Persistence.** `src/db/schema.ts` defines a single `listings` table
+(with a `listing_type` enum column distinguishing `'need'` and
+`'offer'`) plus the internal `magic_tokens` and `rate_limits` tables.
+The row shape matches the Figma `Listing` type exactly so that
+designer-owned components consume database rows without a mapping
+layer. `src/db/client.ts` initialises the Drizzle client against the
+Neon HTTP driver. Generated SQL migrations are written to `drizzle/`
+at the repository root by Drizzle Kit.
 
 **Server logic.** Mutations are implemented as Server Actions under
-`src/actions/`, one file per domain (`angebote.ts`, `gesuche.ts`).
-Cross-cutting helpers are collected in `src/lib/`: token signing and
-session cookies (`auth.ts`, `session.ts`), the Resend client
-(`email.ts`), Zod schemas (`validators.ts`), and rate limiting for the
-authentication endpoints (`rate-limit.ts`).
+`src/actions/`, one file per concern (`auth.ts`, `angebote.ts`,
+`gesuche.ts`). Cross-cutting helpers are collected in `src/lib/`:
+validated environment access (`env.ts`), token hashing (`auth.ts`),
+session cookies (`session.ts`), the Resend client (`email.ts`), shared
+Zod schemas (`validators.ts`), and the Postgres-backed rate limiter
+(`rate-limit.ts`). Every helper that reads secrets or touches the
+database imports `'server-only'` so that the Next.js bundler refuses
+to include it in any client bundle.
 
 **UI and access control.** Reusable components are in
 `src/components/`. Route protection is handled centrally in
@@ -160,19 +189,35 @@ Authentication uses a custom magic-link flow. No passwords are stored, and
 the schema does not contain a user table.
 
 1. The user enters their address on `/login`.
-2. The server validates that the address ends in
-   `@reutlingen-university.de`.
+2. The server validates that the address belongs to
+   `reutlingen-university.de` — either the apex domain itself or any
+   subdomain of it (`student.reutlingen-university.de`,
+   `lb.reutlingen-university.de`, etc.). Look-alike domains such as
+   `evil-reutlingen-university.de` or
+   `reutlingen-university.de.attacker.com` are rejected because the
+   check requires a literal `.` separator before the configured base.
 3. A random token is generated. Its SHA-256 hash is written to the
    `magic_tokens` table together with the address and a 15-minute expiry.
    The token itself is sent to the address as part of a verification URL.
-4. On `/verify?token=...` the server hashes the supplied token, looks it
-   up in `magic_tokens`, and rejects requests where the entry is missing,
-   expired, or already consumed. The lookup is performed in constant time.
-5. On success, the row is marked as consumed. A signed JWT is written to
-   an HTTP-only, Secure, `SameSite=Lax` cookie. The JWT carries the user
-   identifier and the email address.
+4. On `/verify?token=...` the server hashes the supplied token and runs
+   a single atomic `UPDATE … RETURNING` that simultaneously checks the
+   hash, asserts that the row is unconsumed, asserts that it has not
+   expired, and marks it as consumed. The atomic statement closes the
+   read-then-write window that would otherwise allow two concurrent
+   clicks on the same link to both succeed.
+5. On success, a signed JWT is written to an HTTP-only, Secure,
+   `SameSite=Lax` cookie. In production the cookie is named
+   `__Host-session`, which the browser only accepts when `Secure`,
+   `Path=/`, and no `Domain` attribute are set. The JWT carries the
+   user identifier and the email address.
 6. Subsequent requests resolve the session through the helper
    `getSession()`, which verifies and decodes the cookie.
+
+The `POST /api/auth/send-link` endpoint is rate-limited per IP and per
+email address; counters are stored in a `rate_limits` table in the
+same Postgres database. Each new request also invalidates any previously
+issued unconsumed token for the same address, so an old link cannot be
+used after a new one has been requested.
 
 The user identifier is derived deterministically from the address as
 `sha256(email)`. The same person therefore receives a stable identifier
@@ -180,38 +225,51 @@ across sessions without a user record being persisted.
 
 ## Data model
 
-Two business tables hold the listings. A third internal table stores the
-hashed magic-link tokens during the validity window.
+One business table holds every listing — both *Suche* (need) and
+*Biete* (offer) entries — distinguished by an enum column. Two
+internal tables hold hashed magic-link tokens and rate-limit counters.
 
 ```ts
 // src/db/schema.ts
-import { pgTable, uuid, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, boolean, pgEnum } from 'drizzle-orm/pg-core';
 
-export const angebote = pgTable('angebote', {
+export const listingType = pgEnum('listing_type', ['need', 'offer']);
+
+export const listings = pgTable('listings', {
   id:          uuid('id').primaryKey().defaultRandom(),
-  userId:      text('user_id').notNull(),       // sha256(email)
-  email:       text('email').notNull(),         // shown when interest is expressed
+  userId:      text('user_id').notNull(),                    // sha256(email)
+  email:       text('email').notNull(),                      // visible to authenticated viewers
+  type:        listingType('type').notNull(),
   title:       text('title').notNull(),
   description: text('description').notNull(),
-  createdAt:   timestamp('created_at').defaultNow().notNull(),
-});
-
-export const gesuche = pgTable('gesuche', {
-  id:          uuid('id').primaryKey().defaultRandom(),
-  userId:      text('user_id').notNull(),
-  email:       text('email').notNull(),
-  title:       text('title').notNull(),
-  description: text('description').notNull(),
-  createdAt:   timestamp('created_at').defaultNow().notNull(),
+  tags:        text('tags').array().notNull().default([]),
+  location:    text('location').notNull(),
+  createdAt:   timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const magicTokens = pgTable('magic_tokens', {
   tokenHash:   text('token_hash').primaryKey(),
   email:       text('email').notNull(),
-  expiresAt:   timestamp('expires_at').notNull(),
+  expiresAt:   timestamp('expires_at', { withTimezone: true }).notNull(),
   consumed:    boolean('consumed').default(false).notNull(),
 });
+
+export const rateLimits = pgTable('rate_limits', {
+  id:        uuid('id').primaryKey().defaultRandom(),
+  key:       text('key').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
 ```
+
+The `listings` row shape is identical to the Figma `Listing`
+TypeScript interface (`id`, `userId`, `email`, `type`, `title`,
+`description`, `tags`, `location`, `createdAt`). Categories on the
+marketplace are derived client-side from the `tags` array of the
+currently displayed listings, ranked by frequency.
+
+`rate_limits` records each rate-limited request as a row keyed by
+`send-link:ip:<ip>` or `send-link:email:<email>`. A short cleanup
+runs at the start of every send-link request to keep the table bounded.
 
 The schema does not include profile pictures, age, gender, telephone
 numbers, or any other personal attribute beyond the address required for
@@ -226,6 +284,12 @@ The following properties are relevant for the GDPR review.
 - Session state is held in a signed cookie, not in the database.
 - Magic-link tokens are stored only as hashes, expire after 15 minutes,
   and are single-use.
+- The marketplace and every other listing-rendering page live behind
+  authentication via `src/middleware.ts`. The inserent's address is
+  visible directly on each listing card. Because every viewer is an
+  authenticated member of the same university, the address is treated
+  as visible to a closed community rather than to the public web; the
+  in-app *Disclaimer* overlay states this guarantee in five languages.
 - No file uploads, no chat, no message history.
 - The database is hosted in the EU (Neon, Frankfurt, `eu-central-1`).
 - External hosting on Vercel was confirmed in advance with the
@@ -311,13 +375,18 @@ primary path.
 ## Roadmap
 
 - [x] Technical concept and data model
+- [x] Figma reference design integrated into the component layout
 - [ ] Project scaffold (Next.js, TypeScript, App Router, `src/`)
-- [ ] Drizzle schema and initial migration on Neon
-- [ ] Magic-link authentication with JWT session
-- [ ] CRUD for Angebote and Gesuche via Server Actions
+- [ ] Drizzle schema (single `listings` table) and initial migration on Neon
+- [ ] Magic-link authentication with JWT session and per-IP / per-email
+      rate limiting
+- [ ] CRUD for listings via Server Actions
 - [ ] Auth-gated platform layout and middleware
-- [ ] Listing browse, detail view, and email reveal
-- [ ] Rate limiting on the authentication endpoints
+- [ ] Marketplace page with mode toggle, tag-derived categories, search,
+      and pagination (per Figma design)
+- [ ] /meine page for managing own listings
+- [ ] CSP nonce middleware (remove `'unsafe-inline'` from `script-src`)
+- [ ] Server-side pagination and search
 - [ ] Internal pilot
 - [ ] Review for migration to university infrastructure
 
