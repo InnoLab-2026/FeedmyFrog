@@ -1,0 +1,4 @@
+/* Fonts are self-hosted via next/font/google in src/app/layout.tsx.
+   The CSS variables --font-family-base and --font-family-display in
+   theme.css consume the values exposed there. This file is intentionally
+   empty so the design package's import chain still resolves. */
