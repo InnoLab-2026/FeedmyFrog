@@ -1,11 +1,10 @@
 # Dienstleistungs-Exchange
 
-Hochschulinterne Vermittlungsplattform für Studierende und Mitarbeitende der
-Hochschule Reutlingen. Nutzer veröffentlichen Angebote und Gesuche für
-Dienstleistungen und Güter. Auf den Detailseiten wird die Hochschul-E-Mail-Adresse
-des Inserenten angezeigt; die weitere Kommunikation findet außerhalb der
-Plattform statt. Der Zugriff auf alle Inhalte ist auf authentifizierte
-Hochschulangehörige beschränkt.
+Internal university platform for students and staff of Reutlingen
+University. Users post offers and requests for services and goods. The
+poster's university email address is shown directly on each listing
+card; further communication takes place off-platform. Access to all
+content is restricted to authenticated members of the university.
 
 Figma:
 
