@@ -114,8 +114,9 @@ Neon HTTP driver. Generated SQL migrations are written to `drizzle/`
 at the repository root by Drizzle Kit.
 
 **Server logic.** Mutations are implemented as Server Actions under
-`src/actions/`, one file per concern (`auth.ts`, `angebote.ts`,
-`gesuche.ts`). Cross-cutting helpers are collected in `src/lib/`:
+`src/actions/`, one file per concern: `auth.ts` for logout and
+`listings.ts` for create/delete. Cross-cutting helpers are collected
+in `src/lib/`:
 validated environment access (`env.ts`), token hashing (`auth.ts`),
 session cookies (`session.ts`), the Resend client (`email.ts`), shared
 Zod schemas (`validators.ts`), and the Postgres-backed rate limiter
