@@ -37,7 +37,7 @@ https://www.figma.com/make/vaEARPyhfvFIfzMZo79NDR/Mobile-Landing-Page-Design--Co
 
 | Layer       | Technology                          |
 |-------------|-------------------------------------|
-| Framework   | Next.js 15 (App Router)             |
+| Framework   | Next.js 16 (App Router)             |
 | Language    | TypeScript                          |
 | Database    | PostgreSQL on Neon                  |
 | DB driver   | `@neondatabase/serverless` (HTTP)   |
