@@ -28,7 +28,7 @@ https://www.figma.com/make/vaEARPyhfvFIfzMZo79NDR/Mobile-Landing-Page-Design--Co
 
 ## Requirements
 
-- Node.js 20 or later
+- Node.js 20 LTS (the 20 line is pinned in `package.json` `engines`; 21+ is unsupported)
 - A Neon PostgreSQL project (EU region, Frankfurt)
 - A Resend API key for sending magic-link emails
 - A Vercel account for production hosting
