@@ -157,7 +157,12 @@ EMAIL_FROM="Dienstleistungs-Exchange <noreply@reutlingen-university.de>"
 
 # Application
 NEXT_PUBLIC_BASE_URL="http://localhost:3000"
+NEXT_PUBLIC_INSTITUTION_DOMAIN="reutlingen-university.de"  # must equal ALLOWED_EMAIL_DOMAIN
 ALLOWED_EMAIL_DOMAIN="reutlingen-university.de"
+
+# Rate limits (per hour, per dimension)
+RATE_LIMIT_SEND_LINK_PER_IP=10
+RATE_LIMIT_SEND_LINK_PER_EMAIL=5
 ```
 
 ## Database
