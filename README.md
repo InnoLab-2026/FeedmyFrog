@@ -147,7 +147,7 @@ listed below.
 DATABASE_URL="postgresql://USER:PASSWORD@ep-xxx.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 
 # Auth
-AUTH_SECRET="..."                         # 32 random bytes, used to sign tokens and sessions
+AUTH_SECRET="..."                         # 32 random bytes (hex), used to sign session JWTs
 MAGIC_LINK_TTL_MINUTES=15
 SESSION_TTL_DAYS=30
 
