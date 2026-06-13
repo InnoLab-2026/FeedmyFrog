@@ -298,7 +298,7 @@ The following properties are relevant for the GDPR review.
 - No file uploads, no chat, no message history.
 - The database is hosted in the EU (Neon, Frankfurt, `eu-central-1`).
 - External hosting on Vercel was confirmed in advance with the
-  Rechenzentrum.
+  university IT operations.
 - Users can delete their own listings at any time. Logout clears the
   session cookie.
 - Only standard PostgreSQL features are used. A later migration of the
