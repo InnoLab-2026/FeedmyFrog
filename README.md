@@ -381,15 +381,16 @@ primary path.
 
 - [x] Technical concept and data model
 - [x] Figma reference design integrated into the component layout
-- [ ] Project scaffold (Next.js, TypeScript, App Router, `src/`)
-- [ ] Drizzle schema (single `listings` table) and initial migration on Neon
-- [ ] Magic-link authentication with JWT session and per-IP / per-email
+- [x] Project scaffold (Next.js, TypeScript, App Router, `src/`)
+- [x] Drizzle schema (single `listings` table) and initial migration
+- [x] Magic-link authentication with JWT session and per-IP / per-email
       rate limiting
-- [ ] CRUD for listings via Server Actions
-- [ ] Auth-gated platform layout and middleware
-- [ ] Marketplace page with mode toggle, tag-derived categories, search,
+- [x] CRUD for listings via Server Actions
+- [x] Auth-gated platform layout and middleware
+- [x] Marketplace page with mode toggle, tag-derived categories, search,
       and pagination (per Figma design)
-- [ ] /meine page for managing own listings
+- [x] `/meine` page for managing own listings
+- [ ] Apply migration on Neon and run end-to-end against real DATABASE_URL
 - [ ] CSP nonce middleware (remove `'unsafe-inline'` from `script-src`)
 - [ ] Server-side pagination and search
 - [ ] Internal pilot
