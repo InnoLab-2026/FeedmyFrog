@@ -402,4 +402,4 @@ To be defined.
 
 ## Author
 
-Martin Lauterbach, Hochschule Reutlingen, April 2026.
+Martin Lauterbach, Reutlingen University, May 2026.
