@@ -28,7 +28,7 @@ https://www.figma.com/make/vaEARPyhfvFIfzMZo79NDR/Mobile-Landing-Page-Design--Co
 
 ## Requirements
 
-- Node.js 20 LTS (the 20 line is pinned in `package.json` `engines`; 21+ is unsupported)
+- Node.js 24 LTS (pinned in `package.json` `engines` and `.nvmrc`; run `nvm use`)
 - A Neon PostgreSQL project (EU region, Frankfurt)
 - A Brevo API key for sending magic-link emails
 - A Vercel account for production hosting

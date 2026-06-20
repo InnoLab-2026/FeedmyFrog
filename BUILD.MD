@@ -29,7 +29,7 @@ documented in [Component architecture](#component-architecture).
 
 Before starting, prepare the following:
 
-- Node.js 20 LTS (the same version is pinned in `package.json` later)
+- Node.js 24 LTS (the same version is pinned in `package.json` and `.nvmrc` later)
 - npm
 - A GitHub repository for the project
 - A Neon account with a project in the Frankfurt region
@@ -73,14 +73,23 @@ When prompted, choose:
 ### Step 2. Pin the Node version
 
 Edit `package.json` and add an `engines` field so Vercel and local
-contributors run the same Node release:
+contributors run the same Node release. Node 24 is the active LTS line;
+Node 20 reached end-of-life on 30 April 2026 and no longer receives
+security patches.
 
 ```json
 {
   "engines": {
-    "node": ">=20.11 <21"
+    "node": ">=24 <25"
   }
 }
+```
+
+Add a matching `.nvmrc` so `nvm use` selects the same major locally and
+in CI:
+
+```
+24
 ```
 
 ### Step 3. Install runtime dependencies
