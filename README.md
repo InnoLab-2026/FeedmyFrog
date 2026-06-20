@@ -398,7 +398,30 @@ primary path.
 
 ## License
 
-To be defined.
+[PolyForm Noncommercial License 1.0.0](LICENSE) (SPDX:
+`PolyForm-Noncommercial-1.0.0`).
+
+**Permitted (free of charge):** personal use; research, study, and
+hobby projects; charitable organizations; educational institutions;
+public research organizations; public safety, health, or environmental
+protection organizations; government institutions. A non-profit
+*Verein* using this software internally falls inside these categories.
+
+**Not permitted:** any commercial purpose, including a company using
+the software for internal business tools, a freelancer using it on a
+paid client engagement, or selling it (or a derivative) as a product
+or service.
+
+**Patents.** The license includes a Patent Defense clause: anyone who
+asserts a patent claim against this software loses their license
+immediately. Combined with the public publication of this repository
+on GitHub (which establishes prior art), the project's intent is that
+no patent should be enforceable against this software or its
+noncommercial users.
+
+**Liability.** The software is provided "as is" with no warranty and
+no liability, to the maximum extent permitted by law. See section
+*No Liability* in the [LICENSE](LICENSE).
 
 ## Author
 
