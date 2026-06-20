@@ -29,7 +29,7 @@ documented in [Component architecture](#component-architecture).
 
 Before starting, prepare the following:
 
-- Node.js 20 LTS (the same version is pinned in `package.json` later)
+- Node.js 24 LTS (the same version is pinned in `package.json` and `.nvmrc` later)
 - npm
 - A GitHub repository for the project
 - A Neon account with a project in the Frankfurt region
@@ -73,14 +73,23 @@ When prompted, choose:
 ### Step 2. Pin the Node version
 
 Edit `package.json` and add an `engines` field so Vercel and local
-contributors run the same Node release:
+contributors run the same Node release. Node 24 is the active LTS line;
+Node 20 reached end-of-life on 30 April 2026 and no longer receives
+security patches.
 
 ```json
 {
   "engines": {
-    "node": ">=20.11 <21"
+    "node": ">=24 <25"
   }
 }
+```
+
+Add a matching `.nvmrc` so `nvm use` selects the same major locally and
+in CI:
+
+```
+24
 ```
 
 ### Step 3. Install runtime dependencies
@@ -1256,11 +1265,13 @@ The `WHERE id = ? AND user_id = ?` predicate is the authoritative
 authorisation check. Other users' listings are silently unaffected by
 a forged `id`.
 
-### Step 26. Middleware
+### Step 26. Proxy (route gate)
 
-Create `src/middleware.ts`. The matcher gates every authenticated
-route. The bare `/` is included because the marketplace page lives
-there.
+Create `src/proxy.ts`. (In Next.js 16 the `middleware` file convention
+was renamed to `proxy`; the file exports a `proxy` function instead of
+`middleware`, but the `config` matcher is unchanged.) The matcher gates
+every authenticated route. The bare `/` is included because the
+marketplace page lives there.
 
 ```ts
 import { NextResponse, type NextRequest } from 'next/server';
@@ -1269,7 +1280,7 @@ import { jwtVerify } from 'jose';
 const SECRET = new TextEncoder().encode(process.env.AUTH_SECRET!);
 const COOKIE = process.env.NODE_ENV === 'production' ? '__Host-session' : 'session';
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const jwt = req.cookies.get(COOKIE)?.value ?? req.cookies.get('session')?.value;
   if (!jwt) return NextResponse.redirect(new URL('/login', req.url));
   try {
@@ -1913,7 +1924,7 @@ mutating the designer-owned file in place.
 ### Email visibility model
 
 Every page that renders a listing's email address sits inside the
-`(platform)` route group and is gated by `src/middleware.ts`. A viewer
+`(platform)` route group and is gated by `src/proxy.ts`. A viewer
 who reaches such a page has presented a valid session JWT, which
 proves ownership of an `@reutlingen-university.de` mailbox. The
 inserent's email is therefore disclosed only to fellow members of the
