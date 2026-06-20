@@ -151,9 +151,8 @@ AUTH_SECRET="..."                         # 32 random bytes (hex), used to sign 
 MAGIC_LINK_TTL_MINUTES=15
 SESSION_TTL_DAYS=30
 
-# Email
+# Email (sender is hardcoded in src/lib/email.ts — verified domain feedmyfrog.click)
 BREVO_API_KEY="xkeysib-..."
-EMAIL_FROM="Dienstleistungs-Exchange <noreply@reutlingen-university.de>"
 
 # Application
 NEXT_PUBLIC_BASE_URL="http://localhost:3000"

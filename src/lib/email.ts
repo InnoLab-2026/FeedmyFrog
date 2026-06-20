@@ -3,34 +3,15 @@ import { env } from '@/lib/env';
 
 const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
 
-type Sender = { name?: string; email: string };
-
 /**
- * Brevo's transactional API wants a structured sender ({ name, email }),
- * but EMAIL_FROM is the RFC-5322-style combined string "Name <email>"
- * (or possibly a bare "email" with no display name).
- *
- *   "Dienstleistungs-Exchange <noreply@reutlingen-university.de>"
- *        -> { name: 'Dienstleistungs-Exchange', email: 'noreply@reutlingen-university.de' }
- *   "noreply@reutlingen-university.de"
- *        -> { email: 'noreply@reutlingen-university.de' }
- *
- * Fail-fast: a malformed EMAIL_FROM throws here rather than being forwarded to
- * Brevo, which would reject it with a vaguer error. On the magic-link path a
- * misconfigured sender blocks every login, so we want the loudest signal.
+ * Hardcoded transactional sender. `feedmyfrog.click` is verified in Brevo with
+ * a published DKIM signature and a configured DMARC policy, so mail from this
+ * address passes authentication and reaches the inbox. Keeping it in code (not
+ * an env var) guarantees every magic link goes out from the one domain we know
+ * is authenticated — a misconfigured env can't silently swap in an unverified
+ * sender that Brevo would reject after returning 201.
  */
-function parseSender(value: string): Sender {
-  const named = value.match(/^\s*(.*?)\s*<([^>]+)>\s*$/);
-  if (named) {
-    const [, name, email] = named;
-    return name ? { name, email: email.trim() } : { email: email.trim() };
-  }
-  const bare = value.trim();
-  if (bare.includes('@')) {
-    return { email: bare };
-  }
-  throw new Error(`invalid_email_from: ${JSON.stringify(value)}`);
-}
+const SENDER = { name: 'The Team', email: 'noreply@feedmyfrog.click' } as const;
 
 export async function sendMagicLink(email: string, url: string): Promise<void> {
   const res = await fetch(BREVO_ENDPOINT, {
@@ -41,7 +22,7 @@ export async function sendMagicLink(email: string, url: string): Promise<void> {
       accept: 'application/json',
     },
     body: JSON.stringify({
-      sender: parseSender(env.EMAIL_FROM),
+      sender: SENDER,
       to: [{ email }],
       subject: 'Anmeldelink für den Dienstleistungs-Exchange',
       textContent:

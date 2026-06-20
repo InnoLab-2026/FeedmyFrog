@@ -8,7 +8,6 @@ const Schema = z
     MAGIC_LINK_TTL_MINUTES: z.coerce.number().int().positive().default(15),
     SESSION_TTL_DAYS: z.coerce.number().int().positive().default(30),
     BREVO_API_KEY: z.string().startsWith('xkeysib-'),
-    EMAIL_FROM: z.string().min(1),
     NEXT_PUBLIC_BASE_URL: z.string().url(),
     NEXT_PUBLIC_INSTITUTION_DOMAIN: z.string().min(1),
     ALLOWED_EMAIL_DOMAIN: z.string().min(1),
