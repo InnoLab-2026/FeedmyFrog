@@ -4,7 +4,7 @@ import { jwtVerify } from 'jose';
 const SECRET = new TextEncoder().encode(process.env.AUTH_SECRET!);
 const COOKIE = process.env.NODE_ENV === 'production' ? '__Host-session' : 'session';
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const jwt = req.cookies.get(COOKIE)?.value ?? req.cookies.get('session')?.value;
   if (!jwt) return NextResponse.redirect(new URL('/login', req.url));
   try {

@@ -76,7 +76,7 @@ of minimal data retention.
       lib/                       env, auth, session, email, validators, rate-limit
       types.ts                   Listing, Mode, Category (mirrors Figma types)
       constants.ts               INSTITUTION_NAME, SUBTITLE, CARD_SHADOW
-      middleware.ts              route gate for the (platform) group
+      proxy.ts                   route gate for the (platform) group
     drizzle/                     generated SQL migrations
     public/                      static assets
     drizzle.config.ts
@@ -126,7 +126,7 @@ to include it in any client bundle.
 
 **UI and access control.** Reusable components are in
 `src/components/`. Route protection is handled centrally in
-`src/middleware.ts`, which redirects unauthenticated requests to the
+`src/proxy.ts`, which redirects unauthenticated requests to the
 `(platform)` group back to `/login`.
 
 ## Installation
@@ -289,7 +289,7 @@ The following properties are relevant for the GDPR review.
 - Magic-link tokens are stored only as hashes, expire after 15 minutes,
   and are single-use.
 - The marketplace and every other listing-rendering page live behind
-  authentication via `src/middleware.ts`. The inserent's address is
+  authentication via `src/proxy.ts`. The inserent's address is
   visible directly on each listing card. Because every viewer is an
   authenticated member of the same university, the address is treated
   as visible to a closed community rather than to the public web; the
