@@ -30,7 +30,7 @@ https://www.figma.com/make/vaEARPyhfvFIfzMZo79NDR/Mobile-Landing-Page-Design--Co
 
 - Node.js 20 LTS (the 20 line is pinned in `package.json` `engines`; 21+ is unsupported)
 - A Neon PostgreSQL project (EU region, Frankfurt)
-- A Resend API key for sending magic-link emails
+- A Brevo API key for sending magic-link emails
 - A Vercel account for production hosting
 
 ## Tech stack
@@ -43,7 +43,7 @@ https://www.figma.com/make/vaEARPyhfvFIfzMZo79NDR/Mobile-Landing-Page-Design--Co
 | DB driver   | `@neondatabase/serverless` (HTTP)   |
 | ORM         | Drizzle ORM with Drizzle Kit        |
 | Auth        | Custom magic link with JWT session  |
-| Email       | Resend                              |
+| Email       | Brevo (transactional API)           |
 | Validation  | Zod                                 |
 | Styling     | Tailwind CSS 4                      |
 | Icons       | lucide-react                        |
@@ -118,7 +118,7 @@ at the repository root by Drizzle Kit.
 `listings.ts` for create/delete. Cross-cutting helpers are collected
 in `src/lib/`:
 validated environment access (`env.ts`), token hashing (`auth.ts`),
-session cookies (`session.ts`), the Resend client (`email.ts`), shared
+session cookies (`session.ts`), the Brevo email client (`email.ts`), shared
 Zod schemas (`validators.ts`), and the Postgres-backed rate limiter
 (`rate-limit.ts`). Every helper that reads secrets or touches the
 database imports `'server-only'` so that the Next.js bundler refuses
@@ -151,9 +151,8 @@ AUTH_SECRET="..."                         # 32 random bytes (hex), used to sign 
 MAGIC_LINK_TTL_MINUTES=15
 SESSION_TTL_DAYS=30
 
-# Email
-RESEND_API_KEY="re_..."
-EMAIL_FROM="Dienstleistungs-Exchange <noreply@reutlingen-university.de>"
+# Email (sender is hardcoded in src/lib/email.ts — verified domain feedmyfrog.click)
+BREVO_API_KEY="xkeysib-..."
 
 # Application
 NEXT_PUBLIC_BASE_URL="http://localhost:3000"
@@ -307,7 +306,7 @@ The following properties are relevant for the GDPR review.
 ## Deployment
 
 Production hosting is on Vercel. The database remains on Neon in the
-Frankfurt region. Resend handles outbound email.
+Frankfurt region. Brevo handles outbound email.
 
 ### Initial setup
 
