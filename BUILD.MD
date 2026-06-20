@@ -34,9 +34,10 @@ Before starting, prepare the following:
 - A GitHub repository for the project
 - A Neon account with a project in the Frankfurt region
   (`eu-central-1`)
-- A Resend account with a verified sending domain (DNS records
-  printed by the Resend dashboard: SPF, DKIM, and a DMARC policy of
-  at least `p=none`)
+- A Brevo account with a verified sending domain (DNS records
+  printed by the Brevo dashboard: SPF, DKIM, and a DMARC policy of
+  at least `p=none`). Provision the account on Brevo's EU
+  infrastructure to keep email data within the EU.
 - A Vercel account linked to the same GitHub organisation
 - The Figma reference package `Waymakrdesignfigma-main.zip` extracted
   somewhere accessible. The build copies file contents from it
@@ -85,7 +86,7 @@ contributors run the same Node release:
 ### Step 3. Install runtime dependencies
 
 ```bash
-npm install drizzle-orm @neondatabase/serverless jose zod resend server-only \
+npm install drizzle-orm @neondatabase/serverless jose zod server-only \
   lucide-react i18next react-i18next
 ```
 
@@ -96,7 +97,8 @@ Application stack:
   middleware).
 - `zod` — input validation in Server Actions, route handlers, and the
   environment validator.
-- `resend` — magic-link email delivery.
+- Brevo transactional email — magic-link delivery via the REST API
+  (called with `fetch`; no SDK dependency).
 - `server-only` — guard module. Importing it inside a file makes the
   Next.js bundler refuse to ship that file in any client bundle.
 
@@ -129,7 +131,7 @@ MAGIC_LINK_TTL_MINUTES=15
 SESSION_TTL_DAYS=30
 
 # Email
-RESEND_API_KEY=
+BREVO_API_KEY=
 EMAIL_FROM="Dienstleistungs-Exchange <noreply@reutlingen-university.de>"
 
 # Application
@@ -171,7 +173,7 @@ const Schema = z
     AUTH_SECRET: z.string().min(64),
     MAGIC_LINK_TTL_MINUTES: z.coerce.number().int().positive().default(15),
     SESSION_TTL_DAYS: z.coerce.number().int().positive().default(30),
-    RESEND_API_KEY: z.string().startsWith('re_'),
+    BREVO_API_KEY: z.string().startsWith('xkeysib-'),
     EMAIL_FROM: z.string().min(1),
     NEXT_PUBLIC_BASE_URL: z.string().url(),
     NEXT_PUBLIC_INSTITUTION_DOMAIN: z.string().min(1),
@@ -467,25 +469,63 @@ Create `src/lib/email.ts`:
 
 ```ts
 import 'server-only';
-import { Resend } from 'resend';
 import { env } from '@/lib/env';
 
-const resend = new Resend(env.RESEND_API_KEY);
+const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
+
+type Sender = { name?: string; email: string };
+
+/**
+ * Brevo's transactional API wants a structured sender ({ name, email }),
+ * but EMAIL_FROM is the RFC-5322-style combined string "Name <email>"
+ * (or possibly a bare "email" with no display name).
+ *
+ *   "Dienstleistungs-Exchange <noreply@reutlingen-university.de>"
+ *        -> { name: 'Dienstleistungs-Exchange', email: 'noreply@reutlingen-university.de' }
+ *   "noreply@reutlingen-university.de"
+ *        -> { email: 'noreply@reutlingen-university.de' }
+ *
+ * Fail-fast: a malformed EMAIL_FROM throws here rather than being forwarded to
+ * Brevo, which would reject it with a vaguer error. On the magic-link path a
+ * misconfigured sender blocks every login, so we want the loudest signal.
+ */
+function parseSender(value: string): Sender {
+  const named = value.match(/^\s*(.*?)\s*<([^>]+)>\s*$/);
+  if (named) {
+    const [, name, email] = named;
+    return name ? { name, email: email.trim() } : { email: email.trim() };
+  }
+  const bare = value.trim();
+  if (bare.includes('@')) {
+    return { email: bare };
+  }
+  throw new Error(`invalid_email_from: ${JSON.stringify(value)}`);
+}
 
 export async function sendMagicLink(email: string, url: string): Promise<void> {
-  const { error } = await resend.emails.send({
-    from: env.EMAIL_FROM,
-    to: email,
-    subject: 'Anmeldelink für den Dienstleistungs-Exchange',
-    text:
-      `Hallo,\n\n` +
-      `klicken Sie auf den folgenden Link, um sich anzumelden. ` +
-      `Der Link ist ${env.MAGIC_LINK_TTL_MINUTES} Minuten gültig und kann nur einmal verwendet werden.\n\n` +
-      `${url}\n\n` +
-      `Wenn Sie diese E-Mail nicht angefordert haben, können Sie sie ignorieren.`,
+  const res = await fetch(BREVO_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'api-key': env.BREVO_API_KEY,
+      'content-type': 'application/json',
+      accept: 'application/json',
+    },
+    body: JSON.stringify({
+      sender: parseSender(env.EMAIL_FROM),
+      to: [{ email }],
+      subject: 'Anmeldelink für den Dienstleistungs-Exchange',
+      textContent:
+        `Hallo,\n\n` +
+        `klicken Sie auf den folgenden Link, um sich anzumelden. ` +
+        `Der Link ist ${env.MAGIC_LINK_TTL_MINUTES} Minuten gültig und kann nur einmal verwendet werden.\n\n` +
+        `${url}\n\n` +
+        `Wenn Sie diese E-Mail nicht angefordert haben, können Sie sie ignorieren.`,
+    }),
   });
-  if (error) {
-    throw new Error(`resend_send_failed: ${error.name} ${error.message}`);
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '');
+    throw new Error(`brevo_send_failed: ${res.status} ${detail}`);
   }
 }
 ```
@@ -1713,7 +1753,7 @@ Pushing to `main` triggers a production build. Watch the build log:
 After deployment, log in once with a real university address and
 confirm:
 
-- the magic-link email arrives from the configured Resend domain
+- the magic-link email arrives from the configured Brevo domain
 - clicking the link sets a `__Host-session` cookie on the production
   domain
 - creating, listing, and deleting an entry all work
