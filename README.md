@@ -389,8 +389,8 @@ primary path.
 - [x] Marketplace page with mode toggle, tag-derived categories, search,
       and pagination (per Figma design)
 - [x] `/meine` page for managing own listings
-- [ ] Apply migration on Neon and run end-to-end against real DATABASE_URL
-- [ ] CSP nonce middleware (remove `'unsafe-inline'` from `script-src`)
+- [x] Apply migration on Neon and run end-to-end against real DATABASE_URL
+- [ ] CSP nonce middleware to proxy & (remove `'unsafe-inline'` from `script-src`)
 - [ ] Server-side pagination and search
 - [ ] Internal pilot
 - [ ] Review for migration to university infrastructure
