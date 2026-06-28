@@ -63,7 +63,7 @@ export async function POST(req: Request) {
     expiresAt: new Date(Date.now() + ttlMs),
   });
 
-  const url = `${env.NEXT_PUBLIC_BASE_URL}/verify?token=${encodeURIComponent(raw)}`;
+  const url = `${env.NEXT_PUBLIC_BASE_URL}/verify-prompt?token=${encodeURIComponent(raw)}`;
   await sendMagicLink(email, url);
 
   return NextResponse.json({ ok: true }, { status: 202 });
