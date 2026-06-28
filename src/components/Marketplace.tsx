@@ -1,9 +1,11 @@
 'use client';
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Listing, Mode, Category } from '@/types';
 import { iconMap } from '@/data/icons';
+import { logout } from '@/actions/auth';
 import Header from '@/components/layout/Header';
 import ModeToggle from '@/components/marketplace/ModeToggle';
 import CategoryTabs from '@/components/marketplace/CategoryTabs';
@@ -88,6 +90,28 @@ export default function Marketplace({ listings }: MarketplaceProps) {
 
   return (
     <>
+      {/* Application-owned nav strip — not part of the designer-owned Header */}
+      <div
+        className="flex items-center justify-end gap-2 px-5 py-2"
+        style={{ background: 'white', borderBottom: '1px solid #e5e5e5' }}
+      >
+        <Link
+          href="/meine"
+          className="rounded-xl px-3 py-1.5 text-sm font-medium"
+          style={{ background: 'white', border: '2px solid black' }}
+        >
+          Meine Einträge
+        </Link>
+        <form action={logout}>
+          <button
+            type="submit"
+            className="rounded-xl px-3 py-1.5 text-sm font-medium"
+            style={{ background: 'white', border: '2px solid black' }}
+          >
+            Abmelden
+          </button>
+        </form>
+      </div>
       <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
       <main className="max-w-[1400px] w-full mx-auto px-5 flex-grow pb-8">
