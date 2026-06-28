@@ -30,12 +30,17 @@ export async function POST(req: Request) {
     const body = await req.text();
     token = new URLSearchParams(body).get('token');
   } else if (ct.toLowerCase().includes('application/json')) {
-    const json = await req.json().catch(() => ({})) as Record<string, unknown>;
+    let json: Record<string, unknown>;
+    try {
+      json = (await req.json()) as Record<string, unknown>;
+    } catch {
+      return NextResponse.redirect(new URL('/login?error=missing_token', req.url), 303);
+    }
     token = typeof json.token === 'string' ? json.token : null;
   }
 
   if (!token) {
-    return NextResponse.redirect(new URL('/login?error=missing_token', req.url));
+    return NextResponse.redirect(new URL('/login?error=missing_token', req.url), 303);
   }
 
   // Single-use + not-expired check, done atomically: only an unconsumed, still
@@ -54,9 +59,11 @@ export async function POST(req: Request) {
     .returning({ email: magicTokens.email });
 
   if (!row) {
-    return NextResponse.redirect(new URL('/login?error=invalid_or_expired', req.url));
+    return NextResponse.redirect(new URL('/login?error=invalid_or_expired', req.url), 303);
   }
 
   await createSession({ userId: userIdFromEmail(row.email), email: row.email });
-  return NextResponse.redirect(new URL('/', req.url));
+  // 303 See Other: correct status for the Post/Redirect/Get pattern after a
+  // form submission, ensuring the browser follows the redirect with a GET.
+  return NextResponse.redirect(new URL('/', req.url), 303);
 }
