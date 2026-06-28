@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/session';
+import Footer from '@/components/layout/Footer';
 
 export default async function PlatformLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
@@ -8,6 +9,7 @@ export default async function PlatformLayout({ children }: { children: React.Rea
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#f5f5f5' }}>
       {children}
+      <Footer />
     </div>
   );
 }
