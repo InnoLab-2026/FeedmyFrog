@@ -12,9 +12,10 @@ import ListingCard from '@/components/marketplace/ListingCard';
 
 interface MarketplaceProps {
   listings: Listing[];
+  logoutAction: () => Promise<void>;
 }
 
-export default function Marketplace({ listings }: MarketplaceProps) {
+export default function Marketplace({ listings, logoutAction }: MarketplaceProps) {
   const { t } = useTranslation();
   const [mode, setMode] = useState<Mode>('need');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -88,7 +89,7 @@ export default function Marketplace({ listings }: MarketplaceProps) {
 
   return (
     <>
-      <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+      <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} logoutAction={logoutAction} />
 
       <main className="max-w-[1400px] w-full mx-auto px-5 flex-grow pb-8">
         <ModeToggle mode={mode} onChange={setMode} />
