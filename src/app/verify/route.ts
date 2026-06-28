@@ -8,8 +8,32 @@ import { createSession } from '@/lib/session';
 
 export const runtime = 'nodejs';
 
+// Redirect legacy GET links (e.g. from old emails) to the confirmation page so
+// the token is not consumed by link-scanning bots that perform GET requests.
 export async function GET(req: Request) {
   const token = new URL(req.url).searchParams.get('token');
+  if (!token) {
+    return NextResponse.redirect(new URL('/login?error=missing_token', req.url));
+  }
+  return NextResponse.redirect(
+    new URL(`/verify-prompt?token=${encodeURIComponent(token)}`, req.url),
+  );
+}
+
+// Token consumption only happens on POST (triggered by the "Log me in" button
+// on /verify-prompt). Link scanners issue GET requests and never reach here.
+export async function POST(req: Request) {
+  let token: string | null = null;
+
+  const ct = req.headers.get('content-type') ?? '';
+  if (ct.toLowerCase().includes('application/x-www-form-urlencoded')) {
+    const body = await req.text();
+    token = new URLSearchParams(body).get('token');
+  } else if (ct.toLowerCase().includes('application/json')) {
+    const json = await req.json().catch(() => ({})) as Record<string, unknown>;
+    token = typeof json.token === 'string' ? json.token : null;
+  }
+
   if (!token) {
     return NextResponse.redirect(new URL('/login?error=missing_token', req.url));
   }
