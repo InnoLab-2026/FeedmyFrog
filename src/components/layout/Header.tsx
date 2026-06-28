@@ -9,9 +9,10 @@ import { INSTITUTION_NAME, SUBTITLE } from '@/constants';
 interface HeaderProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
+  logoutAction: () => Promise<void>;
 }
 
-export default function Header({ searchQuery, onSearchChange }: HeaderProps) {
+export default function Header({ searchQuery, onSearchChange, logoutAction }: HeaderProps) {
   const { t } = useTranslation();
   const [showDisclaimer, setShowDisclaimer] = useState(false);
 
@@ -39,9 +40,18 @@ export default function Header({ searchQuery, onSearchChange }: HeaderProps) {
             </p>
           </div>
 
-          {/* Language button — top right */}
-          <div className="flex-shrink-0 pt-1">
+          {/* Language button + logout — top right */}
+          <div className="flex flex-shrink-0 items-center gap-2 pt-1">
             <LanguageButton />
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                className="rounded-xl px-3 py-2 text-sm font-medium"
+                style={{ background: 'white', border: '2px solid black' }}
+              >
+                Abmelden
+              </button>
+            </form>
           </div>
         </div>
 
