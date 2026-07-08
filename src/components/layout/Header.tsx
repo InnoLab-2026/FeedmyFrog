@@ -1,12 +1,10 @@
 'use client';
 import { useState } from 'react';
-import Link from 'next/link';
 import { Search, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import DisclaimerOverlay from '@/components/marketplace/DisclaimerOverlay';
 import LanguageButton from '@/components/layout/LanguageButton';
 import { INSTITUTION_NAME, SUBTITLE } from '@/constants';
-import { logout } from '@/actions/auth';
 
 interface HeaderProps {
   searchQuery: string;
@@ -41,25 +39,9 @@ export default function Header({ searchQuery, onSearchChange }: HeaderProps) {
             </p>
           </div>
 
-          {/* Nav + logout — top right */}
-          <div className="flex flex-shrink-0 items-center gap-2 pt-1 flex-wrap">
+          {/* Language button — top right */}
+          <div className="flex-shrink-0 pt-1">
             <LanguageButton />
-            <Link
-              href="/meine"
-              className="rounded-xl px-3 py-2 text-sm font-medium"
-              style={{ background: 'white', border: '2px solid black' }}
-            >
-              Meine Einträge
-            </Link>
-            <form action={logout}>
-              <button
-                type="submit"
-                className="rounded-xl px-3 py-2 text-sm font-medium"
-                style={{ background: 'white', border: '2px solid black' }}
-              >
-                Abmelden
-              </button>
-            </form>
           </div>
         </div>
 
