@@ -75,7 +75,7 @@ of minimal data retention.
         layout/                  Header, Footer, LanguageButton
         marketplace/             ModeToggle, CategoryTab(s), ListingCard,
                                  PaginationControls, DisclaimerOverlay
-        Marketplace.tsx          state-owning client wrapper
+        Marketplace.tsx          client wrapper; filter/page state lives in the URL
       data/icons.tsx             tag → icon map (designer-owned)
       i18n/                      translations.ts, init, client provider
       db/                        Drizzle client and schema
@@ -329,9 +329,21 @@ export const rateLimits = pgTable('rate_limits', {
 
 The `listings` row shape is identical to the Figma `Listing`
 TypeScript interface (`id`, `userId`, `email`, `type`, `title`,
-`description`, `tags`, `location`, `createdAt`). Categories on the
-marketplace are derived client-side from the `tags` array of the
-currently displayed listings, ranked by frequency.
+`description`, `tags`, `location`, `createdAt`).
+
+**Server-side pagination and search.** The marketplace page reads its
+entire filter state from the URL (`?mode=`, `?cat=`, `?q=`, `?page=`,
+`?per=`) and translates it into SQL: mode and category filter via
+`WHERE type = … AND tags @> ARRAY[…]`, search via parameterized `ILIKE`
+on title and description (LIKE wildcards in user input are escaped),
+and pagination via `LIMIT`/`OFFSET` with a `COUNT(*)` for page
+clamping. Category tabs are aggregated in the database
+(`unnest(tags) … GROUP BY`), ranked by frequency within the current
+mode. `Marketplace.tsx` owns no filter state of its own: the
+designer-owned components keep their prop contracts, and their
+callbacks are translated into router navigations (typing in the search
+box debounces 300 ms before updating the URL), so back/forward
+navigation and shareable filtered URLs work naturally.
 
 `rate_limits` records each rate-limited request as a row keyed by
 `send-link:ip:<ip>` or `send-link:email:<email>`. A short cleanup
@@ -520,7 +532,8 @@ primary path.
 - [ ] Fill in controller/provider placeholders on `/datenschutz` and `/impressum`
 - [ ] Add the platform to the university's record of processing activities
       (Art. 30 GDPR)
-- [ ] Server-side pagination and search
+- [x] Server-side pagination and search (URL-driven filters, SQL
+      `ILIKE`/`@>`/`LIMIT`/`OFFSET`, DB-aggregated category tabs)
 - [ ] Internal pilot
 - [ ] Review for migration to university infrastructure
 
