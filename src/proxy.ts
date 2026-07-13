@@ -28,7 +28,7 @@ export async function proxy(req: NextRequest) {
     if (COOKIE !== 'session') {
       res.cookies.set('session', '', {
         httpOnly: true,
-        secure: false,
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
         maxAge: 0,
