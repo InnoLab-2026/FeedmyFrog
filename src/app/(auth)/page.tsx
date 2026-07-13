@@ -1,12 +1,15 @@
 import { desc } from 'drizzle-orm';
 import { db } from '@/db/client';
 import { listings } from '@/db/schema';
+import { requireSession } from '@/lib/session';
 import type { Listing } from '@/types';
 import Marketplace from '@/components/Marketplace';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
+  await requireSession();
+
   const rows = await db
     .select()
     .from(listings)
