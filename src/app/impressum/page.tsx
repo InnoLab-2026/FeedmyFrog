@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { CARD_SHADOW } from '@/constants';
 
 export const metadata: Metadata = {
   title: 'Impressum · Reutlingen University Connect',
@@ -14,15 +15,18 @@ export const dynamic = 'force-dynamic';
 // Betreibers gefüllt werden.
 export default function ImpressumPage() {
   return (
-    <main className="mx-auto w-full max-w-3xl p-6 py-12">
+    <main className="min-h-screen p-6 py-12" style={{ background: '#f5f5f5' }}>
+      <div
+        className="mx-auto w-full max-w-3xl p-8 rounded-2xl"
+        style={{ background: 'white', border: '2px solid black', boxShadow: CARD_SHADOW }}
+      >
       <h1
-        className="text-2xl font-semibold"
-        style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family-display)' }}
+        style={{ fontFamily: 'var(--font-family-display)', fontWeight: 700, fontSize: '24px', color: 'black' }}
       >
         Impressum
       </h1>
 
-      <section className="mt-6 space-y-4 text-sm" style={{ color: 'var(--foreground)' }}>
+      <section className="mt-6 space-y-4" style={{ fontSize: '14px', fontWeight: 500, color: 'black' }}>
         <h2 className="text-lg font-semibold">Angaben gemäß § 5 DDG</h2>
         <p>
           [Name des Betreibers / der verantwortlichen Organisationseinheit]
@@ -58,18 +62,27 @@ export default function ImpressumPage() {
           wird von Neon, Inc. ausschließlich in der EU (Frankfurt) betrieben;
           Anmelde-E-Mails werden über Brevo (Sendinblue SAS, Frankreich)
           versandt. Einzelheiten zur Datenverarbeitung enthält die{' '}
-          <Link href="/datenschutz" style={{ color: 'var(--primary)' }}>
+          <Link
+            href="/datenschutz"
+            className="hover:underline"
+            style={{ color: 'black', fontWeight: 700, textDecoration: 'underline' }}
+          >
             Datenschutzerklärung
           </Link>
           .
         </p>
 
         <p>
-          <Link href="/datenschutz" style={{ color: 'var(--primary)' }}>
+          <Link
+            href="/datenschutz"
+            className="hover:underline"
+            style={{ color: 'black', fontWeight: 700, textDecoration: 'underline' }}
+          >
             Datenschutzerklärung
           </Link>
         </p>
       </section>
+      </div>
     </main>
   );
 }
