@@ -509,31 +509,40 @@ primary path.
 
 ## Roadmap
 
-- [x] Technical concept and data model
-- [x] Figma reference design integrated into the component layout
-- [x] Project scaffold (Next.js, TypeScript, App Router, `src/`)
-- [x] Drizzle schema (single `listings` table) and initial migration
+- [x] Technical concept and data model (Marty Lauterbach)
+- [x] Figma reference design integrated into the component layout (Marty Lauterbach)
+- [x] Project scaffold (Next.js, TypeScript, App Router, `src/`) (Marty Lauterbach)
+- [x] Drizzle schema (single `listings` table) and initial migration (Marty Lauterbach)
 - [x] Magic-link authentication with JWT session and per-IP / per-email
-      rate limiting
-- [x] CRUD for listings via Server Actions
-- [x] Auth-gated platform layout and middleware
+      rate limiting (Marty Lauterbach)
+- [x] CRUD for listings via Server Actions (Marty Lauterbach)
+- [x] Auth-gated platform layout and middleware (Marty Lauterbach)
 - [x] Session expiry enforced: expired `__Host-session` cookies are correctly
-      cleared on the first protected request and the user is redirected to `/login`
+      cleared on the first protected request and the user is redirected to
+      `/login` (Marty Lauterbach)
 - [x] Marketplace page with mode toggle, tag-derived categories, search,
-      and pagination (per Figma design)
-- [x] `/meine` page for managing own listings
+      and pagination (per Figma design) (Marty Lauterbach)
+- [x] `/meine` page for managing own listings (Marty Lauterbach)
 - [x] Apply migration on Neon and run end-to-end against real DATABASE_URL
+      (Marty Lauterbach)
 - [x] CSP nonce in proxy (`'unsafe-inline'` removed from `script-src`)
+      (Marty Lauterbach)
 - [x] Page-level `requireSession()` data-access guard (defense in depth)
+      (Marty Lauterbach)
 - [x] Public `/datenschutz` (Art. 13 GDPR) and `/impressum` (§ 5 DDG) pages
+      (Marty Lauterbach)
 - [x] Production stack live at `feedmyfrog.click` (Vercel + Neon Frankfurt +
-      Brevo, chained and working)
+      Brevo, chained and working) (Marty Lauterbach)
 - [x] Art. 28 DPAs / terms accepted with Vercel, Neon, and Brevo
+      (Marty Lauterbach)
+- [x] Server-side pagination and search (URL-driven filters, SQL
+      `ILIKE`/`@>`/`LIMIT`/`OFFSET`, DB-aggregated category tabs)
+      (Marty Lauterbach)
+- [ ] Frontend alignment (Busra, Kathrin)
+- [ ] Frontend design (Busra, Kathrin)
 - [ ] Fill in controller/provider placeholders on `/datenschutz` and `/impressum`
 - [ ] Add the platform to the university's record of processing activities
       (Art. 30 GDPR)
-- [x] Server-side pagination and search (URL-driven filters, SQL
-      `ILIKE`/`@>`/`LIMIT`/`OFFSET`, DB-aggregated category tabs)
 - [ ] Internal pilot
 - [ ] Review for migration to university infrastructure
 
