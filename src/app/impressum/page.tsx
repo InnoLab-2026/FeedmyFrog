@@ -45,10 +45,23 @@ export default function ImpressumPage() {
         <h2 className="text-lg font-semibold">Hinweis</h2>
         <p>
           Dieses Angebot ist eine hochschulinterne Vermittlungsplattform für
-          Studierende und Beschäftigte der Hochschule Reutlingen. Der Zugang
-          ist auf authentifizierte Mitglieder der Hochschule beschränkt.
-          Inserate werden von den Nutzerinnen und Nutzern selbst eingestellt;
-          die Kontaktaufnahme und Abwicklung erfolgt außerhalb der Plattform.
+          Studierende und Beschäftigte der Hochschule Reutlingen, erreichbar
+          unter <code>feedmyfrog.click</code>. Der Zugang ist auf
+          authentifizierte Mitglieder der Hochschule beschränkt. Inserate
+          werden von den Nutzerinnen und Nutzern selbst eingestellt; die
+          Kontaktaufnahme und Abwicklung erfolgt außerhalb der Plattform.
+        </p>
+
+        <h2 className="text-lg font-semibold">Hosting</h2>
+        <p>
+          Die Anwendung wird bei Vercel Inc. (USA) gehostet; die Datenbank
+          wird von Neon, Inc. ausschließlich in der EU (Frankfurt) betrieben;
+          Anmelde-E-Mails werden über Brevo (Sendinblue SAS, Frankreich)
+          versandt. Einzelheiten zur Datenverarbeitung enthält die{' '}
+          <Link href="/datenschutz" style={{ color: 'var(--primary)' }}>
+            Datenschutzerklärung
+          </Link>
+          .
         </p>
 
         <p>
