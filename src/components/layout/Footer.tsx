@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Footer() {
   return (
     <footer
@@ -16,6 +18,11 @@ export default function Footer() {
         <div className="inline-block px-6 py-2 rounded-full" style={{ background: 'white' }}>
           <a href="https://github.com/mklemmingen"  className="hover:underline" style={{ color: 'black' }}>Lauterbach</a>,{' '}
           <a href="https://github.com/MeinhardH0815" className="hover:underline" style={{ color: 'black' }}>Holzknecht</a>, Neu, Arpa
+        </div>
+        <div className="inline-block px-6 py-2 rounded-full" style={{ background: 'white' }}>
+          <Link href="/impressum" className="hover:underline" style={{ color: 'black' }}>Impressum</Link>
+          {' · '}
+          <Link href="/datenschutz" className="hover:underline" style={{ color: 'black' }}>Datenschutz</Link>
         </div>
       </div>
     </footer>

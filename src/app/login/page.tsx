@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import LoginForm from './LoginForm';
 
 export const metadata: Metadata = {
@@ -36,6 +37,16 @@ export default async function LoginPage({
           einen einmaligen Anmeldelink.
         </p>
         <LoginForm initialError={initialError} />
+        <p className="mt-6 text-xs" style={{ color: 'var(--muted-foreground)' }}>
+          Informationen zur Verarbeitung Ihrer Daten finden Sie in der{' '}
+          <Link href="/datenschutz" style={{ color: 'var(--primary)' }}>
+            Datenschutzerklärung
+          </Link>
+          {' · '}
+          <Link href="/impressum" style={{ color: 'var(--primary)' }}>
+            Impressum
+          </Link>
+        </p>
       </div>
     </main>
   );

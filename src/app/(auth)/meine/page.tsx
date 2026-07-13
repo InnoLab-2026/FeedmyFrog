@@ -2,7 +2,7 @@ import { desc, eq } from 'drizzle-orm';
 import Link from 'next/link';
 import { db } from '@/db/client';
 import { listings } from '@/db/schema';
-import { getSession } from '@/lib/session';
+import { requireSession } from '@/lib/session';
 import { logout } from '@/actions/auth';
 import { deleteListing } from '@/actions/listings';
 import type { Listing } from '@/types';
@@ -11,7 +11,7 @@ import ListingCard from '@/components/marketplace/ListingCard';
 export const dynamic = 'force-dynamic';
 
 export default async function MeinePage() {
-  const session = (await getSession())!; // layout guarantees session
+  const session = await requireSession();
 
   const rows = await db
     .select()
