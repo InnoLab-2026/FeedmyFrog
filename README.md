@@ -64,7 +64,7 @@ of minimal data retention.
         login/                   login form (unauthenticated)
         verify/                  token-consumption endpoint (POST) + legacy-link redirect (GET)
         verify-prompt/           intermediate confirmation page shown after clicking the email link
-        (platform)/              auth-gated pages: marketplace (/), /new, /meine
+        (auth)/                   auth-gated SSR pages: marketplace (/), /new, /meine, /meine/[id]/edit
         api/                     route handlers (send-link, healthz)
         layout.tsx               root layout with i18n provider
       actions/                   server actions: auth.ts (logout), listings.ts
@@ -79,7 +79,7 @@ of minimal data retention.
       lib/                       env, auth, session, email, validators, rate-limit
       types.ts                   Listing, Mode, Category (mirrors Figma types)
       constants.ts               INSTITUTION_NAME, SUBTITLE, CARD_SHADOW
-      proxy.ts                   route gate for the (platform) group
+      proxy.ts                   route gate for the (auth) group
     drizzle/                     generated SQL migrations
     public/                      static assets
     drizzle.config.ts
@@ -99,9 +99,10 @@ The application is organised in four areas.
 
 **Routing.** All routes live under `src/app/` and follow the Next.js
 App Router conventions. Unauthenticated pages (`login/`, `verify/`,
-`verify-prompt/`) live directly under `src/app/`, and `(platform)`
-covers the authenticated pages — the marketplace at `/`, listing
-creation at `/new`, and own-listings management at `/meine`. Route handlers under
+`verify-prompt/`) live directly under `src/app/`, and `(auth)`
+covers the authenticated SSR pages — the marketplace at `/`, listing
+creation at `/new`, and own-listings management at `/meine` and
+`/meine/[id]/edit`. Route handlers under
 `src/app/api/` expose the magic-link issuing endpoint and a liveness
 probe; logout is implemented as a Server Action so that Next.js
 provides Origin-based CSRF protection automatically.
@@ -124,11 +125,12 @@ session cookies (`session.ts`), the Brevo email client (`email.ts`), shared
 Zod schemas (`validators.ts`), and the Postgres-backed rate limiter
 (`rate-limit.ts`). Every helper that reads secrets or touches the
 database imports `'server-only'` so that the Next.js bundler refuses
-to include it in any client bundle.
+to include it in any client bundle. Data-handling actions validate the
+session server-side before writing or deleting listings.
 
 **UI and access control.** Reusable components are in
 `src/components/`. Route protection is handled centrally in
-`src/proxy.ts`, which intercepts requests to the `(platform)` group
+`src/proxy.ts`, which intercepts requests to the `(auth)` group
 and redirects unauthenticated users or users with an expired session
 cookie back to `/login`, clearing the stale cookie in the process.
 
@@ -235,7 +237,7 @@ the schema does not contain a user table.
    user identifier and the email address; its TTL is `SESSION_TTL_DAYS`
    (default 30 days).
 6. Subsequent requests resolve the session through `src/proxy.ts`, which
-   verifies the JWT on every request to the `(platform)` group. If the
+   verifies the JWT on every request to the `(auth)` group. If the
    JWT is missing or expired, the proxy clears the cookie and redirects
    to `/login`. Server pages additionally call `getSession()` as a
    backstop.
