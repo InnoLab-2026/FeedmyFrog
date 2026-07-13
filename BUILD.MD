@@ -137,7 +137,7 @@ DATABASE_URL=
 # Auth
 AUTH_SECRET=
 MAGIC_LINK_TTL_MINUTES=15
-SESSION_TTL_DAYS=30
+SESSION_TTL_DAYS=7
 
 # Email (sender is hardcoded in src/lib/email.ts — verified domain feedmyfrog.click)
 BREVO_API_KEY=
@@ -180,7 +180,7 @@ const Schema = z
     DATABASE_URL: z.string().url(),
     AUTH_SECRET: z.string().min(64),
     MAGIC_LINK_TTL_MINUTES: z.coerce.number().int().positive().default(15),
-    SESSION_TTL_DAYS: z.coerce.number().int().positive().default(30),
+    SESSION_TTL_DAYS: z.coerce.number().int().positive().default(7),
     BREVO_API_KEY: z.string().startsWith('xkeysib-'),
     NEXT_PUBLIC_BASE_URL: z.string().url(),
     NEXT_PUBLIC_INSTITUTION_DOMAIN: z.string().min(1),
