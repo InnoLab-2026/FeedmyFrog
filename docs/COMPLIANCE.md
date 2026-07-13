@@ -49,7 +49,8 @@ for this system (no connected products; not an essential entity).
 | L2 | **Impressum**, §5 DDG (German provider-identification duty for digital services). | DDG §5 | **Missing.** | Added public `/impressum` page (placeholders to be filled before pilot), linked from the footer. | `src/app/impressum/page.tsx`, `src/components/layout/Footer.tsx` |
 | L3 | **Cookie consent**, §25 TDDDG: consent required unless storage is *strictly necessary* for the service the user requested. A single HttpOnly session cookie for login is exempt (§25(2) Nr. 2); no banner needed as long as no tracking/analytics/marketing storage is added. | TDDDG §25; DSK guidance | Compliant by design — only the session cookie is set; no analytics, no third-party embeds. Undocumented. | Documented in README and in the privacy notice. Any future analytics requires a consent banner first. | `src/lib/session.ts` (only cookie written) |
 | L4 | **No third-party font/CDN leakage** (LG München I, 3 O 17493/20 — Google Fonts): loading fonts from Google transmits IPs unlawfully. | Case law; usercentrics/privacychecker 2026 guides | Compliant: `next/font/google` downloads fonts at build time and self-hosts them; no runtime request to Google. Undocumented. | Documented in README and privacy notice. | `src/app/layout.tsx` |
-| L5 | **Processor contracts (AVV/DPA), Art. 28 GDPR** with Vercel (hosting), Neon (DB), Brevo (email). Third-country transfers Chapter V: Vercel is EU-US Data Privacy Framework certified; Neon project pinned to Frankfurt (`eu-central-1`); Brevo is an EU (French) provider. | GDPR Art. 28, 44 ff.; Vercel DPA/changelog; Brevo GDPR docs | DB region was documented; DPA duty was not. | Documented in README (deployment prerequisites) and listed all three processors in the privacy notice. Signing the DPAs is an organisational step before the pilot. | README §Data protection |
+| L5 | **Processor contracts (AVV/DPA), Art. 28 GDPR** with Vercel (hosting), Neon (DB), Brevo (email). Third-country transfers Chapter V: Vercel is EU-US Data Privacy Framework certified; Neon project pinned to Frankfurt (`eu-central-1`); Brevo is an EU (French) provider. | GDPR Art. 28, 44 ff.; Vercel DPA/changelog; Brevo GDPR docs | DB region was documented; DPA duty was not. | Documented in README and listed all three processors in the privacy notice with legal entities (Vercel Inc., USA/DPF; Neon, Inc. — a Databricks company, DB region-locked to Frankfurt; Brevo/Sendinblue SAS, Paris). **Closed July 2026: terms and DPAs of all three platforms accepted; stack live at `feedmyfrog.click`.** | README §Data protection, `src/app/datenschutz/page.tsx` |
+| L10 | **Hosting log data must be disclosed** (Art. 13 GDPR): Vercel automatically processes server logs — end-user IP addresses, request metadata, IP-derived location — to deliver and secure customer sites. | Vercel privacy notice | Undisclosed (platform went live). | Added a *Server-Logdaten* item to the privacy notice (Art. 6(1)(f), no profiling) and a Hosting section to the Impressum naming Vercel, Neon, and Brevo. | `src/app/datenschutz/page.tsx`, `src/app/impressum/page.tsx` |
 | L6 | **Data minimisation / storage limitation**, Art. 5(1)(c)+(e) GDPR: collect only what is needed, keep it no longer than needed. | GDPR Art. 5 | Largely compliant: no user table, `sha256(email)` identifier, hashed single-use tokens (15 min TTL, purged ≤ 7 days after expiry), rate-limit rows (contain IPs) purged after 6 h, session cookie 7 days. Retention was undocumented. | Documented as a retention table in README and privacy notice. | `src/app/api/auth/send-link/route.ts` (token + rate-limit purge), `src/lib/rate-limit.ts` |
 | L7 | **IP addresses are personal data** (CJEU C-582/14 Breyer): rate-limit keys `send-link:ip:<ip>` are personal data; processing is justified by Art. 6(1)(f) (abuse prevention) and must be time-limited. | CJEU C-582/14 | Purged after 6 hours; undocumented. | Documented; 6-hour retention confirmed in `cleanupRateLimits()`. | `src/lib/rate-limit.ts` |
 | L8 | **Data-subject rights**, Art. 15–21 GDPR: access, rectification, erasure, restriction, portability, objection. | GDPR Art. 15–21 | Users can edit and delete their own listings; logout clears the session. Erasure of everything tied to an email is possible by deleting all own listings (no other user record exists). No documented contact channel. | Rights and the contact channel documented in the privacy notice; README updated. | `src/actions/listings.ts` |
@@ -63,7 +64,10 @@ Sources (EU law):
 - https://privacychecker.pro/blog/google-fonts-gdpr-compliant
 - https://allaboutberlin.com/guides/website-compliance-germany
 - https://vercel.com/legal/dpa and https://vercel.com/changelog/vercel-is-now-certified-under-the-eu-us-data-privacy-framework-dpf
+- https://vercel.com/legal/privacy-notice (log data: IP addresses, IP-derived location, traffic metadata)
 - https://help.brevo.com/hc/en-us/articles/360001258744-How-does-Brevo-comply-with-the-GDPR
+- https://www.brevo.com/legal/notice/ (legal entity: Sendinblue SAS, 17 rue Salneuve, 75017 Paris; German office Brevo GmbH, Köpenicker Str. 126, 10179 Berlin)
+- https://www.databricks.com/blog/databricks-neon (Neon, Inc. acquired by Databricks, 2025)
 
 ## 3. Open organisational items (not code)
 
@@ -73,8 +77,9 @@ These cannot be closed by code and must be done before the internal pilot:
    `/datenschutz` and `/impressum` (name, address, contact of the
    responsible person or institution, and the university's data
    protection officer).
-2. Sign/accept the Art. 28 DPAs: Vercel (self-serve DPA), Neon
-   (self-serve DPA, project pinned to Frankfurt), Brevo (self-serve DPA).
+2. ~~Sign/accept the Art. 28 DPAs: Vercel, Neon, Brevo.~~ **Done
+   (July 2026)** — terms and DPAs accepted on all three platforms; the
+   production stack is live at `feedmyfrog.click`.
 3. Add the platform to the university's record of processing
    activities (Art. 30 GDPR) — the retention table in the README is
    the input for that record.

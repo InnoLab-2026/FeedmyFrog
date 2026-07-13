@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { CARD_SHADOW } from '@/constants';
 
 export const metadata: Metadata = {
   title: 'Datenschutzerklärung · Reutlingen University Connect',
@@ -20,15 +21,18 @@ const RETENTION: Array<[string, string]> = [
 // Platzhalter müssen vor dem Produktivbetrieb gefüllt werden.
 export default function DatenschutzPage() {
   return (
-    <main className="mx-auto w-full max-w-3xl p-6 py-12">
+    <main className="min-h-screen p-6 py-12" style={{ background: '#f5f5f5' }}>
+      <div
+        className="mx-auto w-full max-w-3xl p-8 rounded-2xl"
+        style={{ background: 'white', border: '2px solid black', boxShadow: CARD_SHADOW }}
+      >
       <h1
-        className="text-2xl font-semibold"
-        style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family-display)' }}
+        style={{ fontFamily: 'var(--font-family-display)', fontWeight: 700, fontSize: '24px', color: 'black' }}
       >
         Datenschutzerklärung
       </h1>
 
-      <section className="mt-6 space-y-4 text-sm leading-relaxed" style={{ color: 'var(--foreground)' }}>
+      <section className="mt-6 space-y-4 leading-relaxed" style={{ fontSize: '14px', fontWeight: 500, color: 'black' }}>
         <h2 className="text-lg font-semibold">1. Verantwortlicher</h2>
         <p>
           [Name und Anschrift des Verantwortlichen im Sinne von Art. 4 Nr. 7
@@ -41,10 +45,11 @@ export default function DatenschutzPage() {
 
         <h2 className="text-lg font-semibold">2. Zweck der Plattform</h2>
         <p>
-          Die Plattform vermittelt Angebote und Gesuche zwischen Mitgliedern
-          der Hochschule Reutlingen. Alle Inhalte sind ausschließlich für
-          angemeldete Hochschulmitglieder sichtbar. Die Kontaktaufnahme
-          erfolgt außerhalb der Plattform per E-Mail.
+          Die Plattform (erreichbar unter <code>feedmyfrog.click</code>)
+          vermittelt Angebote und Gesuche zwischen Mitgliedern der Hochschule
+          Reutlingen. Alle Inhalte sind ausschließlich für angemeldete
+          Hochschulmitglieder sichtbar. Die Kontaktaufnahme erfolgt außerhalb
+          der Plattform per E-Mail.
         </p>
 
         <h2 className="text-lg font-semibold">3. Verarbeitete Daten und Rechtsgrundlagen</h2>
@@ -75,6 +80,16 @@ export default function DatenschutzPage() {
             TDDDG einwilligungsfrei; ein Cookie-Banner ist daher nicht
             erforderlich.
           </li>
+          <li>
+            <strong>Server-Logdaten</strong> — beim Aufruf der Plattform
+            verarbeitet unser Hosting-Anbieter Vercel automatisch technische
+            Zugriffsdaten (insbesondere IP-Adresse, Zeitpunkt des Zugriffs,
+            aufgerufene URL, User-Agent), soweit dies für die Auslieferung
+            der Seiten und die Sicherheit des Betriebs erforderlich ist. Eine
+            Zusammenführung mit anderen Daten oder eine Profilbildung findet
+            nicht statt. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO
+            (technischer Betrieb und Absicherung der Plattform).
+          </li>
         </ul>
 
         <h2 className="text-lg font-semibold">4. Sichtbarkeit Ihrer E-Mail-Adresse</h2>
@@ -103,22 +118,35 @@ export default function DatenschutzPage() {
         </table>
 
         <h2 className="text-lg font-semibold">6. Auftragsverarbeiter und Empfänger</h2>
+        <p>
+          Mit allen nachfolgend genannten Dienstleistern bestehen
+          Auftragsverarbeitungsverträge nach Art. 28 DSGVO (jeweils über die
+          vom Anbieter bereitgestellten Vertragswerke abgeschlossen):
+        </p>
         <ul className="list-disc space-y-2 pl-5">
           <li>
-            <strong>Vercel Inc.</strong> (USA) — Hosting der Anwendung.
-            Auftragsverarbeitung nach Art. 28 DSGVO; Drittlandtransfer auf
+            <strong>Vercel Inc.</strong> (USA) — Hosting und Auslieferung der
+            Anwendung unter <code>feedmyfrog.click</code>; verarbeitet dabei
+            Server-Logdaten (siehe Abschnitt 3). Drittlandtransfer auf
             Grundlage der Zertifizierung nach dem EU-US Data Privacy
-            Framework sowie Standardvertragsklauseln.
+            Framework sowie EU-Standardvertragsklauseln. Details:
+            vercel.com/legal/privacy-notice.
           </li>
           <li>
-            <strong>Neon Inc.</strong> — Datenbank-Hosting. Die Datenbank
-            liegt ausschließlich in der EU (Frankfurt, AWS eu-central-1).
-            Auftragsverarbeitung nach Art. 28 DSGVO.
+            <strong>Neon, Inc.</strong> (USA, ein Unternehmen von
+            Databricks) — Betrieb der PostgreSQL-Datenbank. Die Datenbank
+            liegt ausschließlich in der EU (Frankfurt, AWS eu-central-1) und
+            das Projekt ist an diese Region gebunden. Für den
+            US-Unternehmenssitz gelten EU-Standardvertragsklauseln als
+            Transfergarantie.
           </li>
           <li>
-            <strong>Brevo</strong> (Sendinblue GmbH / Brevo SAS, EU) —
-            Versand der Anmelde-E-Mails. Auftragsverarbeitung nach Art. 28
-            DSGVO.
+            <strong>Brevo</strong> (Sendinblue SAS, 17 rue Salneuve, 75017
+            Paris, Frankreich, mit deutscher Niederlassung Brevo GmbH,
+            Köpenicker Str. 126, 10179 Berlin) — Versand der
+            Anmelde-E-Mails (Absender <code>noreply@feedmyfrog.click</code>).
+            EU-Anbieter; Verarbeitung der Empfängeradresse zum Zweck des
+            Linkversands.
           </li>
         </ul>
         <p>
@@ -142,11 +170,16 @@ export default function DatenschutzPage() {
         </p>
 
         <p>
-          <Link href="/impressum" style={{ color: 'var(--primary)' }}>
+          <Link
+            href="/impressum"
+            className="hover:underline"
+            style={{ color: 'black', fontWeight: 700, textDecoration: 'underline' }}
+          >
             Impressum
           </Link>
         </p>
       </section>
+      </div>
     </main>
   );
 }

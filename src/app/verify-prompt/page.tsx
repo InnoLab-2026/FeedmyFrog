@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { CARD_SHADOW } from '@/constants';
 
 export const metadata: Metadata = {
   title: 'Anmelden · Reutlingen University Connect',
@@ -13,20 +14,29 @@ export default async function VerifyPromptPage({
 
   if (!token) {
     return (
-      <main className="flex min-h-screen items-center justify-center p-6">
+      <main className="flex min-h-screen items-center justify-center p-6" style={{ background: '#f5f5f5' }}>
         <div
-          className="w-full max-w-md rounded-[var(--radius)] p-8 shadow-sm"
-          style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+          className="w-full max-w-md p-8 rounded-2xl"
+          style={{ background: 'white', border: '2px solid black', boxShadow: CARD_SHADOW }}
         >
           <h1
-            className="text-2xl font-semibold"
-            style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family-display)' }}
+            style={{ fontFamily: 'var(--font-family-display)', fontWeight: 700, fontSize: '24px', color: 'black' }}
           >
             Ungültiger Link
           </h1>
-          <p className="mt-2 text-sm" style={{ color: 'var(--muted-foreground)' }}>
-            Der Anmeldelink war unvollständig.{' '}
-            <a href="/login" style={{ color: 'var(--primary)' }}>
+          <p
+            role="alert"
+            className="mt-4 p-3 rounded-xl"
+            style={{ border: '2px solid black', color: 'red', fontSize: '14px', fontWeight: 600, background: 'white' }}
+          >
+            Der Anmeldelink war unvollständig.
+          </p>
+          <p className="mt-4" style={{ fontSize: '14px', fontWeight: 500, color: 'black' }}>
+            <a
+              href="/login"
+              className="hover:underline"
+              style={{ color: 'black', fontWeight: 700, textDecoration: 'underline' }}
+            >
               Neuen Link anfordern
             </a>
           </p>
@@ -36,18 +46,17 @@ export default async function VerifyPromptPage({
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
+    <main className="flex min-h-screen items-center justify-center p-6" style={{ background: '#f5f5f5' }}>
       <div
-        className="w-full max-w-md rounded-[var(--radius)] p-8 shadow-sm"
-        style={{ background: 'var(--card)', border: '1px solid var(--border)' }}
+        className="w-full max-w-md p-8 rounded-2xl"
+        style={{ background: 'white', border: '2px solid black', boxShadow: CARD_SHADOW }}
       >
         <h1
-          className="text-2xl font-semibold"
-          style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family-display)' }}
+          style={{ fontFamily: 'var(--font-family-display)', fontWeight: 700, fontSize: '24px', color: 'black' }}
         >
           Reutlingen University Connect
         </h1>
-        <p className="mt-2 text-sm" style={{ color: 'var(--muted-foreground)' }}>
+        <p className="mt-2" style={{ fontSize: '14px', fontWeight: 500, color: 'black' }}>
           Klicken Sie auf die Schaltfläche, um sich anzumelden.
         </p>
 
@@ -55,8 +64,8 @@ export default async function VerifyPromptPage({
           <input type="hidden" name="token" value={token} />
           <button
             type="submit"
-            className="w-full rounded-[calc(var(--radius)-0.5rem)] px-4 py-2 text-sm font-semibold transition"
-            style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
+            className="w-full py-3 rounded-xl transition"
+            style={{ background: 'black', color: 'white', fontWeight: 600 }}
           >
             Jetzt anmelden
           </button>

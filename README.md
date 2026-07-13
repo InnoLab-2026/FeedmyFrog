@@ -183,7 +183,7 @@ SESSION_TTL_DAYS=7
 # Email (sender is hardcoded in src/lib/email.ts — verified domain feedmyfrog.click)
 BREVO_API_KEY="xkeysib-..."
 
-# Application
+# Application (production: https://feedmyfrog.click)
 NEXT_PUBLIC_BASE_URL="http://localhost:3000"
 NEXT_PUBLIC_INSTITUTION_DOMAIN="reutlingen-university.de"  # must equal ALLOWED_EMAIL_DOMAIN
 ALLOWED_EMAIL_DOMAIN="reutlingen-university.de"
@@ -397,12 +397,17 @@ than to the public web; the in-app *Disclaimer* overlay states this
 guarantee in five languages.
 
 **Processors (Art. 28) and transfers (Chapter V).** The database is
-hosted in the EU (Neon, Frankfurt, `eu-central-1`). Application hosting
-is on Vercel (EU-US Data Privacy Framework certified; DPA available
-self-serve). Transactional email is sent via Brevo (EU provider; DPA
-available self-serve). The Art. 28 DPAs with all three processors must
-be accepted before the pilot; external hosting on Vercel was confirmed
-in advance with the university IT operations.
+hosted in the EU (Neon, Frankfurt, `eu-central-1`; Neon, Inc. is a
+Databricks company, and the project is region-locked to Frankfurt).
+Application hosting is on Vercel (EU-US Data Privacy Framework
+certified). Transactional email is sent via Brevo (Sendinblue SAS,
+Paris — an EU provider). The Art. 28 DPAs (terms including the data
+processing addenda) with all three processors **have been accepted**;
+the stack is live in production at `https://feedmyfrog.click`. External
+hosting on Vercel was confirmed in advance with the university IT
+operations. As hosting provider, Vercel processes server log data
+(IP addresses, request metadata) for delivery and operational security;
+this is disclosed in the privacy notice under Art. 6(1)(f).
 
 **Data-subject rights (Art. 15–21).** Users can edit and delete their
 own listings at any time; since no other user record exists, deleting
@@ -415,8 +420,11 @@ database to university-operated infrastructure is therefore feasible.
 
 ## Deployment
 
-Production hosting is on Vercel. The database remains on Neon in the
-Frankfurt region. Brevo handles outbound email.
+The production stack is **live at `https://feedmyfrog.click`**:
+hosting on Vercel (project chained to this repository), the database on
+Neon in the Frankfurt region, and Brevo handling outbound email from
+the verified sender domain `feedmyfrog.click`. The terms and data
+processing agreements of all three platforms have been accepted.
 
 ### Initial setup
 
@@ -428,9 +436,10 @@ Frankfurt region. Brevo handles outbound email.
    for all three scopes used by Vercel: *Production*, *Preview*, and
    *Development*. For preview deployments a separate Neon branch is
    recommended so that pull requests do not write to production data.
-4. Connect a custom domain if required (for example,
-   `dienstleistungen.reutlingen-university.de`) under
-   *Project Settings → Domains*.
+4. Connect the custom domain under *Project Settings → Domains*. In
+   production this is `feedmyfrog.click`; a university subdomain (for
+   example, `dienstleistungen.reutlingen-university.de`) can be added
+   the same way after the migration review.
 
 ### Branching workflow
 
@@ -505,9 +514,12 @@ primary path.
 - [x] CSP nonce in proxy (`'unsafe-inline'` removed from `script-src`)
 - [x] Page-level `requireSession()` data-access guard (defense in depth)
 - [x] Public `/datenschutz` (Art. 13 GDPR) and `/impressum` (§ 5 DDG) pages
+- [x] Production stack live at `feedmyfrog.click` (Vercel + Neon Frankfurt +
+      Brevo, chained and working)
+- [x] Art. 28 DPAs / terms accepted with Vercel, Neon, and Brevo
 - [ ] Fill in controller/provider placeholders on `/datenschutz` and `/impressum`
-- [ ] Accept Art. 28 DPAs with Vercel, Neon, and Brevo; add the platform to
-      the university's record of processing activities (Art. 30 GDPR)
+- [ ] Add the platform to the university's record of processing activities
+      (Art. 30 GDPR)
 - [ ] Server-side pagination and search
 - [ ] Internal pilot
 - [ ] Review for migration to university infrastructure
