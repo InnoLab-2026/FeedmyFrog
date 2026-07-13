@@ -16,15 +16,16 @@ https://www.figma.com/make/vaEARPyhfvFIfzMZo79NDR/Mobile-Landing-Page-Design--Co
 2. [Tech stack](#tech-stack)
 3. [Repository layout](#repository-layout)
 4. [Installation](#installation)
-5. [Configuration](#configuration)
-6. [Database](#database)
-7. [Authentication](#authentication)
-8. [Data model](#data-model)
-9. [Data protection](#data-protection)
-10. [Deployment](#deployment)
-11. [Roadmap](#roadmap)
-12. [License](#license)
-13. [Author](#author)
+5. [Linting and type-checking](#linting-and-type-checking)
+6. [Configuration](#configuration)
+7. [Database](#database)
+8. [Authentication](#authentication)
+9. [Data model](#data-model)
+10. [Data protection](#data-protection)
+11. [Deployment](#deployment)
+12. [Roadmap](#roadmap)
+13. [License](#license)
+14. [Author](#author)
 
 ## Requirements
 
@@ -60,7 +61,9 @@ of minimal data retention.
 
     src/
       app/                       App Router
-        (auth)/                  login, email confirmation, token verification
+        login/                   login form (unauthenticated)
+        verify/                  token-consumption endpoint (POST) + legacy-link redirect (GET)
+        verify-prompt/           intermediate confirmation page shown after clicking the email link
         (platform)/              auth-gated pages: marketplace (/), /new, /meine
         api/                     route handlers (send-link, healthz)
         layout.tsx               root layout with i18n provider
@@ -95,11 +98,10 @@ philosophy.
 The application is organised in four areas.
 
 **Routing.** All routes live under `src/app/` and follow the Next.js
-App Router conventions. Two route groups separate concerns: `(auth)`
-covers the unauthenticated pages (login form, email-sent screen, token
-verification endpoint), and `(platform)` covers the authenticated
-pages — the marketplace at `/`, listing creation at `/new`, and
-own-listings management at `/meine`. Route handlers under
+App Router conventions. Unauthenticated pages (`login/`, `verify/`,
+`verify-prompt/`) live directly under `src/app/`, and `(platform)`
+covers the authenticated pages — the marketplace at `/`, listing
+creation at `/new`, and own-listings management at `/meine`. Route handlers under
 `src/app/api/` expose the magic-link issuing endpoint and a liveness
 probe; logout is implemented as a Server Action so that Next.js
 provides Origin-based CSRF protection automatically.
@@ -126,8 +128,9 @@ to include it in any client bundle.
 
 **UI and access control.** Reusable components are in
 `src/components/`. Route protection is handled centrally in
-`src/proxy.ts`, which redirects unauthenticated requests to the
-`(platform)` group back to `/login`.
+`src/proxy.ts`, which intercepts requests to the `(platform)` group
+and redirects unauthenticated users or users with an expired session
+cookie back to `/login`, clearing the stale cookie in the process.
 
 ## Installation
 
@@ -136,6 +139,18 @@ git clone https://github.com/<org>/dienstleistungs-exchange.git
 cd dienstleistungs-exchange
 npm install
 ```
+
+## Linting and type-checking
+
+There is currently no automated test suite. Code quality is verified via
+the two scripts in `package.json`:
+
+```bash
+npm run lint       # ESLint (eslint-config-next)
+npm run typecheck  # tsc --noEmit
+```
+
+Both commands must pass cleanly before a pull request is merged.
 
 ## Configuration
 
@@ -203,19 +218,27 @@ the schema does not contain a user table.
 3. A random token is generated. Its SHA-256 hash is written to the
    `magic_tokens` table together with the address and a 15-minute expiry.
    The token itself is sent to the address as part of a verification URL.
-4. On `/verify?token=...` the server hashes the supplied token and runs
-   a single atomic `UPDATE … RETURNING` that simultaneously checks the
-   hash, asserts that the row is unconsumed, asserts that it has not
-   expired, and marks it as consumed. The atomic statement closes the
+4. The magic-link URL points to `GET /verify?token=...`. To prevent
+   link-scanner bots from consuming the token, this endpoint only
+   redirects the browser to `/verify-prompt?token=...`. The user
+   clicks the *Log me in* button, which submits a `POST /verify` form
+   request. The server hashes the supplied token and runs a single
+   atomic `UPDATE … RETURNING` that simultaneously checks the hash,
+   asserts that the row is unconsumed, asserts that it has not expired,
+   and marks it as consumed. The atomic statement closes the
    read-then-write window that would otherwise allow two concurrent
    clicks on the same link to both succeed.
 5. On success, a signed JWT is written to an HTTP-only, Secure,
    `SameSite=Lax` cookie. In production the cookie is named
    `__Host-session`, which the browser only accepts when `Secure`,
    `Path=/`, and no `Domain` attribute are set. The JWT carries the
-   user identifier and the email address.
-6. Subsequent requests resolve the session through the helper
-   `getSession()`, which verifies and decodes the cookie.
+   user identifier and the email address; its TTL is `SESSION_TTL_DAYS`
+   (default 30 days).
+6. Subsequent requests resolve the session through `src/proxy.ts`, which
+   verifies the JWT on every request to the `(platform)` group. If the
+   JWT is missing or expired, the proxy clears the cookie and redirects
+   to `/login`. Server pages additionally call `getSession()` as a
+   backstop.
 
 The `POST /api/auth/send-link` endpoint is rate-limited per IP and per
 email address; counters are stored in a `rate_limits` table in the
@@ -289,7 +312,9 @@ The following properties are relevant for the GDPR review.
 - Magic-link tokens are stored only as hashes, expire after 15 minutes,
   and are single-use.
 - The marketplace and every other listing-rendering page live behind
-  authentication via `src/proxy.ts`. The inserent's address is
+  authentication via `src/proxy.ts`. Expired or absent session cookies
+  are cleared on the first protected request and the user is redirected
+  to `/login`. The inserent's address is
   visible directly on each listing card. Because every viewer is an
   authenticated member of the same university, the address is treated
   as visible to a closed community rather than to the public web; the
@@ -386,6 +411,8 @@ primary path.
       rate limiting
 - [x] CRUD for listings via Server Actions
 - [x] Auth-gated platform layout and middleware
+- [x] Session expiry enforced: expired `__Host-session` cookies are correctly
+      cleared on the first protected request and the user is redirected to `/login`
 - [x] Marketplace page with mode toggle, tag-derived categories, search,
       and pagination (per Figma design)
 - [x] `/meine` page for managing own listings
