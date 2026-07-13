@@ -1,6 +1,7 @@
 import 'server-only';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { env } from '@/lib/env';
 
@@ -44,6 +45,16 @@ export async function getSession(): Promise<Session | null> {
   } catch {
     return null;
   }
+}
+
+// Data-access-layer guard: every server component or helper that reads
+// user-scoped or member-only data calls this instead of trusting that the
+// proxy or a parent layout already ran. Proxy, layout, and page checks
+// together form the defense-in-depth recommended for App Router auth.
+export async function requireSession(): Promise<Session> {
+  const session = await getSession();
+  if (!session) redirect('/login');
+  return session;
 }
 
 export async function destroySession(): Promise<void> {

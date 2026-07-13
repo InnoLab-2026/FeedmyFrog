@@ -64,9 +64,12 @@ of minimal data retention.
         login/                   login form (unauthenticated)
         verify/                  token-consumption endpoint (POST) + legacy-link redirect (GET)
         verify-prompt/           intermediate confirmation page shown after clicking the email link
+        datenschutz/             public privacy notice (Art. 13 GDPR)
+        impressum/               public provider identification (§ 5 DDG)
         (auth)/                   auth-gated SSR pages: marketplace (/), /new, /meine, /meine/[id]/edit
         api/                     route handlers (send-link, healthz)
         layout.tsx               root layout with i18n provider
+        not-found.tsx            dynamically rendered 404 (keeps the CSP nonce valid)
       actions/                   server actions: auth.ts (logout), listings.ts
       components/                designer-owned UI (mirrors Figma package layout)
         layout/                  Header, Footer, LanguageButton
@@ -79,7 +82,8 @@ of minimal data retention.
       lib/                       env, auth, session, email, validators, rate-limit
       types.ts                   Listing, Mode, Category (mirrors Figma types)
       constants.ts               INSTITUTION_NAME, SUBTITLE, CARD_SHADOW
-      proxy.ts                   route gate for the (auth) group
+      proxy.ts                   route gate for the (auth) group + per-request CSP nonce
+    docs/COMPLIANCE.md           SSR best-practice and EU data-law audit record
     drizzle/                     generated SQL migrations
     public/                      static assets
     drizzle.config.ts
@@ -129,10 +133,18 @@ to include it in any client bundle. Data-handling actions validate the
 session server-side before writing or deleting listings.
 
 **UI and access control.** Reusable components are in
-`src/components/`. Route protection is handled centrally in
-`src/proxy.ts`, which intercepts requests to the `(auth)` group
-and redirects unauthenticated users or users with an expired session
-cookie back to `/login`, clearing the stale cookie in the process.
+`src/components/`. Access control follows the defense-in-depth model
+recommended for the App Router (a lesson of CVE-2025-29927, where
+middleware could be bypassed): three independent layers each verify
+the session. First, `src/proxy.ts` intercepts requests to the `(auth)`
+group and redirects unauthenticated users or users with an expired
+session cookie back to `/login`, clearing the stale cookie in the
+process. Second, the `(auth)` layout re-checks the session server-side
+before rendering. Third, every page that reads user-scoped or
+member-only data calls `requireSession()` from `src/lib/session.ts`
+(the data-access-layer guard), and every Server Action re-validates
+the session before writing. `src/proxy.ts` additionally generates a
+per-request CSP nonce (see *Security headers* below).
 
 ## Installation
 
@@ -260,6 +272,23 @@ The user identifier is derived deterministically from the address as
 `sha256(email)`. The same person therefore receives a stable identifier
 across sessions without a user record being persisted.
 
+### Security headers and CSP
+
+Static security headers (HSTS, `X-Content-Type-Options`,
+`X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`) are set in
+`next.config.ts`. The `Content-Security-Policy` is *not* static: it is
+built per request in `src/proxy.ts` with a fresh nonce, following the
+official Next.js CSP guidance. `script-src` is
+`'self' 'nonce-<value>' 'strict-dynamic'` — there is no
+`'unsafe-inline'` for scripts. The proxy forwards the policy on the
+request headers so Next.js stamps the nonce onto its own inline
+bootstrap scripts, and exposes it as `x-nonce` for any future custom
+`<script>`. Because the nonce differs per request, every HTML route is
+rendered dynamically (auth pages were already `force-dynamic`; the
+legal pages and the custom 404 opt in explicitly). Styles keep
+`'unsafe-inline'` because the design system uses inline style
+attributes; in development `'unsafe-eval'` is added for HMR only.
+
 ## Data model
 
 One business table holds every listing — both *Suche* (need) and
@@ -314,29 +343,75 @@ contacting the inserent.
 
 ## Data protection
 
-The following properties are relevant for the GDPR review.
+The platform is subject to the GDPR, the German TDDDG (§ 25 governs
+cookies/terminal-equipment access) and the German DDG (§ 5 Impressum
+duty). The full audit record with sources is in
+[`docs/COMPLIANCE.md`](docs/COMPLIANCE.md). The following properties
+implement the requirements.
+
+**Transparency duties.** A public privacy notice (Art. 13 GDPR) lives
+at `/datenschutz` and a provider identification (§ 5 DDG) at
+`/impressum`. Both are linked from the footer and from the login page
+(the point where the email address is collected). The controller and
+provider identity fields on those pages are clearly marked
+placeholders and **must be filled in before the internal pilot**.
+
+**Data minimisation (Art. 5(1)(c)).**
 
 - No user table. Identity is the email address; the stored identifier is
   its SHA-256 hash.
 - Session state is held in a signed cookie, not in the database.
 - Magic-link tokens are stored only as hashes, expire after 15 minutes,
   and are single-use.
-- The marketplace and every other listing-rendering page live behind
-  authentication via `src/proxy.ts`. Expired or absent session cookies
-  are cleared on the first protected request and the user is redirected
-  to `/login`. The inserent's address is
-  visible directly on each listing card. Because every viewer is an
-  authenticated member of the same university, the address is treated
-  as visible to a closed community rather than to the public web; the
-  in-app *Disclaimer* overlay states this guarantee in five languages.
-- No file uploads, no chat, no message history.
-- The database is hosted in the EU (Neon, Frankfurt, `eu-central-1`).
-- External hosting on Vercel was confirmed in advance with the
-  university IT operations.
-- Users can delete their own listings at any time. Logout clears the
-  session cookie.
-- Only standard PostgreSQL features are used. A later migration of the
-  database to university-operated infrastructure is therefore feasible.
+- No file uploads, no chat, no message history. The schema holds no
+  personal attribute beyond the contact address a listing exists to show.
+
+**Storage limitation (Art. 5(1)(e)).** Retention is bounded for every
+stored datum:
+
+| Data | Retention |
+|------|-----------|
+| Magic-link token (hash only) | 15 min validity; leftover rows purged ≤ 7 days after expiry |
+| Session cookie (signed JWT) | 7 days (`SESSION_TTL_DAYS`); logout clears it immediately |
+| IP address in `rate_limits` (abuse prevention, Art. 6(1)(f)) | deleted after 6 hours |
+| Listings incl. email address | until deleted by their owner |
+
+**Cookies / TDDDG.** Exactly one HttpOnly session cookie is set. It is
+strictly necessary for the requested service and therefore exempt from
+consent under § 25(2) Nr. 2 TDDDG — no cookie banner is required. There
+is no tracking, no analytics, and no third-party embed. Adding any such
+feature later requires a consent banner *first*.
+
+**No third-party leakage.** Fonts are downloaded at build time and
+self-hosted via `next/font` — no runtime request to Google (relevant
+after LG München I, 3 O 17493/20 on Google Fonts). The CSP
+(`connect-src 'self'`) technically prevents the browser from talking to
+third parties.
+
+**Visibility of the address (Art. 6(1)(b)).** The marketplace and every
+other listing-rendering page live behind authentication (three-layer
+check, see above). The inserent's address is visible directly on each
+listing card. Because every viewer is an authenticated member of the
+same university, the address is visible to a closed community rather
+than to the public web; the in-app *Disclaimer* overlay states this
+guarantee in five languages.
+
+**Processors (Art. 28) and transfers (Chapter V).** The database is
+hosted in the EU (Neon, Frankfurt, `eu-central-1`). Application hosting
+is on Vercel (EU-US Data Privacy Framework certified; DPA available
+self-serve). Transactional email is sent via Brevo (EU provider; DPA
+available self-serve). The Art. 28 DPAs with all three processors must
+be accepted before the pilot; external hosting on Vercel was confirmed
+in advance with the university IT operations.
+
+**Data-subject rights (Art. 15–21).** Users can edit and delete their
+own listings at any time; since no other user record exists, deleting
+all own listings removes all stored content tied to the person. Logout
+clears the session cookie. The privacy notice names a contact channel
+for the remaining rights.
+
+Only standard PostgreSQL features are used. A later migration of the
+database to university-operated infrastructure is therefore feasible.
 
 ## Deployment
 
@@ -427,7 +502,12 @@ primary path.
       and pagination (per Figma design)
 - [x] `/meine` page for managing own listings
 - [x] Apply migration on Neon and run end-to-end against real DATABASE_URL
-- [ ] CSP nonce middleware to proxy & (remove `'unsafe-inline'` from `script-src`)
+- [x] CSP nonce in proxy (`'unsafe-inline'` removed from `script-src`)
+- [x] Page-level `requireSession()` data-access guard (defense in depth)
+- [x] Public `/datenschutz` (Art. 13 GDPR) and `/impressum` (§ 5 DDG) pages
+- [ ] Fill in controller/provider placeholders on `/datenschutz` and `/impressum`
+- [ ] Accept Art. 28 DPAs with Vercel, Neon, and Brevo; add the platform to
+      the university's record of processing activities (Art. 30 GDPR)
 - [ ] Server-side pagination and search
 - [ ] Internal pilot
 - [ ] Review for migration to university infrastructure

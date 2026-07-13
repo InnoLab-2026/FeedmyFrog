@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { db } from '@/db/client';
 import { listings } from '@/db/schema';
-import { getSession } from '@/lib/session';
+import { requireSession } from '@/lib/session';
 import type { Listing } from '@/types';
 import EditListingForm from './EditListingForm';
 
@@ -15,7 +15,7 @@ export default async function EditListingPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const session = (await getSession())!; // layout guarantees session
+  const session = await requireSession();
 
   const [row] = await db
     .select()
