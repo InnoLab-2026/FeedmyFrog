@@ -1416,7 +1416,7 @@ export default function CheckEmailPage() {
 
 ### Step 29. Platform layout
 
-Create `src/app/(platform)/layout.tsx`. Unlike the original BUILD.MD,
+Create `src/app/(auth)/layout.tsx`. Unlike the original BUILD.MD,
 the layout has no header chrome of its own — the marketplace `Header`
 component owns that. The layout just guards the boundary and provides
 the footer.
@@ -1445,7 +1445,7 @@ export default async function PlatformLayout({
 
 ### Step 30. Main marketplace page
 
-Create `src/app/(platform)/page.tsx`. The server component fetches up
+Create `src/app/(auth)/page.tsx`. The server component fetches up
 to 500 rows, maps them to the `Listing` shape that
 `Marketplace.tsx` consumes, and hands the array down. All filtering,
 mode toggling, and pagination then runs client-side, exactly as in the
@@ -1489,7 +1489,7 @@ purely presentational props.
 
 ### Step 31. New-listing page
 
-Create `src/app/(platform)/new/page.tsx`:
+Create `src/app/(auth)/new/page.tsx`:
 
 ```tsx
 'use client';
@@ -1566,7 +1566,7 @@ export default function NewListingPage() {
 
 ### Step 32. Manage-own-listings page
 
-Create `src/app/(platform)/meine/page.tsx`. The page reuses
+Create `src/app/(auth)/meine/page.tsx`. The page reuses
 `ListingCard` with the `ownerActions` slot to attach a delete form.
 The visual top of the card is unchanged from the design.
 
@@ -1924,7 +1924,7 @@ mutating the designer-owned file in place.
 ### Email visibility model
 
 Every page that renders a listing's email address sits inside the
-`(platform)` route group and is gated by `src/proxy.ts`. A viewer
+`(auth)` route group and is gated by `src/proxy.ts`. A viewer
 who reaches such a page has presented a valid session JWT, which
 proves ownership of an `@reutlingen-university.de` mailbox. The
 inserent's email is therefore disclosed only to fellow members of the
