@@ -43,12 +43,12 @@ export default function LoginForm({ initialError }: { initialError: string | nul
   if (status === 'sent') {
     return (
       <div
-        className="mt-6 rounded-[calc(var(--radius)-0.5rem)] p-4 text-sm"
-        style={{ background: 'var(--muted)', color: 'var(--foreground)' }}
+        className="mt-6 p-4 rounded-xl"
+        style={{ background: 'white', border: '2px solid black', fontSize: '14px' }}
       >
-        <p className="font-medium">E-Mail unterwegs ✉️</p>
-        <p className="mt-1" style={{ color: 'var(--muted-foreground)' }}>
-          Wenn ein Konto für <span className="font-medium">{email}</span> möglich
+        <p style={{ fontWeight: 700 }}>E-Mail unterwegs ✉️</p>
+        <p className="mt-1" style={{ fontWeight: 500 }}>
+          Wenn ein Konto für <span style={{ fontWeight: 700 }}>{email}</span> möglich
           ist, finden Sie gleich einen Anmeldelink in Ihrem Postfach. Der Link ist
           nur kurze Zeit und einmalig gültig.
         </p>
@@ -59,7 +59,7 @@ export default function LoginForm({ initialError }: { initialError: string | nul
   return (
     <form onSubmit={onSubmit} className="mt-6 space-y-4">
       <div>
-        <label htmlFor="email" className="block text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+        <label htmlFor="email" className="block" style={{ fontSize: '14px', fontWeight: 600, color: 'black' }}>
           E-Mail-Adresse
         </label>
         <input
@@ -70,19 +70,24 @@ export default function LoginForm({ initialError }: { initialError: string | nul
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="max.mustermann@reutlingen-university.de"
-          className="mt-1 w-full rounded-[calc(var(--radius)-0.5rem)] px-3 py-2 text-sm outline-none focus:ring-2"
-          style={{
-            background: 'var(--input-background)',
-            border: '1px solid var(--border)',
-            color: 'var(--foreground)',
-            // @ts-expect-error custom property for the focus ring color
-            '--tw-ring-color': 'var(--ring)',
+          className="mt-1 w-full px-4 py-2 rounded-xl outline-none focus:outline-none"
+          style={{ background: 'white', border: '2px solid black', color: 'black', fontSize: '14px' }}
+          onFocus={(e) => {
+            e.currentTarget.style.outline = '3px solid black';
+            e.currentTarget.style.outlineOffset = '2px';
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.outline = 'none';
           }}
         />
       </div>
 
       {error && (
-        <p className="text-sm" style={{ color: 'var(--destructive)' }} role="alert">
+        <p
+          role="alert"
+          className="p-3 rounded-xl"
+          style={{ border: '2px solid black', color: 'red', fontSize: '14px', fontWeight: 600, background: 'white' }}
+        >
           {error}
         </p>
       )}
@@ -90,8 +95,8 @@ export default function LoginForm({ initialError }: { initialError: string | nul
       <button
         type="submit"
         disabled={status === 'sending'}
-        className="w-full rounded-[calc(var(--radius)-0.5rem)] px-4 py-2 text-sm font-semibold transition disabled:opacity-60"
-        style={{ background: 'var(--primary)', color: 'var(--primary-foreground)' }}
+        className="w-full py-3 rounded-xl transition disabled:opacity-60"
+        style={{ background: 'black', color: 'white', fontWeight: 600 }}
       >
         {status === 'sending' ? 'Wird gesendet …' : 'Anmeldelink senden'}
       </button>
