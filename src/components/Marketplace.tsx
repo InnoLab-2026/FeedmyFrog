@@ -1,6 +1,7 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { Listing, Mode, Category } from '@/types';
@@ -13,80 +14,91 @@ import PaginationControls from '@/components/marketplace/PaginationControls';
 import ListingCard from '@/components/marketplace/ListingCard';
 
 interface MarketplaceProps {
+  /** The current page slice — filtering and pagination happen in SQL. */
   listings: Listing[];
+  totalCount: number;
+  page: number;
+  perPage: number;
+  mode: Mode;
+  category: string;
+  query: string;
+  /** Tags of the current mode, ordered by frequency (server-aggregated). */
+  categoryTags: string[];
 }
 
-export default function Marketplace({ listings }: MarketplaceProps) {
+const SEARCH_DEBOUNCE_MS = 300;
+
+// Filter and pagination state lives in the URL; this wrapper only translates
+// the designer-owned components' callbacks into router navigations, so the
+// server component re-queries the database with the new parameters.
+export default function Marketplace({
+  listings,
+  totalCount,
+  page,
+  perPage,
+  mode,
+  category,
+  query,
+  categoryTags,
+}: MarketplaceProps) {
   const { t } = useTranslation();
-  const [mode, setMode] = useState<Mode>('need');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(15);
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
-  // Reset selectedCategory when mode flips. This is the
-  // "adjust state during render" pattern — React applies the new
-  // value before committing without firing an extra effect.
-  const [lastMode, setLastMode] = useState(mode);
-  if (mode !== lastMode) {
-    setLastMode(mode);
-    setSelectedCategory('All');
+  // Local echo of the search box so typing stays responsive while the
+  // debounced URL update (and server round-trip) catches up.
+  const [searchInput, setSearchInput] = useState(query);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Adopt an externally-changed query (back/forward navigation) unless the
+  // user has typed past the last URL state — adjust-during-render pattern.
+  const [lastQuery, setLastQuery] = useState(query);
+  if (query !== lastQuery) {
+    setLastQuery(query);
+    setSearchInput((current) => (current === lastQuery ? query : current));
   }
 
-  // Reset currentPage whenever any filter input changes.
-  const filterKey = `${mode}|${selectedCategory}|${searchQuery}|${itemsPerPage}`;
-  const [lastFilterKey, setLastFilterKey] = useState(filterKey);
-  if (filterKey !== lastFilterKey) {
-    setLastFilterKey(filterKey);
-    setCurrentPage(1);
+  function navigate(
+    next: Partial<{ mode: Mode; category: string; q: string; page: number; per: number }>,
+    replace = false,
+  ) {
+    const merged = { mode, category, q: query, page, per: perPage, ...next };
+    const params = new URLSearchParams();
+    if (merged.mode !== 'need') params.set('mode', merged.mode);
+    if (merged.category !== 'All') params.set('cat', merged.category);
+    if (merged.q) params.set('q', merged.q);
+    if (merged.page > 1) params.set('page', String(merged.page));
+    if (merged.per !== 15) params.set('per', String(merged.per));
+    const qs = params.toString();
+    const url = qs ? `/?${qs}` : '/';
+    startTransition(() => {
+      if (replace) router.replace(url, { scroll: false });
+      else router.push(url, { scroll: false });
+    });
   }
 
-  const categories = useMemo<Category[]>(() => {
-    const counts: Record<string, number> = {};
-    listings
-      .filter((l) => l.type === mode)
-      .forEach((l) =>
-        l.tags.forEach((tag) => {
-          counts[tag] = (counts[tag] || 0) + 1;
-        }),
-      );
+  function onSearchChange(value: string) {
+    setSearchInput(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      navigate({ q: value.trim(), page: 1 }, true);
+    }, SEARCH_DEBOUNCE_MS);
+  }
 
-    const sorted = Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .map(([tag]) => ({
+  const categories = useMemo<Category[]>(
+    () => [
+      { id: 'All', label: 'All', icon: <Search className="w-4 h-4" /> },
+      ...categoryTags.map((tag) => ({
         id: tag,
         label: tag,
         icon: iconMap[tag] ?? <Search className="w-4 h-4" />,
-      }));
-
-    return [
-      { id: 'All', label: 'All', icon: <Search className="w-4 h-4" /> },
-      ...sorted,
-    ];
-  }, [listings, mode]);
-
-  const filteredListings = useMemo(() => {
-    const q = searchQuery.toLowerCase();
-    return listings.filter((l) => {
-      if (l.type !== mode) return false;
-      if (selectedCategory !== 'All' && !l.tags.includes(selectedCategory))
-        return false;
-      if (
-        q &&
-        !l.title.toLowerCase().includes(q) &&
-        !l.description.toLowerCase().includes(q)
-      )
-        return false;
-      return true;
-    });
-  }, [listings, mode, selectedCategory, searchQuery]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredListings.length / itemsPerPage));
-  const paginatedListings = filteredListings.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
+      })),
+    ],
+    [categoryTags],
   );
-  const showPagination = filteredListings.length > 15;
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / perPage));
+  const showPagination = totalCount > 15;
 
   return (
     <>
@@ -112,28 +124,31 @@ export default function Marketplace({ listings }: MarketplaceProps) {
           </button>
         </form>
       </div>
-      <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+      <Header searchQuery={searchInput} onSearchChange={onSearchChange} />
 
       <main className="max-w-[1400px] w-full mx-auto px-5 flex-grow pb-8">
-        <ModeToggle mode={mode} onChange={setMode} />
+        <ModeToggle
+          mode={mode}
+          onChange={(m) => navigate({ mode: m, category: 'All', page: 1 })}
+        />
         <CategoryTabs
           categories={categories}
-          selectedCategory={selectedCategory}
-          onSelectCategory={setSelectedCategory}
+          selectedCategory={category}
+          onSelectCategory={(c) => navigate({ category: c, page: 1 })}
         />
         {showPagination && (
           <div className="mb-6">
             <PaginationControls
-              currentPage={currentPage}
+              currentPage={page}
               totalPages={totalPages}
-              itemsPerPage={itemsPerPage}
-              onPageChange={setCurrentPage}
-              onItemsPerPageChange={setItemsPerPage}
+              itemsPerPage={perPage}
+              onPageChange={(p) => navigate({ page: p })}
+              onItemsPerPageChange={(n) => navigate({ per: n, page: 1 })}
             />
           </div>
         )}
-        <div className="space-y-4">
-          {filteredListings.length === 0 ? (
+        <div className="space-y-4" style={{ opacity: isPending ? 0.6 : 1, transition: 'opacity 150ms' }}>
+          {totalCount === 0 ? (
             <div className="text-center py-12">
               <div
                 className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
@@ -147,7 +162,7 @@ export default function Marketplace({ listings }: MarketplaceProps) {
               </p>
             </div>
           ) : (
-            paginatedListings.map((listing) => (
+            listings.map((listing) => (
               <ListingCard key={listing.id} listing={listing} />
             ))
           )}
@@ -155,11 +170,11 @@ export default function Marketplace({ listings }: MarketplaceProps) {
         {showPagination && (
           <div className="mt-6">
             <PaginationControls
-              currentPage={currentPage}
+              currentPage={page}
               totalPages={totalPages}
-              itemsPerPage={itemsPerPage}
-              onPageChange={setCurrentPage}
-              onItemsPerPageChange={setItemsPerPage}
+              itemsPerPage={perPage}
+              onPageChange={(p) => navigate({ page: p })}
+              onItemsPerPageChange={(n) => navigate({ per: n, page: 1 })}
             />
           </div>
         )}
