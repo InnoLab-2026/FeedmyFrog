@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { CARD_SHADOW } from '@/constants';
 
 export const metadata: Metadata = {
   title: 'Datenschutzerklärung · Reutlingen University Connect',
@@ -20,15 +21,18 @@ const RETENTION: Array<[string, string]> = [
 // Platzhalter müssen vor dem Produktivbetrieb gefüllt werden.
 export default function DatenschutzPage() {
   return (
-    <main className="mx-auto w-full max-w-3xl p-6 py-12">
+    <main className="min-h-screen p-6 py-12" style={{ background: '#f5f5f5' }}>
+      <div
+        className="mx-auto w-full max-w-3xl p-8 rounded-2xl"
+        style={{ background: 'white', border: '2px solid black', boxShadow: CARD_SHADOW }}
+      >
       <h1
-        className="text-2xl font-semibold"
-        style={{ color: 'var(--foreground)', fontFamily: 'var(--font-family-display)' }}
+        style={{ fontFamily: 'var(--font-family-display)', fontWeight: 700, fontSize: '24px', color: 'black' }}
       >
         Datenschutzerklärung
       </h1>
 
-      <section className="mt-6 space-y-4 text-sm leading-relaxed" style={{ color: 'var(--foreground)' }}>
+      <section className="mt-6 space-y-4 leading-relaxed" style={{ fontSize: '14px', fontWeight: 500, color: 'black' }}>
         <h2 className="text-lg font-semibold">1. Verantwortlicher</h2>
         <p>
           [Name und Anschrift des Verantwortlichen im Sinne von Art. 4 Nr. 7
@@ -166,11 +170,16 @@ export default function DatenschutzPage() {
         </p>
 
         <p>
-          <Link href="/impressum" style={{ color: 'var(--primary)' }}>
+          <Link
+            href="/impressum"
+            className="hover:underline"
+            style={{ color: 'black', fontWeight: 700, textDecoration: 'underline' }}
+          >
             Impressum
           </Link>
         </p>
       </section>
+      </div>
     </main>
   );
 }
