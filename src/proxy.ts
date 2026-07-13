@@ -12,7 +12,28 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   } catch {
     const res = NextResponse.redirect(new URL('/login', req.url));
-    res.cookies.delete(COOKIE);
+    // Use an explicit Set-Cookie with maxAge=0 instead of delete() so that
+    // __Host- prefixed cookies (which require Secure + Path=/ on every
+    // Set-Cookie header, including deletions) are correctly cleared by the
+    // browser.
+    res.cookies.set(COOKIE, '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 0,
+    });
+    // Also clear the fallback unprefixed name used in development or by
+    // older clients.
+    if (COOKIE !== 'session') {
+      res.cookies.set('session', '', {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 0,
+      });
+    }
     return res;
   }
 }
