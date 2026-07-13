@@ -236,11 +236,19 @@ the schema does not contain a user table.
    `Path=/`, and no `Domain` attribute are set. The JWT carries the
    user identifier and the email address; its TTL is `SESSION_TTL_DAYS`
    (default 7 days).
-6. Subsequent requests resolve the session through `src/proxy.ts`, which
-   verifies the JWT on every request to the `(auth)` group. If the
-   JWT is missing or expired, the proxy clears the cookie and redirects
-   to `/login`. Server pages additionally call `getSession()` as a
-   backstop.
+6. Subsequent requests are gated by `src/proxy.ts`, which runs on every
+   request to the `(auth)` group (`/`, `/new`, `/meine/:path*`). The
+   proxy calls `jwtVerify` to validate the signature and expiry of the
+   JWT. If the token is absent or expired, the proxy issues an explicit
+   `Set-Cookie` with `maxAge: 0` to clear it and then redirects to
+   `/login`. A plain `.delete()` call is intentionally avoided: browsers
+   silently ignore cookie-deletion headers that omit the `Secure` and
+   `Path=/` attributes required by the `__Host-` prefix, so the stale
+   cookie would persist until its natural `maxAge` elapsed. In production
+   the cookie name is `__Host-session`; in development it falls back to
+   `session`. The `(auth)` group layout (`src/app/(auth)/layout.tsx`) also
+   calls `getSession()` as a server-side backstop and redirects
+   unauthenticated users before any child page renders.
 
 The `POST /api/auth/send-link` endpoint is rate-limited per IP and per
 email address; counters are stored in a `rate_limits` table in the
