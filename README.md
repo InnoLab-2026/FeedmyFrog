@@ -166,7 +166,7 @@ DATABASE_URL="postgresql://USER:PASSWORD@ep-xxx.eu-central-1.aws.neon.tech/neond
 # Auth
 AUTH_SECRET="..."                         # 32 random bytes (hex), used to sign session JWTs
 MAGIC_LINK_TTL_MINUTES=15
-SESSION_TTL_DAYS=30
+SESSION_TTL_DAYS=7
 
 # Email (sender is hardcoded in src/lib/email.ts — verified domain feedmyfrog.click)
 BREVO_API_KEY="xkeysib-..."
@@ -235,7 +235,7 @@ the schema does not contain a user table.
    `__Host-session`, which the browser only accepts when `Secure`,
    `Path=/`, and no `Domain` attribute are set. The JWT carries the
    user identifier and the email address; its TTL is `SESSION_TTL_DAYS`
-   (default 30 days).
+   (default 7 days).
 6. Subsequent requests resolve the session through `src/proxy.ts`, which
    verifies the JWT on every request to the `(auth)` group. If the
    JWT is missing or expired, the proxy clears the cookie and redirects
