@@ -16,7 +16,7 @@ https://www.figma.com/make/vaEARPyhfvFIfzMZo79NDR/Mobile-Landing-Page-Design--Co
 2. [Tech stack](#tech-stack)
 3. [Repository layout](#repository-layout)
 4. [Installation](#installation)
-5. [Linting and type-checking](#linting-and-type-checking)
+5. [Linting, type-checking and tests](#linting-type-checking-and-tests)
 6. [Configuration](#configuration)
 7. [Database](#database)
 8. [Authentication](#authentication)
@@ -154,17 +154,61 @@ cd dienstleistungs-exchange
 npm install
 ```
 
-## Linting and type-checking
+## Linting, type-checking and tests
 
-There is currently no automated test suite. Code quality is verified via
-the two scripts in `package.json`:
+Code quality is verified via the scripts in `package.json`:
 
 ```bash
-npm run lint       # ESLint (eslint-config-next)
-npm run typecheck  # tsc --noEmit
+npm run lint           # ESLint (eslint-config-next)
+npm run typecheck      # tsc --noEmit
+npm test               # Vitest unit tests (single run)
+npm run test:watch     # Vitest in watch mode
+npm run test:coverage  # Vitest with a V8 coverage report
 ```
 
-Both commands must pass cleanly before a pull request is merged.
+All three must pass cleanly before a pull request is merged.
+
+### Unit tests
+
+The backend logic is unit-tested with [Vitest](https://vitest.dev). Tests
+live next to the code they cover as `*.test.ts` files and run in a plain
+Node environment — no database, network, or running Next.js server is
+required:
+
+| Area                     | File                          | Covered behaviour                                                        |
+|--------------------------|-------------------------------|--------------------------------------------------------------------------|
+| Token / id crypto        | `src/lib/auth.test.ts`        | Token generation, single-use hashing, deterministic user ids            |
+| Input validation         | `src/lib/validators.test.ts`  | Institutional-domain allow-list (incl. look-alike attacks), listing schema |
+| Session JWTs             | `src/lib/session.test.ts`     | Signed-cookie round-trip, tamper/expiry rejection, legacy-cookie fallback |
+| Transactional email      | `src/lib/email.test.ts`       | Brevo request shape and error propagation                               |
+| Listing server actions   | `src/actions/listings.test.ts`| Auth guards and input-validation branches                               |
+
+`vitest.config.ts` aliases the `server-only` package to an empty stub and
+injects throwaway environment variables so modules that validate
+`process.env` at import time load in isolation. Database- and HTTP-level
+paths (`src/lib/rate-limit.ts`, the API routes) are covered indirectly
+through their pure helpers; end-to-end coverage of those would need an
+integration test against a throwaway Postgres instance, which is a natural
+follow-up.
+
+### Continuous integration
+
+`.github/workflows/ci.yml` runs lint, typecheck and the unit tests on every
+push and on every pull request targeting `main`, using the Node version
+pinned in `.nvmrc`.
+
+### Making CI a merge prerequisite
+
+The workflow reports a **Lint, typecheck & test** status check. To require
+it before merging, a repository admin enables branch protection on `main`
+(this is a GitHub repository setting, not something the code can configure):
+
+1. **Settings → Branches → Add branch ruleset** (or *Add rule*) for `main`.
+2. Enable **Require status checks to pass before merging**.
+3. Add **Lint, typecheck & test** to the required checks.
+4. Optionally enable **Require branches to be up to date before merging**.
+
+Once enabled, a pull request cannot be merged until the CI job is green.
 
 ## Configuration
 
