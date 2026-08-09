@@ -1,6 +1,11 @@
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans, DM_Sans } from 'next/font/google';
+import {
+  Plus_Jakarta_Sans,
+  DM_Sans,
+} from 'next/font/google';
+
 import I18nProvider from '@/i18n/Provider';
+
 import './globals.css';
 
 const jakarta = Plus_Jakarta_Sans({
@@ -30,8 +35,15 @@ export default function RootLayout({
       lang="en"
       className={`${jakarta.variable} ${dmSans.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col" style={{ background: '#f5f5f5' }}>
-        <I18nProvider>{children}</I18nProvider>
+      <body
+        className="min-h-full flex flex-col"
+        style={{
+          background: '#f5f5f5',
+        }}
+      >
+        <I18nProvider>
+          {children}
+        </I18nProvider>
       </body>
     </html>
   );
