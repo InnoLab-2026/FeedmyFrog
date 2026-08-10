@@ -20,7 +20,7 @@
     "i18next": "^26.0.10",
     "jose": "^6.2.3",
     "lucide-react": "^1.14.0",
-    "next": "16.2.6",
+    "next": "16.3.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-i18next": "^17.0.7",
@@ -35,9 +35,9 @@
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9",
-    "eslint-config-next": "16.2.6",
+    "eslint-config-next": "16.3.0",
     "tailwindcss": "^4",
-    "tsx": "^4.21.0",
+    "tsx": "^4.23.12",
     "typescript": "^5"
   }
 }
