@@ -81,7 +81,7 @@ export default function Header({
               border: '1px solid rgba(47,47,47,0.15)',
               background: '#8DC63F',
               color: '#1a3200',
-              fontSize: '16px',
+              fontSize: 'var(--fs-base)',
               fontWeight: 700,
               cursor: 'pointer',
             }}

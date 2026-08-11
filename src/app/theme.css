@@ -5,12 +5,29 @@
   --font-family-base: var(--font-jakarta), 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-family-display: var(--font-dm-sans), 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 
-  /* Shared control type scale. Inherited via the cascade so the header and the
-     body render interactive controls at the same size instead of each hard-coding
-     its own px value. Values match the sizes already used across body forms
-     (text inputs 14px; primary buttons 16px). */
-  --fs-control-input: 14px;
-  --fs-control-button: 16px;
+  /* --- Type scale ------------------------------------------------------
+     One scale shared across the whole app. Inherited through the cascade so
+     the header and the body render text at matching sizes instead of each
+     component hard-coding its own px value; tune a step here and every
+     consumer follows. Kept in a private --fs-* namespace so Tailwind's
+     built-in --text-* utilities are left untouched. Steps use rem so they
+     respect the user's root font size. */
+  --fs-2xs: 0.75rem;    /* 12px — fine print, captions, hints */
+  --fs-xs: 0.8125rem;   /* 13px — meta text, tags, small labels */
+  --fs-sm: 0.875rem;    /* 14px — body text, form inputs, secondary buttons */
+  --fs-md: 0.9375rem;   /* 15px — tabs, compact controls */
+  --fs-base: 1rem;      /* 16px — default body, primary buttons, field labels */
+  --fs-lg: 1.125rem;    /* 18px — card titles, emphasized controls */
+  --fs-xl: 1.375rem;    /* 22px — section headings */
+  --fs-2xl: 1.5rem;     /* 24px — sub-headings */
+  --fs-3xl: 1.875rem;   /* 30px — modal / page titles */
+  --fs-4xl: 2.375rem;   /* 38px — hero title */
+
+  /* Component aliases — name the scale steps by purpose so interactive
+     controls read intent, and header + body inputs/buttons resolve to the
+     exact same token. */
+  --fs-control-input: var(--fs-sm);    /* 14px */
+  --fs-control-button: var(--fs-base); /* 16px */
 
   --background: #FBF8F4;
   --foreground: #2D2821;

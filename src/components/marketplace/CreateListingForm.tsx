@@ -95,7 +95,7 @@ export default function CreateListingForm({
     background: 'white',
     border: '1px solid rgba(47,47,47,0.2)',
     borderRadius: '8px',
-    fontSize: '14px',
+    fontSize: 'var(--fs-control-input)',
     color: '#2F2F2F',
     outline: 'none',
     boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
@@ -165,7 +165,7 @@ export default function CreateListingForm({
             style={{
               margin: '0 0 26px',
               color: '#2F2F2F',
-              fontSize: '22px',
+              fontSize: 'var(--fs-xl)',
               fontWeight: 600,
             }}
           >
@@ -181,7 +181,7 @@ export default function CreateListingForm({
               style={{
                 display: 'block',
                 marginBottom: '12px',
-                fontSize: '16px',
+                fontSize: 'var(--fs-base)',
                 fontWeight: 600,
               }}
             >
@@ -221,7 +221,7 @@ export default function CreateListingForm({
                           : '1px solid rgba(47,47,47,0.2)',
 
                         borderRadius: '9px',
-                        fontSize: '18px',
+                        fontSize: 'var(--fs-lg)',
                         fontWeight: 600,
                         cursor: 'pointer',
 
@@ -248,7 +248,7 @@ export default function CreateListingForm({
               style={{
                 display: 'block',
                 marginBottom: '12px',
-                fontSize: '16px',
+                fontSize: 'var(--fs-base)',
                 fontWeight: 600,
               }}
             >
@@ -292,7 +292,7 @@ export default function CreateListingForm({
 
                       borderRadius: '8px',
 
-                      fontSize: '15px',
+                      fontSize: 'var(--fs-md)',
                       fontWeight: 500,
 
                       cursor: 'pointer',
@@ -317,7 +317,7 @@ export default function CreateListingForm({
               style={{
                 display: 'block',
                 marginBottom: '12px',
-                fontSize: '16px',
+                fontSize: 'var(--fs-base)',
                 fontWeight: 600,
               }}
             >
@@ -336,7 +336,7 @@ export default function CreateListingForm({
               style={{
                 ...inputStyle,
                 height: '58px',
-                fontSize: '16px',
+                fontSize: 'var(--fs-base)',
               }}
             />
 
@@ -344,7 +344,7 @@ export default function CreateListingForm({
               style={{
                 margin: '7px 0 0',
                 color: '#666',
-                fontSize: '13px',
+                fontSize: 'var(--fs-xs)',
               }}
             >
               {t('custom_tags_hint')}
@@ -367,7 +367,7 @@ export default function CreateListingForm({
               border: 'none',
               borderRadius: '8px',
 
-              fontSize: '18px',
+              fontSize: 'var(--fs-lg)',
               fontWeight: 600,
 
               cursor: step1Valid
@@ -391,7 +391,7 @@ export default function CreateListingForm({
             style={{
               margin: '0 0 26px',
               color: '#2F2F2F',
-              fontSize: '22px',
+              fontSize: 'var(--fs-xl)',
               fontWeight: 600,
             }}
           >
@@ -541,7 +541,7 @@ export default function CreateListingForm({
             style={{
               margin: '0 0 26px',
               color: '#2F2F2F',
-              fontSize: '22px',
+              fontSize: 'var(--fs-xl)',
               fontWeight: 600,
             }}
           >
@@ -578,7 +578,7 @@ export default function CreateListingForm({
               style={{
                 margin: '6px 0 0',
                 color: '#666',
-                fontSize: '12px',
+                fontSize: 'var(--fs-2xs)',
               }}
             >
               {t('email_from_account')}
@@ -609,7 +609,7 @@ export default function CreateListingForm({
             <h3
               style={{
                 margin: '0 0 8px',
-                fontSize: '17px',
+                fontSize: 'var(--fs-lg)',
                 fontWeight: 600,
               }}
             >
@@ -620,7 +620,7 @@ export default function CreateListingForm({
               style={{
                 margin: '0 0 12px',
                 color: '#5a5a5a',
-                fontSize: '14px',
+                fontSize: 'var(--fs-sm)',
                 lineHeight: 1.6,
               }}
             >
@@ -658,7 +658,7 @@ export default function CreateListingForm({
 
                       borderRadius: '6px',
 
-                      fontSize: '12px',
+                      fontSize: 'var(--fs-2xs)',
                       fontWeight: 600,
                     }}
                   >
@@ -672,7 +672,7 @@ export default function CreateListingForm({
               style={{
                 margin: 0,
                 color: '#666',
-                fontSize: '12px',
+                fontSize: 'var(--fs-2xs)',
               }}
             >
               {location} • {email}
@@ -685,7 +685,7 @@ export default function CreateListingForm({
               style={{
                 marginTop: '18px',
                 color: '#dc2626',
-                fontSize: '13px',
+                fontSize: 'var(--fs-xs)',
               }}
             >
               {Object.entries(

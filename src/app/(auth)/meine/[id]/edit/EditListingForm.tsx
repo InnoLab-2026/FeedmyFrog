@@ -90,7 +90,7 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
       </label>
 
       {state && !state.ok && (
-        <ul role="alert" style={{ color: 'red', fontSize: '14px' }}>
+        <ul role="alert" style={{ color: 'red', fontSize: 'var(--fs-sm)' }}>
           {Object.entries(state.errors).flatMap(([k, vs]) =>
             vs.map((v, i) => (
               <li key={`${k}-${i}`}>

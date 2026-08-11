@@ -45,7 +45,7 @@ export default function ModeToggle({ mode, onChange }: ModeToggleProps) {
                 background: active ? '#8DC63F' : 'transparent',
                 color: active ? '#1a3200' : '#2f2f2f',
                 fontWeight: 600,
-                fontSize: '16px',
+                fontSize: 'var(--fs-control-button)',
                 cursor: 'pointer',
               }}
             >

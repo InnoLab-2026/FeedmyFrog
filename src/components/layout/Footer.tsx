@@ -8,7 +8,7 @@ export default function Footer() {
     >
       <div
         className="max-w-[900px] mx-auto px-5 text-center flex flex-col items-center gap-2"
-        style={{ fontSize: '14px', fontWeight: 500 }}
+        style={{ fontSize: 'var(--fs-sm)', fontWeight: 500 }}
       >
         <div className="inline-block px-6 py-2 rounded-full" style={{ background: 'white' }}>
           <a href="https://github.com/InnoLab-2026/relay-zero-host/tree/main" className="hover:underline" style={{ fontWeight: 700, color: 'black' }}>

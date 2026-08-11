@@ -60,7 +60,7 @@ export default function MyListingsPageContent({
                 border: '1px solid rgba(47,47,47,0.18)',
                 borderRadius: '8px',
                 padding: '13px 18px',
-                fontSize: '15px',
+                fontSize: 'var(--fs-md)',
                 fontWeight: 600,
                 textDecoration: 'none',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
@@ -71,7 +71,7 @@ export default function MyListingsPageContent({
               <span
                 aria-hidden="true"
                 style={{
-                  fontSize: '20px',
+                  fontSize: 'var(--fs-lg)',
                   lineHeight: 1,
                 }}
               >
@@ -90,7 +90,7 @@ export default function MyListingsPageContent({
                   border: '1px solid rgba(47,47,47,0.18)',
                   borderRadius: '8px',
                   padding: '13px 18px',
-                  fontSize: '15px',
+                  fontSize: 'var(--fs-md)',
                   fontWeight: 600,
                   boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
                   cursor: 'pointer',
@@ -111,7 +111,7 @@ export default function MyListingsPageContent({
               style={{
                 margin: '0 0 12px',
                 color: '#2f2f2f',
-                fontSize: '38px',
+                fontSize: 'var(--fs-4xl)',
                 lineHeight: 1.2,
                 fontWeight: 700,
               }}
@@ -123,7 +123,7 @@ export default function MyListingsPageContent({
               style={{
                 margin: 0,
                 color: '#6a6a6a',
-                fontSize: '18px',
+                fontSize: 'var(--fs-lg)',
                 lineHeight: 1.5,
               }}
             >
@@ -156,7 +156,7 @@ export default function MyListingsPageContent({
                 style={{
                   margin: '0 0 20px',
                   color: '#6a6a6a',
-                  fontSize: '16px',
+                  fontSize: 'var(--fs-base)',
                 }}
               >
                 {t('no_own_listings')}
@@ -188,7 +188,7 @@ export default function MyListingsPageContent({
                           color: '#2f2f2f',
                           border: '1px solid rgba(47,47,47,0.2)',
                           borderRadius: '7px',
-                          fontSize: '13px',
+                          fontSize: 'var(--fs-xs)',
                           fontWeight: 600,
                           textDecoration: 'none',
                         }}
@@ -213,7 +213,7 @@ export default function MyListingsPageContent({
                             color: '#b42318',
                             border: '1px solid rgba(180,35,24,0.3)',
                             borderRadius: '7px',
-                            fontSize: '13px',
+                            fontSize: 'var(--fs-xs)',
                             fontWeight: 600,
                             cursor: 'pointer',
                           }}
