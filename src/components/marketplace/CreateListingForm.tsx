@@ -691,13 +691,13 @@ export default function CreateListingForm({
               {Object.entries(
                 state.errors,
               ).flatMap(
-                ([key, values]) =>
-                  values.map(
-                    (value, index) => (
+                ([key, codes]) =>
+                  codes.map(
+                    (code, index) => (
                       <li
                         key={`${key}-${index}`}
                       >
-                        {key}: {value}
+                        {t(`error_${code}`)}
                       </li>
                     ),
                   ),

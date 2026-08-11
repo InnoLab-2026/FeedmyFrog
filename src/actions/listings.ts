@@ -58,7 +58,7 @@ export async function updateListing(
   if (!session) redirect('/login');
 
   const id = Uuid.safeParse(formData.get('id'));
-  if (!id.success) return { ok: false, errors: { id: ['Invalid listing ID'] } };
+  if (!id.success) return { ok: false, errors: { id: ['invalid_id'] } };
 
   const rawTags = formData.get('tags');
   const tags =
@@ -87,7 +87,7 @@ export async function updateListing(
     .returning({ id: listings.id });
 
   if (updated.length === 0) {
-    return { ok: false, errors: { id: ['Eintrag nicht gefunden'] } };
+    return { ok: false, errors: { id: ['not_found'] } };
   }
 
   revalidatePath('/');
