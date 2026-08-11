@@ -10,7 +10,7 @@ export default function LoginForm({
 }: {
   initialErrorCode: string | null;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const MESSAGES: Record<string, string> = {
     forbidden_domain: t('error_forbidden_domain'),
@@ -39,7 +39,7 @@ export default function LoginForm({
         headers: {
           'content-type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, lang: i18n.language }),
       });
 
       if (res.status === 202) {
