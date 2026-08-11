@@ -5,6 +5,13 @@
   --font-family-base: var(--font-jakarta), 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-family-display: var(--font-dm-sans), 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 
+  /* Shared control type scale. Inherited via the cascade so the header and the
+     body render interactive controls at the same size instead of each hard-coding
+     its own px value. Values match the sizes already used across body forms
+     (text inputs 14px; primary buttons 16px). */
+  --fs-control-input: 14px;
+  --fs-control-button: 16px;
+
   --background: #FBF8F4;
   --foreground: #2D2821;
   --card: #ffffff;
