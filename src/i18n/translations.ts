@@ -135,6 +135,22 @@ export const resources = {
 
       // Edit listing page
       edit_listing_title: 'Edit listing',
+      tags_label: 'Tags (comma-separated)',
+      save_changes: 'Save changes',
+
+      // Listing validation error codes returned by server actions
+      error_type_invalid: 'Please choose a valid type.',
+      error_title_too_short: 'Title must be at least 3 characters.',
+      error_title_too_long: 'Title must be at most 120 characters.',
+      error_description_too_short: 'Description must be at least 10 characters.',
+      error_description_too_long: 'Description must be at most 2000 characters.',
+      error_tag_empty: 'Tags cannot be empty.',
+      error_tag_too_long: 'Each tag can be at most 40 characters.',
+      error_tags_too_many: 'You can add at most 8 tags.',
+      error_location_required: 'Location is required.',
+      error_location_too_long: 'Location must be at most 80 characters.',
+      error_invalid_id: 'Invalid listing ID.',
+      error_not_found: 'Listing not found.',
     },
   },
 
@@ -278,6 +294,22 @@ export const resources = {
 
       // Edit listing page
       edit_listing_title: 'Eintrag bearbeiten',
+      tags_label: 'Tags (kommagetrennt)',
+      save_changes: 'Änderungen speichern',
+
+      // Listing validation error codes returned by server actions
+      error_type_invalid: 'Bitte wählen Sie einen gültigen Typ.',
+      error_title_too_short: 'Der Titel muss mindestens 3 Zeichen lang sein.',
+      error_title_too_long: 'Der Titel darf höchstens 120 Zeichen lang sein.',
+      error_description_too_short: 'Die Beschreibung muss mindestens 10 Zeichen lang sein.',
+      error_description_too_long: 'Die Beschreibung darf höchstens 2000 Zeichen lang sein.',
+      error_tag_empty: 'Schlagwörter dürfen nicht leer sein.',
+      error_tag_too_long: 'Jedes Schlagwort darf höchstens 40 Zeichen lang sein.',
+      error_tags_too_many: 'Sie können höchstens 8 Schlagwörter hinzufügen.',
+      error_location_required: 'Standort ist erforderlich.',
+      error_location_too_long: 'Der Standort darf höchstens 80 Zeichen lang sein.',
+      error_invalid_id: 'Ungültige Anzeigen-ID.',
+      error_not_found: 'Anzeige nicht gefunden.',
     },
   },
 
@@ -411,6 +443,22 @@ export const resources = {
 
       // Edit listing page
       edit_listing_title: "Modifier l'annonce",
+      tags_label: 'Mots-clés (séparés par des virgules)',
+      save_changes: 'Enregistrer les modifications',
+
+      // Listing validation error codes returned by server actions
+      error_type_invalid: 'Veuillez choisir un type valide.',
+      error_title_too_short: 'Le titre doit comporter au moins 3 caractères.',
+      error_title_too_long: 'Le titre ne doit pas dépasser 120 caractères.',
+      error_description_too_short: 'La description doit comporter au moins 10 caractères.',
+      error_description_too_long: 'La description ne doit pas dépasser 2000 caractères.',
+      error_tag_empty: 'Les mots-clés ne peuvent pas être vides.',
+      error_tag_too_long: 'Chaque mot-clé ne doit pas dépasser 40 caractères.',
+      error_tags_too_many: 'Vous pouvez ajouter 8 mots-clés au maximum.',
+      error_location_required: 'Le lieu est requis.',
+      error_location_too_long: 'Le lieu ne doit pas dépasser 80 caractères.',
+      error_invalid_id: "Identifiant d'annonce invalide.",
+      error_not_found: 'Annonce introuvable.',
     },
   },
 
@@ -539,6 +587,22 @@ export const resources = {
 
       // Edit listing page
       edit_listing_title: 'İlanı düzenle',
+      tags_label: 'Etiketler (virgülle ayrılmış)',
+      save_changes: 'Değişiklikleri kaydet',
+
+      // Listing validation error codes returned by server actions
+      error_type_invalid: 'Lütfen geçerli bir tür seçin.',
+      error_title_too_short: 'Başlık en az 3 karakter olmalıdır.',
+      error_title_too_long: 'Başlık en fazla 120 karakter olabilir.',
+      error_description_too_short: 'Açıklama en az 10 karakter olmalıdır.',
+      error_description_too_long: 'Açıklama en fazla 2000 karakter olabilir.',
+      error_tag_empty: 'Etiketler boş olamaz.',
+      error_tag_too_long: 'Her etiket en fazla 40 karakter olabilir.',
+      error_tags_too_many: 'En fazla 8 etiket ekleyebilirsiniz.',
+      error_location_required: 'Konum gereklidir.',
+      error_location_too_long: 'Konum en fazla 80 karakter olabilir.',
+      error_invalid_id: 'Geçersiz ilan kimliği.',
+      error_not_found: 'İlan bulunamadı.',
     },
   },
 
@@ -672,6 +736,22 @@ export const resources = {
 
       // Edit listing page
       edit_listing_title: 'Editar anuncio',
+      tags_label: 'Etiquetas (separadas por comas)',
+      save_changes: 'Guardar cambios',
+
+      // Listing validation error codes returned by server actions
+      error_type_invalid: 'Selecciona un tipo válido.',
+      error_title_too_short: 'El título debe tener al menos 3 caracteres.',
+      error_title_too_long: 'El título no puede superar los 120 caracteres.',
+      error_description_too_short: 'La descripción debe tener al menos 10 caracteres.',
+      error_description_too_long: 'La descripción no puede superar los 2000 caracteres.',
+      error_tag_empty: 'Las etiquetas no pueden estar vacías.',
+      error_tag_too_long: 'Cada etiqueta puede tener como máximo 40 caracteres.',
+      error_tags_too_many: 'Puedes añadir como máximo 8 etiquetas.',
+      error_location_required: 'La ubicación es obligatoria.',
+      error_location_too_long: 'La ubicación no puede superar los 80 caracteres.',
+      error_invalid_id: 'ID de anuncio no válido.',
+      error_not_found: 'Anuncio no encontrado.',
     },
   },
 } as const;

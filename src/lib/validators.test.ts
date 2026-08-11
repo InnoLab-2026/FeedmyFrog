@@ -79,29 +79,51 @@ describe('ListingInput schema', () => {
     if (result.success) expect(result.data.tags).toEqual([]);
   });
 
-  it('rejects a title under 3 characters', () => {
-    expect(ListingInput.safeParse({ ...base, title: 'ab' }).success).toBe(false);
+  /*
+   * Every failure below asserts the exact code, not just success:false —
+   * these codes are a contract the client relies on to pick a translated
+   * message (see src/lib/validators.ts's `error_<code>` convention), so a
+   * silent rename here would break every language on the client silently.
+   */
+  it('rejects a title under 3 characters with title_too_short', () => {
+    const result = ListingInput.safeParse({ ...base, title: 'ab' });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.flatten().fieldErrors.title).toEqual(['title_too_short']);
   });
 
-  it('rejects a title over 120 characters', () => {
-    expect(ListingInput.safeParse({ ...base, title: 'a'.repeat(121) }).success).toBe(false);
+  it('rejects a title over 120 characters with title_too_long', () => {
+    const result = ListingInput.safeParse({ ...base, title: 'a'.repeat(121) });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.flatten().fieldErrors.title).toEqual(['title_too_long']);
   });
 
-  it('rejects a description under 10 characters', () => {
-    expect(ListingInput.safeParse({ ...base, description: 'too short' }).success).toBe(false);
+  it('rejects a description under 10 characters with description_too_short', () => {
+    const result = ListingInput.safeParse({ ...base, description: 'too short' });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.flatten().fieldErrors.description).toEqual(['description_too_short']);
+    }
   });
 
-  it('rejects more than 8 tags', () => {
+  it('rejects more than 8 tags with tags_too_many', () => {
     const tags = Array.from({ length: 9 }, (_, i) => `tag${i}`);
-    expect(ListingInput.safeParse({ ...base, tags }).success).toBe(false);
+    const result = ListingInput.safeParse({ ...base, tags });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.flatten().fieldErrors.tags).toEqual(['tags_too_many']);
   });
 
-  it('rejects an empty location', () => {
-    expect(ListingInput.safeParse({ ...base, location: '' }).success).toBe(false);
+  it('rejects an empty location with location_required', () => {
+    const result = ListingInput.safeParse({ ...base, location: '' });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.flatten().fieldErrors.location).toEqual(['location_required']);
+    }
   });
 
-  it('rejects an invalid type', () => {
-    expect(ListingInput.safeParse({ ...base, type: 'both' }).success).toBe(false);
+  it('rejects an invalid type with type_invalid', () => {
+    const result = ListingInput.safeParse({ ...base, type: 'both' });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.flatten().fieldErrors.type).toEqual(['type_invalid']);
   });
 });
 
@@ -110,7 +132,9 @@ describe('Uuid schema', () => {
     expect(Uuid.safeParse('123e4567-e89b-12d3-a456-426614174000').success).toBe(true);
   });
 
-  it('rejects a non-UUID string', () => {
-    expect(Uuid.safeParse('not-a-uuid').success).toBe(false);
+  it('rejects a non-UUID string with the invalid_id code', () => {
+    const result = Uuid.safeParse('not-a-uuid');
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.issues[0]?.message).toBe('invalid_id');
   });
 });
