@@ -95,6 +95,46 @@ export const resources = {
       // Listing card aria
       aria_tag: 'Tag: {{tag}}',
       aria_location: 'Location: {{location}}',
+
+      // Login page
+      login_subtitle:
+        'Sign in with your university email address. We will send you a one-time login link.',
+      login_privacy_notice:
+        'Information about how we process your data can be found in our',
+      privacy_policy_link: 'Privacy Policy',
+      imprint_link: 'Imprint',
+      login_error_missing_token:
+        'The login link was incomplete. Please request a new one.',
+      login_error_invalid_or_expired:
+        'This login link has expired or was already used. Please request a new one.',
+      email_address_label: 'Email address',
+      sending_link: 'Sending …',
+      send_login_link: 'Send login link',
+      email_sent_title: 'Email on its way ✉️',
+      email_sent_body_pre: 'If an account exists for',
+      email_sent_body_post:
+        'you will find a login link in your inbox shortly. The link is valid for a short time and only once.',
+      error_forbidden_domain:
+        'Please use your university email address.',
+      error_invalid_email: 'Please enter a valid email address.',
+      error_too_many_requests:
+        'Too many requests. Please try again later.',
+      error_unknown: 'Something went wrong. Please try again.',
+
+      // Verify prompt page
+      invalid_link_title: 'Invalid link',
+      invalid_link_body: 'The login link was incomplete.',
+      request_new_link: 'Request a new link',
+      verify_prompt_subtitle: 'Click the button to sign in.',
+      verify_now: 'Sign in now',
+
+      // 404 page
+      not_found_title: 'Page not found',
+      not_found_body: 'The requested page does not exist.',
+      go_home: 'Go to homepage',
+
+      // Edit listing page
+      edit_listing_title: 'Edit listing',
     },
   },
 
@@ -195,6 +235,49 @@ export const resources = {
       // Listing card aria
       aria_tag: 'Schlagwort: {{tag}}',
       aria_location: 'Standort: {{location}}',
+
+      // Login page
+      login_subtitle:
+        'Melden Sie sich mit Ihrer Hochschul-E-Mail-Adresse an. Wir senden Ihnen einen einmaligen Anmeldelink.',
+      login_privacy_notice:
+        'Informationen zur Verarbeitung Ihrer Daten finden Sie in der',
+      privacy_policy_link: 'Datenschutzerklärung',
+      imprint_link: 'Impressum',
+      login_error_missing_token:
+        'Der Anmeldelink war unvollständig. Bitte fordern Sie einen neuen an.',
+      login_error_invalid_or_expired:
+        'Dieser Anmeldelink ist abgelaufen oder wurde bereits verwendet. Bitte fordern Sie einen neuen an.',
+      email_address_label: 'E-Mail-Adresse',
+      sending_link: 'Wird gesendet …',
+      send_login_link: 'Anmeldelink senden',
+      email_sent_title: 'E-Mail unterwegs ✉️',
+      email_sent_body_pre: 'Wenn ein Konto für',
+      email_sent_body_post:
+        'möglich ist, finden Sie gleich einen Anmeldelink in Ihrem Postfach. Der Link ist nur kurze Zeit und einmalig gültig.',
+      error_forbidden_domain:
+        'Bitte verwenden Sie Ihre Hochschul-E-Mail-Adresse.',
+      error_invalid_email:
+        'Bitte geben Sie eine gültige E-Mail-Adresse ein.',
+      error_too_many_requests:
+        'Zu viele Anfragen. Bitte versuchen Sie es später erneut.',
+      error_unknown:
+        'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
+
+      // Verify prompt page
+      invalid_link_title: 'Ungültiger Link',
+      invalid_link_body: 'Der Anmeldelink war unvollständig.',
+      request_new_link: 'Neuen Link anfordern',
+      verify_prompt_subtitle:
+        'Klicken Sie auf die Schaltfläche, um sich anzumelden.',
+      verify_now: 'Jetzt anmelden',
+
+      // 404 page
+      not_found_title: 'Seite nicht gefunden',
+      not_found_body: 'Die angeforderte Seite existiert nicht.',
+      go_home: 'Zur Startseite',
+
+      // Edit listing page
+      edit_listing_title: 'Eintrag bearbeiten',
     },
   },
 
@@ -286,6 +369,48 @@ export const resources = {
 
       aria_tag: 'Étiquette: {{tag}}',
       aria_location: 'Lieu: {{location}}',
+
+      // Login page
+      login_subtitle:
+        'Connectez-vous avec votre adresse e-mail universitaire. Nous vous enverrons un lien de connexion à usage unique.',
+      login_privacy_notice:
+        'Des informations sur le traitement de vos données sont disponibles dans notre',
+      privacy_policy_link: 'Politique de confidentialité',
+      imprint_link: 'Mentions légales',
+      login_error_missing_token:
+        'Le lien de connexion était incomplet. Veuillez en demander un nouveau.',
+      login_error_invalid_or_expired:
+        'Ce lien de connexion a expiré ou a déjà été utilisé. Veuillez en demander un nouveau.',
+      email_address_label: 'Adresse e-mail',
+      sending_link: 'Envoi en cours …',
+      send_login_link: 'Envoyer le lien de connexion',
+      email_sent_title: 'E-mail en route ✉️',
+      email_sent_body_pre: 'Si un compte existe pour',
+      email_sent_body_post:
+        "vous trouverez sous peu un lien de connexion dans votre boîte de réception. Le lien n'est valable que peu de temps et une seule fois.",
+      error_forbidden_domain:
+        'Veuillez utiliser votre adresse e-mail universitaire.',
+      error_invalid_email:
+        'Veuillez saisir une adresse e-mail valide.',
+      error_too_many_requests:
+        'Trop de tentatives. Veuillez réessayer plus tard.',
+      error_unknown:
+        "Une erreur s'est produite. Veuillez réessayer.",
+
+      // Verify prompt page
+      invalid_link_title: 'Lien invalide',
+      invalid_link_body: 'Le lien de connexion était incomplet.',
+      request_new_link: 'Demander un nouveau lien',
+      verify_prompt_subtitle: 'Cliquez sur le bouton pour vous connecter.',
+      verify_now: 'Se connecter maintenant',
+
+      // 404 page
+      not_found_title: 'Page introuvable',
+      not_found_body: "La page demandée n'existe pas.",
+      go_home: "Retour à l'accueil",
+
+      // Edit listing page
+      edit_listing_title: "Modifier l'annonce",
     },
   },
 
@@ -374,6 +499,46 @@ export const resources = {
 
       aria_tag: 'Etiket: {{tag}}',
       aria_location: 'Konum: {{location}}',
+
+      // Login page
+      login_subtitle:
+        'Üniversite e-posta adresinizle giriş yapın. Size tek kullanımlık bir giriş bağlantısı göndereceğiz.',
+      login_privacy_notice:
+        'Verilerinizin nasıl işlendiğine dair bilgileri',
+      privacy_policy_link: 'Gizlilik Politikası',
+      imprint_link: 'Yasal Bildirim',
+      login_error_missing_token:
+        'Giriş bağlantısı eksikti. Lütfen yeni bir tane isteyin.',
+      login_error_invalid_or_expired:
+        'Bu giriş bağlantısının süresi doldu veya zaten kullanıldı. Lütfen yeni bir tane isteyin.',
+      email_address_label: 'E-posta adresi',
+      sending_link: 'Gönderiliyor …',
+      send_login_link: 'Giriş bağlantısı gönder',
+      email_sent_title: 'E-posta yolda ✉️',
+      email_sent_body_pre: 'Eğer',
+      email_sent_body_post:
+        'için bir hesap mevcutsa, gelen kutunuzda kısa süre içinde bir giriş bağlantısı bulacaksınız. Bağlantı yalnızca kısa bir süre ve tek seferlik geçerlidir.',
+      error_forbidden_domain:
+        'Lütfen üniversite e-posta adresinizi kullanın.',
+      error_invalid_email: 'Lütfen geçerli bir e-posta adresi girin.',
+      error_too_many_requests:
+        'Çok fazla istek. Lütfen daha sonra tekrar deneyin.',
+      error_unknown: 'Bir şeyler ters gitti. Lütfen tekrar deneyin.',
+
+      // Verify prompt page
+      invalid_link_title: 'Geçersiz bağlantı',
+      invalid_link_body: 'Giriş bağlantısı eksikti.',
+      request_new_link: 'Yeni bağlantı iste',
+      verify_prompt_subtitle: 'Giriş yapmak için düğmeye tıklayın.',
+      verify_now: 'Şimdi giriş yap',
+
+      // 404 page
+      not_found_title: 'Sayfa bulunamadı',
+      not_found_body: 'İstenen sayfa mevcut değil.',
+      go_home: 'Ana sayfaya git',
+
+      // Edit listing page
+      edit_listing_title: 'İlanı düzenle',
     },
   },
 
@@ -467,6 +632,46 @@ export const resources = {
 
       aria_tag: 'Etiqueta: {{tag}}',
       aria_location: 'Ubicación: {{location}}',
+
+      // Login page
+      login_subtitle:
+        'Inicia sesión con tu dirección de correo universitaria. Te enviaremos un enlace de acceso de un solo uso.',
+      login_privacy_notice:
+        'Encontrarás información sobre el tratamiento de tus datos en nuestra',
+      privacy_policy_link: 'Política de privacidad',
+      imprint_link: 'Aviso legal',
+      login_error_missing_token:
+        'El enlace de acceso estaba incompleto. Solicita uno nuevo.',
+      login_error_invalid_or_expired:
+        'Este enlace de acceso ha caducado o ya se ha utilizado. Solicita uno nuevo.',
+      email_address_label: 'Dirección de correo electrónico',
+      sending_link: 'Enviando …',
+      send_login_link: 'Enviar enlace de acceso',
+      email_sent_title: 'Correo en camino ✉️',
+      email_sent_body_pre: 'Si existe una cuenta para',
+      email_sent_body_post:
+        'en breve encontrarás un enlace de acceso en tu bandeja de entrada. El enlace solo es válido por poco tiempo y una sola vez.',
+      error_forbidden_domain:
+        'Utiliza tu dirección de correo universitaria.',
+      error_invalid_email: 'Introduce una dirección de correo válida.',
+      error_too_many_requests:
+        'Demasiadas solicitudes. Inténtalo de nuevo más tarde.',
+      error_unknown: 'Algo salió mal. Inténtalo de nuevo.',
+
+      // Verify prompt page
+      invalid_link_title: 'Enlace no válido',
+      invalid_link_body: 'El enlace de acceso estaba incompleto.',
+      request_new_link: 'Solicitar un nuevo enlace',
+      verify_prompt_subtitle: 'Haz clic en el botón para iniciar sesión.',
+      verify_now: 'Iniciar sesión ahora',
+
+      // 404 page
+      not_found_title: 'Página no encontrada',
+      not_found_body: 'La página solicitada no existe.',
+      go_home: 'Ir al inicio',
+
+      // Edit listing page
+      edit_listing_title: 'Editar anuncio',
     },
   },
 } as const;

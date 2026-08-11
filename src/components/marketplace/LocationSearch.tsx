@@ -208,10 +208,10 @@ export default function LocationSearch({
         onClick={() => setOpen((current) => !current)}
         className="w-full flex items-center text-left"
         style={{
-          height: '72px',
-          paddingLeft: '24px',
-          paddingRight: '18px',
-          gap: '14px',
+          height: '44px',
+          paddingLeft: '16px',
+          paddingRight: '14px',
+          gap: '10px',
 
           background: 'white',
           color: value ? '#444' : '#555',
@@ -234,8 +234,8 @@ export default function LocationSearch({
       >
         <MapPin
           style={{
-            width: '24px',
-            height: '24px',
+            width: '17px',
+            height: '17px',
             color: value ? '#8DC63F' : '#666',
             flexShrink: 0,
           }}
