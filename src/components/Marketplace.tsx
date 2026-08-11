@@ -32,24 +32,11 @@ interface MarketplaceProps {
 const SEARCH_DEBOUNCE_MS = 300;
 
 /*
- * Das sind ausschließlich die festen Kategorien,
- * die auch beim Erstellen einer Anzeige auswählbar sind.
- *
- * Eigene freie Tags wie "Mathe", "Dringend" oder "testing..."
- * werden NICHT als Tabs oben angezeigt.
+ * Maps the 9 built-in categories (also offered as quick-pick tags when
+ * creating a listing) to their translation key. Any other tag is a free-form
+ * one a user typed in — falls through to the tag string itself, which is
+ * exactly right since there's no translation for made-up text.
  */
-const STANDARD_CATEGORIES = [
-  'Familie',
-  'Kinder',
-  'Wochenende',
-  'Mobilität',
-  'Pendeln',
-  'Verkauf',
-  'Dienstleistungen',
-  'Transport',
-  'Bildung',
-] as const;
-
 function getCategoryTranslationKey(tag: string) {
   const keys: Record<string, string> = {
     Familie: 'category_family',
@@ -166,59 +153,20 @@ export default function Marketplace({
   }
 
   /*
-   * KATEGORIEN-LOGIK:
-   *
-   * 1. categoryTags kommt vom Server nach Häufigkeit sortiert.
-   * 2. Eigene/freie Tags werden entfernt.
-   * 3. Die zwei häufigsten Standard-Kategorien kommen direkt nach "Alle".
-   * 4. Alle übrigen Standard-Kategorien kommen danach und landen dadurch
-   *    in CategoryTabs automatisch unter "...".
+   * categoryTags comes from the server already ranked by how many current
+   * listings use each tag (most-used first) — every tag actually in use
+   * becomes a tab, not just the 9 built-in categories. CategoryTabs takes
+   * care of only showing the top few and folding the rest under "...".
    */
-  const categories = useMemo<Category[]>(() => {
-    const standardSet = new Set(STANDARD_CATEGORIES);
-
-    const rankedCategories = categoryTags.filter((tag) =>
-      standardSet.has(tag as (typeof STANDARD_CATEGORIES)[number]),
-    );
-
-    const topCategories: string[] = [];
-
-    for (const tag of rankedCategories) {
-      if (!topCategories.includes(tag)) {
-        topCategories.push(tag);
-      }
-
-      if (topCategories.length === 2) {
-        break;
-      }
-    }
-
-    for (const tag of STANDARD_CATEGORIES) {
-      if (
-        topCategories.length < 2 &&
-        !topCategories.includes(tag)
-      ) {
-        topCategories.push(tag);
-      }
-    }
-
-    const remainingCategories = STANDARD_CATEGORIES.filter(
-      (tag) => !topCategories.includes(tag),
-    );
-
-    const orderedCategories = [
-      ...topCategories,
-      ...remainingCategories,
-    ];
-
-    return [
+  const categories = useMemo<Category[]>(
+    () => [
       {
         id: 'All',
         label: t('category_all'),
         icon: <Search className="w-4 h-4" />,
       },
 
-      ...orderedCategories.map((tag) => ({
+      ...categoryTags.map((tag) => ({
         id: tag,
         label: t(getCategoryTranslationKey(tag)),
         icon:
@@ -226,8 +174,9 @@ export default function Marketplace({
             <Search className="w-4 h-4" />
           ),
       })),
-    ];
-  }, [categoryTags, t]);
+    ],
+    [categoryTags, t],
+  );
 
   const totalPages = Math.max(
     1,
