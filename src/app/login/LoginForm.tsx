@@ -1,28 +1,31 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 type Status = 'idle' | 'sending' | 'sent' | 'error';
 
-const MESSAGES: Record<string, string> = {
-  forbidden_domain:
-    'Bitte verwenden Sie Ihre Hochschul-E-Mail-Adresse.',
-  invalid_email:
-    'Bitte geben Sie eine gültige E-Mail-Adresse ein.',
-  too_many_requests:
-    'Zu viele Anfragen. Bitte versuchen Sie es später erneut.',
-  unknown:
-    'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
-};
-
 export default function LoginForm({
-  initialError,
+  initialErrorCode,
 }: {
-  initialError: string | null;
+  initialErrorCode: string | null;
 }) {
+  const { t } = useTranslation();
+
+  const MESSAGES: Record<string, string> = {
+    forbidden_domain: t('error_forbidden_domain'),
+    invalid_email: t('error_invalid_email'),
+    too_many_requests: t('error_too_many_requests'),
+    unknown: t('error_unknown'),
+    missing_token: t('login_error_missing_token'),
+    invalid_or_expired: t('login_error_invalid_or_expired'),
+  };
+
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<Status>('idle');
-  const [error, setError] = useState<string | null>(initialError);
+  const [error, setError] = useState<string | null>(
+    initialErrorCode ? (MESSAGES[initialErrorCode] ?? null) : null,
+  );
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -77,7 +80,7 @@ export default function LoginForm({
             fontSize: 'var(--fs-base)',
           }}
         >
-          E-Mail unterwegs ✉️
+          {t('email_sent_title')}
         </p>
 
         <p
@@ -88,7 +91,7 @@ export default function LoginForm({
             lineHeight: 1.6,
           }}
         >
-          Wenn ein Konto für{' '}
+          {t('email_sent_body_pre')}{' '}
           <span
             style={{
               color: '#2F2F2F',
@@ -97,8 +100,7 @@ export default function LoginForm({
           >
             {email}
           </span>{' '}
-          möglich ist, finden Sie gleich einen Anmeldelink in Ihrem
-          Postfach. Der Link ist nur kurze Zeit und einmalig gültig.
+          {t('email_sent_body_post')}
         </p>
       </div>
     );
@@ -121,7 +123,7 @@ export default function LoginForm({
           color: '#2F2F2F',
         }}
       >
-        E-Mail-Adresse
+        {t('email_address_label')}
 
         <input
           id="email"
@@ -209,8 +211,8 @@ export default function LoginForm({
         }}
       >
         {status === 'sending'
-          ? 'Wird gesendet …'
-          : 'Anmeldelink senden'}
+          ? t('sending_link')
+          : t('send_login_link')}
       </button>
     </form>
   );

@@ -9,7 +9,17 @@ export default function LanguageButton() {
   const current     = LANGUAGES[currentIdx] ?? LANGUAGES[0];
   const next        = LANGUAGES[(currentIdx + 1) % LANGUAGES.length];
 
-  const cycle = () => i18n.changeLanguage(next.code);
+  const cycle = () => {
+    i18n.changeLanguage(next.code);
+
+    // Explicit choice always wins over auto-detection on later visits.
+    try {
+      window.localStorage.setItem('i18nextLng', next.code);
+    } catch {
+      // localStorage may be unavailable (private browsing); language still
+      // applies for this session via i18n.changeLanguage above.
+    }
+  };
 
   return (
     <button

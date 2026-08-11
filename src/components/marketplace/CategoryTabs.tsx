@@ -81,7 +81,7 @@ export default function CategoryTabs({
       ref={containerRef}
       className="flex w-full"
       style={{
-        marginBottom: '24px',
+        marginBottom: '16px',
         overflow: 'visible',
       }}
     >
@@ -117,7 +117,7 @@ export default function CategoryTabs({
             }
             className="w-full flex items-center justify-center"
             style={{
-              minHeight: '68px',
+              minHeight: '44px',
               background: 'white',
               color: '#2f2f2f',
 

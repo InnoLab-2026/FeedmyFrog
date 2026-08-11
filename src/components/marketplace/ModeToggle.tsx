@@ -19,7 +19,7 @@ export default function ModeToggle({ mode, onChange }: ModeToggleProps) {
   };
 
   return (
-    <div className="pb-6 flex justify-center">
+    <div className="pb-4 flex justify-center">
       <div
         className="inline-flex p-1"
         style={{
@@ -38,8 +38,8 @@ export default function ModeToggle({ mode, onChange }: ModeToggleProps) {
               onClick={() => onChange(m)}
               className="transition-all duration-200"
               style={{
-                minWidth: '150px',
-                padding: '13px 34px',
+                minWidth: '110px',
+                padding: '9px 22px',
                 borderRadius: '999px',
                 border: 'none',
                 background: active ? '#8DC63F' : 'transparent',
