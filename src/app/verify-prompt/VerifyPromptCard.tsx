@@ -3,7 +3,7 @@
 import { useTranslation } from 'react-i18next';
 
 import LanguageButton from '@/components/layout/LanguageButton';
-import { CARD_SHADOW } from '@/constants';
+import { CARD_SHADOW, INSTITUTION_NAME } from '@/constants';
 
 export default function VerifyPromptCard({ token }: { token: string | null }) {
   const { t } = useTranslation();
@@ -58,7 +58,7 @@ export default function VerifyPromptCard({ token }: { token: string | null }) {
         <h1
           style={{ fontFamily: 'var(--font-family-display)', fontWeight: 700, fontSize: 'var(--fs-2xl)', color: 'black' }}
         >
-          Reutlingen University Connect
+          {INSTITUTION_NAME} Connect
         </h1>
         <p className="mt-2" style={{ fontSize: 'var(--fs-sm)', fontWeight: 500, color: 'black' }}>
           {t('verify_prompt_subtitle')}

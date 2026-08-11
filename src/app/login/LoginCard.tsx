@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import LoginForm from './LoginForm';
 import LanguageButton from '@/components/layout/LanguageButton';
-import { CARD_SHADOW } from '@/constants';
+import { CARD_SHADOW, INSTITUTION_NAME } from '@/constants';
 
 export default function LoginCard({
   initialErrorCode,
@@ -73,7 +73,7 @@ export default function LoginCard({
               color: '#2F2F2F',
             }}
           >
-            Reutlingen University Connect
+            {INSTITUTION_NAME} Connect
           </h1>
 
           <p
