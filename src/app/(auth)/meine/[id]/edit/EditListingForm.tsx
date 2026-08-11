@@ -20,7 +20,7 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
       <input type="hidden" name="id" value={listing.id} />
 
       <fieldset>
-        <legend style={{ fontWeight: 600, marginBottom: '8px' }}>Typ</legend>
+        <legend style={{ fontWeight: 600, marginBottom: '8px' }}>{t('type')}</legend>
         <label className="mr-4">
           <input
             type="radio"
@@ -42,7 +42,7 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
       </fieldset>
 
       <label className="flex flex-col gap-1">
-        <span style={{ fontWeight: 500 }}>Titel</span>
+        <span style={{ fontWeight: 500 }}>{t('title')}</span>
         <input
           name="title"
           required
@@ -54,7 +54,7 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
       </label>
 
       <label className="flex flex-col gap-1">
-        <span style={{ fontWeight: 500 }}>Beschreibung</span>
+        <span style={{ fontWeight: 500 }}>{t('description')}</span>
         <textarea
           name="description"
           required
@@ -67,18 +67,18 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
       </label>
 
       <label className="flex flex-col gap-1">
-        <span style={{ fontWeight: 500 }}>Tags (kommagetrennt)</span>
+        <span style={{ fontWeight: 500 }}>{t('tags_label')}</span>
         <input
           name="tags"
           defaultValue={listing.tags.join(', ')}
-          placeholder="z. B. Familie, Mobilität"
+          placeholder={t('custom_tags_placeholder')}
           className="px-4 py-2 rounded-xl"
           style={{ border: '2px solid black' }}
         />
       </label>
 
       <label className="flex flex-col gap-1">
-        <span style={{ fontWeight: 500 }}>Standort</span>
+        <span style={{ fontWeight: 500 }}>{t('location')}</span>
         <input
           name="location"
           required
@@ -91,11 +91,9 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
 
       {state && !state.ok && (
         <ul role="alert" style={{ color: 'red', fontSize: 'var(--fs-sm)' }}>
-          {Object.entries(state.errors).flatMap(([k, vs]) =>
-            vs.map((v, i) => (
-              <li key={`${k}-${i}`}>
-                {k}: {v}
-              </li>
+          {Object.entries(state.errors).flatMap(([field, codes]) =>
+            codes.map((code, i) => (
+              <li key={`${field}-${i}`}>{t(`error_${code}`)}</li>
             )),
           )}
         </ul>
@@ -107,7 +105,7 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
         className="py-3 rounded-xl"
         style={{ background: 'black', color: 'white', fontWeight: 600 }}
       >
-        {pending ? 'Speichern…' : 'Änderungen speichern'}
+        {pending ? t('saving') : t('save_changes')}
       </button>
     </form>
   );

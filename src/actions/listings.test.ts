@@ -67,13 +67,18 @@ describe('createListing', () => {
     expect(insertValues).not.toHaveBeenCalled();
   });
 
-  it('returns field errors and does not insert on invalid input', async () => {
+  it('returns standardized error codes (not prose) and does not insert on invalid input', async () => {
     getSessionMock.mockResolvedValue(SESSION);
     const result = await createListing(
       null,
       formData({ type: 'need', title: 'ab', description: 'too short', location: '' }),
     );
     expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.errors.title).toEqual(['title_too_short']);
+      expect(result.errors.description).toEqual(['description_too_short']);
+      expect(result.errors.location).toEqual(['location_required']);
+    }
     expect(insertValues).not.toHaveBeenCalled();
   });
 
@@ -108,28 +113,34 @@ describe('updateListing', () => {
     );
   });
 
-  it('rejects a malformed id without touching the db', async () => {
+  it('rejects a malformed id with the invalid_id code, without touching the db', async () => {
     getSessionMock.mockResolvedValue(SESSION);
     const result = await updateListing(null, formData({ id: 'not-a-uuid', ...validFields }));
     expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors.id).toEqual(['invalid_id']);
     expect(updateSet).not.toHaveBeenCalled();
   });
 
-  it('returns field errors for invalid input', async () => {
+  it('returns standardized error codes for invalid input', async () => {
     getSessionMock.mockResolvedValue(SESSION);
     const result = await updateListing(
       null,
       formData({ id: VALID_ID, type: 'need', title: 'x', description: 'short', location: '' }),
     );
     expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.errors.title).toEqual(['title_too_short']);
+      expect(result.errors.location).toEqual(['location_required']);
+    }
   });
 
-  it('reports not-found when the update matches no row (wrong owner or missing)', async () => {
+  it('reports the not_found code when the update matches no row (wrong owner or missing)', async () => {
     getSessionMock.mockResolvedValue(SESSION);
     returningMock.mockResolvedValue([]);
 
     const result = await updateListing(null, formData({ id: VALID_ID, ...validFields }));
     expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors.id).toEqual(['not_found']);
     expect(redirectMock).not.toHaveBeenCalled();
   });
 
