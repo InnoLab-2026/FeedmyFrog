@@ -1,12 +1,15 @@
 'use client';
+
 import { useMemo, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
 import type { Listing, Mode, Category } from '@/types';
 import { iconMap } from '@/data/icons';
 import { logout } from '@/actions/auth';
+
 import Header from '@/components/layout/Header';
 import ModeToggle from '@/components/marketplace/ModeToggle';
 import CategoryTabs from '@/components/marketplace/CategoryTabs';
@@ -22,15 +25,48 @@ interface MarketplaceProps {
   mode: Mode;
   category: string;
   query: string;
+
   /** Tags of the current mode, ordered by frequency (server-aggregated). */
   categoryTags: string[];
 }
 
 const SEARCH_DEBOUNCE_MS = 300;
 
-// Filter and pagination state lives in the URL; this wrapper only translates
-// the designer-owned components' callbacks into router navigations, so the
-// server component re-queries the database with the new parameters.
+/*
+ * Das sind ausschließlich die festen Kategorien,
+ * die auch beim Erstellen einer Anzeige auswählbar sind.
+ *
+ * Eigene freie Tags wie "Mathe", "Dringend" oder "testing..."
+ * werden NICHT als Tabs oben angezeigt.
+ */
+const STANDARD_CATEGORIES = [
+  'Familie',
+  'Kinder',
+  'Wochenende',
+  'Mobilität',
+  'Pendeln',
+  'Verkauf',
+  'Dienstleistungen',
+  'Transport',
+  'Bildung',
+] as const;
+
+function getCategoryTranslationKey(tag: string) {
+  const keys: Record<string, string> = {
+    Familie: 'category_family',
+    Kinder: 'category_children',
+    Wochenende: 'category_weekend',
+    Mobilität: 'category_mobility',
+    Pendeln: 'category_commuting',
+    Verkauf: 'category_sale',
+    Dienstleistungen: 'category_services',
+    Transport: 'category_transport',
+    Bildung: 'category_education',
+  };
+
+  return keys[tag] ?? tag;
+}
+
 export default function Marketplace({
   listings,
   totalCount,
@@ -45,136 +81,305 @@ export default function Marketplace({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
-  // Local echo of the search box so typing stays responsive while the
-  // debounced URL update (and server round-trip) catches up.
   const [searchInput, setSearchInput] = useState(query);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Adopt an externally-changed query (back/forward navigation) unless the
-  // user has typed past the last URL state — adjust-during-render pattern.
   const [lastQuery, setLastQuery] = useState(query);
+
   if (query !== lastQuery) {
     setLastQuery(query);
-    setSearchInput((current) => (current === lastQuery ? query : current));
+
+    setSearchInput((current) =>
+      current === lastQuery ? query : current,
+    );
   }
 
   function navigate(
-    next: Partial<{ mode: Mode; category: string; q: string; page: number; per: number }>,
+    next: Partial<{
+      mode: Mode;
+      category: string;
+      q: string;
+      page: number;
+      per: number;
+    }>,
     replace = false,
   ) {
-    const merged = { mode, category, q: query, page, per: perPage, ...next };
+    const merged = {
+      mode,
+      category,
+      q: query,
+      page,
+      per: perPage,
+      ...next,
+    };
+
     const params = new URLSearchParams();
-    if (merged.mode !== 'need') params.set('mode', merged.mode);
-    if (merged.category !== 'All') params.set('cat', merged.category);
-    if (merged.q) params.set('q', merged.q);
-    if (merged.page > 1) params.set('page', String(merged.page));
-    if (merged.per !== 15) params.set('per', String(merged.per));
+
+    if (merged.mode !== 'need') {
+      params.set('mode', merged.mode);
+    }
+
+    if (merged.category !== 'All') {
+      params.set('cat', merged.category);
+    }
+
+    if (merged.q) {
+      params.set('q', merged.q);
+    }
+
+    if (merged.page > 1) {
+      params.set('page', String(merged.page));
+    }
+
+    if (merged.per !== 15) {
+      params.set('per', String(merged.per));
+    }
+
     const qs = params.toString();
     const url = qs ? `/?${qs}` : '/';
+
     startTransition(() => {
-      if (replace) router.replace(url, { scroll: false });
-      else router.push(url, { scroll: false });
+      if (replace) {
+        router.replace(url, { scroll: false });
+      } else {
+        router.push(url, { scroll: false });
+      }
     });
   }
 
   function onSearchChange(value: string) {
     setSearchInput(value);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
     debounceRef.current = setTimeout(() => {
-      navigate({ q: value.trim(), page: 1 }, true);
+      navigate(
+        {
+          q: value.trim(),
+          page: 1,
+        },
+        true,
+      );
     }, SEARCH_DEBOUNCE_MS);
   }
 
-  const categories = useMemo<Category[]>(
-    () => [
-      { id: 'All', label: 'All', icon: <Search className="w-4 h-4" /> },
-      ...categoryTags.map((tag) => ({
+  /*
+   * KATEGORIEN-LOGIK:
+   *
+   * 1. categoryTags kommt vom Server nach Häufigkeit sortiert.
+   * 2. Eigene/freie Tags werden entfernt.
+   * 3. Die zwei häufigsten Standard-Kategorien kommen direkt nach "Alle".
+   * 4. Alle übrigen Standard-Kategorien kommen danach und landen dadurch
+   *    in CategoryTabs automatisch unter "...".
+   */
+  const categories = useMemo<Category[]>(() => {
+    const standardSet = new Set(STANDARD_CATEGORIES);
+
+    const rankedCategories = categoryTags.filter((tag) =>
+      standardSet.has(tag as (typeof STANDARD_CATEGORIES)[number]),
+    );
+
+    const topCategories: string[] = [];
+
+    for (const tag of rankedCategories) {
+      if (!topCategories.includes(tag)) {
+        topCategories.push(tag);
+      }
+
+      if (topCategories.length === 2) {
+        break;
+      }
+    }
+
+    for (const tag of STANDARD_CATEGORIES) {
+      if (
+        topCategories.length < 2 &&
+        !topCategories.includes(tag)
+      ) {
+        topCategories.push(tag);
+      }
+    }
+
+    const remainingCategories = STANDARD_CATEGORIES.filter(
+      (tag) => !topCategories.includes(tag),
+    );
+
+    const orderedCategories = [
+      ...topCategories,
+      ...remainingCategories,
+    ];
+
+    return [
+      {
+        id: 'All',
+        label: t('category_all'),
+        icon: <Search className="w-4 h-4" />,
+      },
+
+      ...orderedCategories.map((tag) => ({
         id: tag,
-        label: tag,
-        icon: iconMap[tag] ?? <Search className="w-4 h-4" />,
+        label: t(getCategoryTranslationKey(tag)),
+        icon:
+          iconMap[tag] ?? (
+            <Search className="w-4 h-4" />
+          ),
       })),
-    ],
-    [categoryTags],
+    ];
+  }, [categoryTags, t]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalCount / perPage),
   );
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / perPage));
-  const showPagination = totalCount > 15;
+  const showPagination = true;
 
   return (
     <>
-      {/* Application-owned nav strip — not part of the designer-owned Header */}
+      {/* Application-owned nav strip */}
       <div
         className="flex items-center justify-end gap-2 px-5 py-2"
-        style={{ background: 'white', borderBottom: '1px solid #e5e5e5' }}
+        style={{
+          background: 'white',
+          borderBottom: '1px solid #e5e5e5',
+        }}
       >
         <Link
           href="/meine"
           className="rounded-xl px-3 py-1.5 text-sm font-medium"
-          style={{ background: 'white', border: '2px solid black' }}
+          style={{
+            background: 'white',
+            border: '2px solid black',
+          }}
         >
-          Meine Einträge
+          {t('my_entries')}
         </Link>
+
         <form action={logout}>
           <button
             type="submit"
             className="rounded-xl px-3 py-1.5 text-sm font-medium"
-            style={{ background: 'white', border: '2px solid black' }}
+            style={{
+              background: 'white',
+              border: '2px solid black',
+            }}
           >
-            Abmelden
+            {t('logout')}
           </button>
         </form>
       </div>
-      <Header searchQuery={searchInput} onSearchChange={onSearchChange} />
+
+      <Header
+        searchQuery={searchInput}
+        onSearchChange={onSearchChange}
+      />
 
       <main className="max-w-[1400px] w-full mx-auto px-5 flex-grow pb-8">
         <ModeToggle
           mode={mode}
-          onChange={(m) => navigate({ mode: m, category: 'All', page: 1 })}
+          onChange={(m) =>
+            navigate({
+              mode: m,
+              category: 'All',
+              page: 1,
+            })
+          }
         />
+
         <CategoryTabs
           categories={categories}
           selectedCategory={category}
-          onSelectCategory={(c) => navigate({ category: c, page: 1 })}
+          onSelectCategory={(c) =>
+            navigate({
+              category: c,
+              page: 1,
+            })
+          }
         />
+
         {showPagination && (
           <div className="mb-6">
             <PaginationControls
               currentPage={page}
               totalPages={totalPages}
               itemsPerPage={perPage}
-              onPageChange={(p) => navigate({ page: p })}
-              onItemsPerPageChange={(n) => navigate({ per: n, page: 1 })}
+              onPageChange={(p) =>
+                navigate({ page: p })
+              }
+              onItemsPerPageChange={(n) =>
+                navigate({
+                  per: n,
+                  page: 1,
+                })
+              }
             />
           </div>
         )}
-        <div className="space-y-4" style={{ opacity: isPending ? 0.6 : 1, transition: 'opacity 150ms' }}>
+
+        <div
+          className="space-y-4"
+          style={{
+            opacity: isPending ? 0.6 : 1,
+            transition: 'opacity 150ms',
+          }}
+        >
           {totalCount === 0 ? (
             <div className="text-center py-12">
               <div
                 className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
-                style={{ background: 'white', border: '2px solid black' }}
+                style={{
+                  background: 'white',
+                  border: '2px solid black',
+                }}
               >
                 <Search className="w-7 h-7" />
               </div>
-              <p style={{ fontSize: '16px', fontWeight: 500 }}>{t('no_results')}</p>
-              <p style={{ fontSize: '14px', marginTop: '8px' }}>
+
+              <p
+                style={{
+                  fontSize: '16px',
+                  fontWeight: 500,
+                }}
+              >
+                {t('no_results')}
+              </p>
+
+              <p
+                style={{
+                  fontSize: '14px',
+                  marginTop: '8px',
+                }}
+              >
                 {t('try_different')}
               </p>
             </div>
           ) : (
             listings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+              />
             ))
           )}
         </div>
+
         {showPagination && (
           <div className="mt-6">
             <PaginationControls
               currentPage={page}
               totalPages={totalPages}
               itemsPerPage={perPage}
-              onPageChange={(p) => navigate({ page: p })}
-              onItemsPerPageChange={(n) => navigate({ per: n, page: 1 })}
+              onPageChange={(p) =>
+                navigate({ page: p })
+              }
+              onItemsPerPageChange={(n) =>
+                navigate({
+                  per: n,
+                  page: 1,
+                })
+              }
             />
           </div>
         )}
