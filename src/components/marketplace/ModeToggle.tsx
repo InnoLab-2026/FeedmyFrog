@@ -19,7 +19,7 @@ export default function ModeToggle({ mode, onChange }: ModeToggleProps) {
   };
 
   return (
-    <div className="pb-4 flex justify-center">
+    <div className="pt-4 pb-4 flex justify-center">
       <div
         className="inline-flex p-1"
         style={{

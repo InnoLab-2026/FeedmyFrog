@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Search, Plus, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { logout } from '@/actions/auth';
+import { getInitials } from '@/lib/initials';
 import DisclaimerOverlay from '@/components/marketplace/DisclaimerOverlay';
 import LanguageButton from '@/components/layout/LanguageButton';
 
@@ -16,6 +18,7 @@ interface HeaderProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
   showMyListingsButton?: boolean;
+  email: string;
 
   locationFilter?: LocationFilter | null;
   onLocationChange?: (value: LocationFilter | null) => void;
@@ -25,12 +28,35 @@ export default function Header({
   searchQuery,
   onSearchChange,
   showMyListingsButton = true,
+  email,
   locationFilter: externalLocationFilter,
   onLocationChange,
 }: HeaderProps) {
   const { t } = useTranslation();
 
   const [showDisclaimer, setShowDisclaimer] = useState(false);
+
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!showAccountMenu) return;
+
+    const handler = (event: MouseEvent) => {
+      if (
+        accountMenuRef.current &&
+        !accountMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowAccountMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handler);
+
+    return () => {
+      document.removeEventListener('mousedown', handler);
+    };
+  }, [showAccountMenu]);
 
   // Falls der Header ohne externe Standort-Props verwendet wird
   // (z.B. auf "Meine Anzeigen"), funktioniert das Feld trotzdem.
@@ -71,23 +97,67 @@ export default function Header({
           }}
         >
           {/* User */}
-          <button
-            type="button"
-            aria-label="Benutzer"
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              border: '1px solid rgba(47,47,47,0.15)',
-              background: '#8DC63F',
-              color: '#1a3200',
-              fontSize: 'var(--fs-sm)',
-              fontWeight: 700,
-              cursor: 'pointer',
-            }}
+          <div
+            className="relative"
+            ref={accountMenuRef}
           >
-            BA
-          </button>
+            <button
+              type="button"
+              onClick={() =>
+                setShowAccountMenu((current) => !current)
+              }
+              aria-label={t('account_menu')}
+              aria-haspopup="menu"
+              aria-expanded={showAccountMenu}
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                border: '1px solid rgba(47,47,47,0.15)',
+                background: '#8DC63F',
+                color: '#1a3200',
+                fontSize: 'var(--fs-sm)',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              {getInitials(email)}
+            </button>
+
+            {showAccountMenu && (
+              <div
+                role="menu"
+                className="absolute right-0"
+                style={{
+                  top: 'calc(100% + 8px)',
+                  minWidth: '160px',
+
+                  background: 'white',
+                  border: '1px solid rgba(47,47,47,0.15)',
+                  borderRadius: '10px',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                  padding: '8px',
+
+                  zIndex: 30,
+                }}
+              >
+                <form action={logout}>
+                  <button
+                    type="submit"
+                    role="menuitem"
+                    className="w-full rounded-xl px-3 py-1.5 text-sm font-medium"
+                    style={{
+                      background: 'white',
+                      border: '2px solid black',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {t('logout')}
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
 
           {/* Info */}
           <button

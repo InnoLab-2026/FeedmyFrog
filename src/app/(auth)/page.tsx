@@ -34,7 +34,7 @@ export default async function HomePage({
     per?: string;
   }>;
 }) {
-  await requireSession();
+  const session = await requireSession();
 
   const params = await searchParams;
 
@@ -125,6 +125,7 @@ export default async function HomePage({
       mode={mode}
       category={category}
       query={query}
+      email={session.email}
       categoryTags={tagRows.map((r) => r.tag)}
     />
   );
