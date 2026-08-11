@@ -339,7 +339,7 @@ export default function Marketplace({
 
               <p
                 style={{
-                  fontSize: '16px',
+                  fontSize: 'var(--fs-base)',
                   fontWeight: 500,
                 }}
               >
@@ -348,7 +348,7 @@ export default function Marketplace({
 
               <p
                 style={{
-                  fontSize: '14px',
+                  fontSize: 'var(--fs-sm)',
                   marginTop: '8px',
                 }}
               >

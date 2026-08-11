@@ -20,14 +20,14 @@ export default function LanguageButton() {
       style={{
         background: 'white',
         border: '2px solid black',
-        fontSize: '13px',
+        fontSize: 'var(--fs-xs)',
         fontWeight: 700,
         letterSpacing: '0.04em',
         cursor: 'pointer',
         whiteSpace: 'nowrap',
       }}
     >
-      <span style={{ fontSize: '16px', lineHeight: 1 }}>{current.flag}</span>
+      <span style={{ fontSize: 'var(--fs-base)', lineHeight: 1 }}>{current.flag}</span>
       <span>{current.label}</span>
     </button>
   );

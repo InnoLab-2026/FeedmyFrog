@@ -66,7 +66,7 @@ export default function LoginForm({
           background: '#F7FBF9',
           border: '1px solid rgba(141,198,63,0.35)',
           borderRadius: '12px',
-          fontSize: '14px',
+          fontSize: 'var(--fs-sm)',
         }}
       >
         <p
@@ -74,7 +74,7 @@ export default function LoginForm({
             margin: 0,
             color: '#2F2F2F',
             fontWeight: 700,
-            fontSize: '16px',
+            fontSize: 'var(--fs-base)',
           }}
         >
           E-Mail unterwegs ✉️
@@ -116,7 +116,7 @@ export default function LoginForm({
         htmlFor="email"
         className="block"
         style={{
-          fontSize: '14px',
+          fontSize: 'var(--fs-sm)',
           fontWeight: 600,
           color: '#2F2F2F',
         }}
@@ -139,7 +139,7 @@ export default function LoginForm({
             border: '1px solid rgba(47,47,47,0.18)',
             borderRadius: '10px',
             color: '#2F2F2F',
-            fontSize: '14px',
+            fontSize: 'var(--fs-control-input)',
             transition:
               'border-color 150ms ease, box-shadow 150ms ease',
           }}
@@ -165,7 +165,7 @@ export default function LoginForm({
             border: '1px solid rgba(220,38,38,0.25)',
             borderRadius: '10px',
             color: '#dc2626',
-            fontSize: '13px',
+            fontSize: 'var(--fs-xs)',
             fontWeight: 600,
             background: '#fff7f7',
           }}
@@ -184,7 +184,7 @@ export default function LoginForm({
           color: '#1a3200',
           border: '1px solid #8DC63F',
           borderRadius: '10px',
-          fontSize: '15px',
+          fontSize: 'var(--fs-control-button)',
           fontWeight: 700,
           cursor:
             status === 'sending'

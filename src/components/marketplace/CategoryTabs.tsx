@@ -197,7 +197,7 @@ export default function CategoryTabs({
                           ? '1px solid rgba(47,47,47,0.08)'
                           : 'none',
 
-                      fontSize: '15px',
+                      fontSize: 'var(--fs-md)',
                       fontWeight: 500,
 
                       cursor: 'pointer',

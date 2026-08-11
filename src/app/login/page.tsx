@@ -72,7 +72,7 @@ export default async function LoginPage({
               margin: 0,
               fontFamily: 'var(--font-family-display)',
               fontWeight: 700,
-              fontSize: '28px',
+              fontSize: 'var(--fs-3xl)',
               lineHeight: 1.2,
               color: '#2F2F2F',
             }}
@@ -84,7 +84,7 @@ export default async function LoginPage({
             style={{
               marginTop: '12px',
               marginBottom: 0,
-              fontSize: '15px',
+              fontSize: 'var(--fs-md)',
               lineHeight: 1.6,
               fontWeight: 500,
               color: '#666',
@@ -113,7 +113,7 @@ export default async function LoginPage({
           <p
             style={{
               margin: 0,
-              fontSize: '12px',
+              fontSize: 'var(--fs-2xs)',
               lineHeight: 1.6,
               fontWeight: 500,
               color: '#666',
