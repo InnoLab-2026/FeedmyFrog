@@ -24,7 +24,7 @@ export default function MyListingsPageContent({
 
   return (
     <>
-      <MyListingsHeader />
+      <MyListingsHeader email={email} />
 
       <main
         className="min-h-screen"
