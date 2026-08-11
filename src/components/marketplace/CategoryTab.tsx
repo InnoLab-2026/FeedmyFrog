@@ -23,7 +23,7 @@ const CategoryTab = ({
       fullWidth ? 'w-full h-full' : 'flex-1'
     }`}
     style={{
-      minHeight: '68px',
+      minHeight: '44px',
       background: isSelected ? '#8DC63F' : 'white',
       color: '#2f2f2f',
       borderTop: '1px solid rgba(47,47,47,0.15)',

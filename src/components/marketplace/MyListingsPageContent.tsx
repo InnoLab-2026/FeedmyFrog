@@ -51,7 +51,7 @@ export default function MyListingsPageContent({
               zIndex: 20,
             }}
           >
-            <a
+            <Link
               href="/"
               className="inline-flex items-center gap-3"
               style={{
@@ -79,7 +79,7 @@ export default function MyListingsPageContent({
               </span>
 
               {t('back_to_overview')}
-            </a>
+            </Link>
 
             <form action={logout}>
               <button
