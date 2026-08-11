@@ -228,7 +228,7 @@ export default function LocationSearch({
             ? '0 0 0 3px rgba(141,198,63,0.10)'
             : 'none',
 
-          fontSize: '19px',
+          fontSize: 'var(--fs-control-input)',
           cursor: 'pointer',
         }}
       >

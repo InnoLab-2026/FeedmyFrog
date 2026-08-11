@@ -195,7 +195,7 @@ export default function Header({
                     border:
                       '1px solid rgba(47,47,47,0.15)',
                     borderRadius: '10px',
-                    fontSize: '20px',
+                    fontSize: 'var(--fs-control-input)',
                     color: '#444',
                   }}
                 />
@@ -229,7 +229,7 @@ export default function Header({
                     color: '#1a3200',
                     border: '1px solid #8DC63F',
                     borderRadius: '9px',
-                    fontSize: '19px',
+                    fontSize: 'var(--fs-control-button)',
                     fontWeight: 600,
                     textDecoration: 'none',
                   }}
