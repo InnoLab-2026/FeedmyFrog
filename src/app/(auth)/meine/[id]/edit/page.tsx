@@ -37,7 +37,7 @@ export default async function EditListingPage({
   return (
     <main className="max-w-[800px] mx-auto px-5 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 style={{ fontWeight: 700, fontSize: '24px' }}>Eintrag bearbeiten</h1>
+        <h1 style={{ fontWeight: 700, fontSize: 'var(--fs-2xl)' }}>Eintrag bearbeiten</h1>
         <Link
           href="/meine"
           className="py-2 px-4 rounded-xl"

@@ -17,11 +17,11 @@ export default async function NotFound() {
         style={{ background: 'white', border: '2px solid black', boxShadow: CARD_SHADOW }}
       >
         <h1
-          style={{ fontFamily: 'var(--font-family-display)', fontWeight: 700, fontSize: '24px', color: 'black' }}
+          style={{ fontFamily: 'var(--font-family-display)', fontWeight: 700, fontSize: 'var(--fs-2xl)', color: 'black' }}
         >
           Seite nicht gefunden
         </h1>
-        <p className="mt-2" style={{ fontSize: '14px', fontWeight: 500, color: 'black' }}>
+        <p className="mt-2" style={{ fontSize: 'var(--fs-sm)', fontWeight: 500, color: 'black' }}>
           Die angeforderte Seite existiert nicht.{' '}
           <Link
             href="/"

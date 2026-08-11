@@ -35,7 +35,7 @@ const CategoryTab = ({
       borderTopLeftRadius: isFirst ? '8px' : '0',
       borderTopRightRadius: isLast ? '8px' : '0',
       fontWeight: 600,
-      fontSize: '15px',
+      fontSize: 'var(--fs-md)',
       cursor: 'pointer',
       zIndex: isSelected ? 2 : 1,
     }}

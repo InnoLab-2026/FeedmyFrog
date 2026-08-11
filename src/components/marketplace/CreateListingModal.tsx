@@ -31,7 +31,7 @@ export default function CreateListingModal({
           color: '#1a3200',
           border: 'none',
           borderRadius: '9px',
-          fontSize: '16px',
+          fontSize: 'var(--fs-control-button)',
           fontWeight: 600,
           cursor: 'pointer',
         }}
@@ -86,7 +86,7 @@ export default function CreateListingModal({
                 style={{
                   margin: 0,
                   color: '#2F2F2F',
-                  fontSize: '30px',
+                  fontSize: 'var(--fs-3xl)',
                   lineHeight: 1.2,
                   fontWeight: 700,
                 }}

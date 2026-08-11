@@ -27,12 +27,12 @@ export default function DatenschutzPage() {
         style={{ background: 'white', border: '2px solid black', boxShadow: CARD_SHADOW }}
       >
       <h1
-        style={{ fontFamily: 'var(--font-family-display)', fontWeight: 700, fontSize: '24px', color: 'black' }}
+        style={{ fontFamily: 'var(--font-family-display)', fontWeight: 700, fontSize: 'var(--fs-2xl)', color: 'black' }}
       >
         Datenschutzerklärung
       </h1>
 
-      <section className="mt-6 space-y-4 leading-relaxed" style={{ fontSize: '14px', fontWeight: 500, color: 'black' }}>
+      <section className="mt-6 space-y-4 leading-relaxed" style={{ fontSize: 'var(--fs-sm)', fontWeight: 500, color: 'black' }}>
         <h2 className="text-lg font-semibold">1. Verantwortlicher</h2>
         <p>
           [Name und Anschrift des Verantwortlichen im Sinne von Art. 4 Nr. 7
