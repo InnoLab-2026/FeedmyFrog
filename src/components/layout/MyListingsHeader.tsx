@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Header from '@/components/layout/Header';
 
-export default function MyListingsHeader() {
+export default function MyListingsHeader({ email }: { email: string }) {
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
@@ -11,6 +11,7 @@ export default function MyListingsHeader() {
       searchQuery={searchQuery}
       onSearchChange={setSearchQuery}
       showMyListingsButton={false}
+      email={email}
     />
   );
 }

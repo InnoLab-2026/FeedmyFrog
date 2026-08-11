@@ -1,14 +1,12 @@
 'use client';
 
 import { useMemo, useRef, useState, useTransition } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import type { Listing, Mode, Category } from '@/types';
 import { iconMap } from '@/data/icons';
-import { logout } from '@/actions/auth';
 
 import Header from '@/components/layout/Header';
 import ModeToggle from '@/components/marketplace/ModeToggle';
@@ -25,6 +23,7 @@ interface MarketplaceProps {
   mode: Mode;
   category: string;
   query: string;
+  email: string;
 
   /** Tags of the current mode, ordered by frequency (server-aggregated). */
   categoryTags: string[];
@@ -75,6 +74,7 @@ export default function Marketplace({
   mode,
   category,
   query,
+  email,
   categoryTags,
 }: MarketplaceProps) {
   const { t } = useTranslation();
@@ -234,46 +234,14 @@ export default function Marketplace({
     Math.ceil(totalCount / perPage),
   );
 
-  const showPagination = true;
+  const showPagination = totalCount > perPage;
 
   return (
     <>
-      {/* Application-owned nav strip */}
-      <div
-        className="flex items-center justify-end gap-2 px-5 py-2"
-        style={{
-          background: 'white',
-          borderBottom: '1px solid #e5e5e5',
-        }}
-      >
-        <Link
-          href="/meine"
-          className="rounded-xl px-3 py-1.5 text-sm font-medium"
-          style={{
-            background: 'white',
-            border: '2px solid black',
-          }}
-        >
-          {t('my_entries')}
-        </Link>
-
-        <form action={logout}>
-          <button
-            type="submit"
-            className="rounded-xl px-3 py-1.5 text-sm font-medium"
-            style={{
-              background: 'white',
-              border: '2px solid black',
-            }}
-          >
-            {t('logout')}
-          </button>
-        </form>
-      </div>
-
       <Header
         searchQuery={searchInput}
         onSearchChange={onSearchChange}
+        email={email}
       />
 
       <main className="max-w-[1400px] w-full mx-auto px-5 flex-grow pb-8">
