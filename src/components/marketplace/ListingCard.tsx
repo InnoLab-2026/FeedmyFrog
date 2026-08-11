@@ -1,36 +1,51 @@
 'use client';
-import { MapPin } from 'lucide-react';
+
+import { MapPin, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { ReactNode } from 'react';
 import type { Listing } from '@/types';
-import { CARD_SHADOW } from '@/constants';
 
 interface ListingCardProps {
   listing: Listing;
-  /** Owner-only affordance (e.g. delete button) rendered below the card body. */
   ownerActions?: ReactNode;
+  alternateBackground?: boolean;
 }
 
-export default function ListingCard({ listing, ownerActions }: ListingCardProps) {
+export default function ListingCard({
+  listing,
+  ownerActions,
+  alternateBackground = false,
+}: ListingCardProps) {
   const { t } = useTranslation();
 
   const ariaLabel = [
     listing.title,
     listing.description,
-    listing.tags.map((tag) => t('aria_tag', { tag })).join(', '),
+    listing.tags
+      .map((tag) => t('aria_tag', { tag }))
+      .join(', '),
     t('aria_location', { location: listing.location }),
-    `Email: ${listing.email}`,
   ].join('. ');
+
+  const mailtoLink = `mailto:${listing.email}?subject=${encodeURIComponent(
+    `${t('contact')}: ${listing.title}`
+  )}`;
 
   return (
     <div
-      className="p-6 cursor-pointer focus:outline-none"
+      className="p-7 cursor-pointer focus:outline-none"
       tabIndex={0}
       role="article"
       aria-label={ariaLabel}
-      style={{ background: 'white', border: '2px solid black', boxShadow: CARD_SHADOW }}
+      style={{
+        background: alternateBackground ? 'white' : '#F7FBF9',
+        border: '1px solid rgba(47, 47, 47, 0.15)',
+        borderRadius: '10px',
+        boxShadow:
+          '0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)',
+      }}
       onFocus={(e) => {
-        e.currentTarget.style.outline = '3px solid black';
+        e.currentTarget.style.outline = '3px solid #8DC63F';
         e.currentTarget.style.outlineOffset = '2px';
       }}
       onBlur={(e) => {
@@ -38,28 +53,39 @@ export default function ListingCard({ listing, ownerActions }: ListingCardProps)
       }}
     >
       <h3
-        className="mb-2"
+        className="mb-3"
         style={{
           fontFamily: 'var(--font-family-display)',
           fontWeight: 600,
-          fontSize: '17px',
+          fontSize: '18px',
           lineHeight: 1.3,
+          color: '#2F2F2F',
         }}
       >
         {listing.title}
       </h3>
-      <p className="mb-3" style={{ fontSize: '14px', lineHeight: 1.5 }}>
+
+      <p
+        className="mb-4"
+        style={{
+          fontSize: '14px',
+          lineHeight: 1.6,
+          color: '#5a5a5a',
+        }}
+      >
         {listing.description}
       </p>
-      <div className="flex flex-wrap gap-2 mb-3">
+
+      <div className="flex flex-wrap gap-2 mb-5">
         {listing.tags.map((tag) => (
           <span
             key={tag}
-            className="px-3 py-1 rounded-full text-xs"
+            className="px-3 py-1.5 text-xs"
             style={{
-              background: 'white',
-              color: 'black',
-              border: '2px solid black',
+              background: 'rgba(141, 198, 63, 0.08)',
+              color: '#8DC63F',
+              border: '1px solid rgba(141, 198, 63, 0.2)',
+              borderRadius: '6px',
               fontWeight: 600,
             }}
           >
@@ -67,31 +93,55 @@ export default function ListingCard({ listing, ownerActions }: ListingCardProps)
           </span>
         ))}
       </div>
+
       <div
-        className="flex items-center justify-between"
-        style={{ fontSize: '13px', fontWeight: 500 }}
+        className="flex items-center justify-between pt-3"
+        style={{
+          fontSize: '13px',
+          fontWeight: 500,
+          borderTop: '1px solid rgba(47, 47, 47, 0.08)',
+        }}
       >
-        <div className="flex items-center gap-1.5">
+        <div
+          className="flex items-center gap-1.5"
+          style={{ color: '#6a6a6a' }}
+        >
           <MapPin className="w-3.5 h-3.5" />
           <span>{listing.location}</span>
         </div>
+
         <a
-          href={`mailto:${listing.email}`}
-          className="hover:underline focus:outline-none"
-          style={{ color: 'black' }}
-          onClick={(e) => e.stopPropagation()}
-          onFocus={(e) => {
-            e.currentTarget.style.outline = '2px solid black';
-            e.currentTarget.style.outlineOffset = '2px';
+          href={mailtoLink}
+          className="flex items-center gap-1.5 px-4 py-2 transition-all duration-200"
+          style={{
+            background: '#8DC63F',
+            color: '#1a3200',
+            border: '1px solid #8DC63F',
+            borderRadius: '7px',
+            fontSize: '13px',
+            fontWeight: 600,
+            textDecoration: 'none',
           }}
-          onBlur={(e) => {
-            e.currentTarget.style.outline = 'none';
+          onClick={(e) => e.stopPropagation()}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#72a830';
+            e.currentTarget.style.borderColor = '#72a830';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = '#8DC63F';
+            e.currentTarget.style.borderColor = '#8DC63F';
           }}
         >
-          {listing.email}
+          <Mail className="w-3.5 h-3.5" />
+          <span>{t('contact')}</span>
         </a>
       </div>
-      {ownerActions && <div className="mt-4">{ownerActions}</div>}
+
+      {ownerActions && (
+        <div className="mt-4">
+          {ownerActions}
+        </div>
+      )}
     </div>
   );
 }

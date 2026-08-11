@@ -9,22 +9,35 @@ interface CategoryTabProps {
   fullWidth?: boolean;
 }
 
-const CategoryTab = ({ isSelected, onClick, children, isFirst, isLast, fullWidth = false }: CategoryTabProps) => (
+const CategoryTab = ({
+  isSelected,
+  onClick,
+  children,
+  isFirst,
+  isLast,
+  fullWidth = false,
+}: CategoryTabProps) => (
   <button
     onClick={onClick}
-    className={`flex items-center justify-center gap-2 py-3 whitespace-nowrap ${fullWidth ? 'w-full h-full' : 'flex-1'}`}
+    className={`flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-200 ${
+      fullWidth ? 'w-full h-full' : 'flex-1'
+    }`}
     style={{
-      background: isSelected ? 'black' : 'white',
-      color: isSelected ? 'white' : 'black',
-      borderTop: '2px solid black',
-      borderBottom: '2px solid black',
-      borderLeft: isFirst ? '2px solid black' : '1px solid black',
-      borderRight: isLast ? '2px solid black' : '1px solid black',
-      borderTopLeftRadius: '12px',
-      borderTopRightRadius: '12px',
+      minHeight: '68px',
+      background: isSelected ? '#8DC63F' : 'white',
+      color: '#2f2f2f',
+      borderTop: '1px solid rgba(47,47,47,0.15)',
+      borderBottom: '1px solid rgba(47,47,47,0.15)',
+      borderLeft: isFirst
+        ? '1px solid rgba(47,47,47,0.15)'
+        : 'none',
+      borderRight: '1px solid rgba(47,47,47,0.15)',
+      borderTopLeftRadius: isFirst ? '8px' : '0',
+      borderTopRightRadius: isLast ? '8px' : '0',
       fontWeight: 600,
-      fontSize: '14px',
-      zIndex: isSelected ? 10 : 1,
+      fontSize: '15px',
+      cursor: 'pointer',
+      zIndex: isSelected ? 2 : 1,
     }}
   >
     {children}
