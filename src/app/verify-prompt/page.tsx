@@ -20,18 +20,18 @@ export default async function VerifyPromptPage({
           style={{ background: 'white', border: '2px solid black', boxShadow: CARD_SHADOW }}
         >
           <h1
-            style={{ fontFamily: 'var(--font-family-display)', fontWeight: 700, fontSize: '24px', color: 'black' }}
+            style={{ fontFamily: 'var(--font-family-display)', fontWeight: 700, fontSize: 'var(--fs-2xl)', color: 'black' }}
           >
             Ungültiger Link
           </h1>
           <p
             role="alert"
             className="mt-4 p-3 rounded-xl"
-            style={{ border: '2px solid black', color: 'red', fontSize: '14px', fontWeight: 600, background: 'white' }}
+            style={{ border: '2px solid black', color: 'red', fontSize: 'var(--fs-sm)', fontWeight: 600, background: 'white' }}
           >
             Der Anmeldelink war unvollständig.
           </p>
-          <p className="mt-4" style={{ fontSize: '14px', fontWeight: 500, color: 'black' }}>
+          <p className="mt-4" style={{ fontSize: 'var(--fs-sm)', fontWeight: 500, color: 'black' }}>
             <a
               href="/login"
               className="hover:underline"
@@ -52,11 +52,11 @@ export default async function VerifyPromptPage({
         style={{ background: 'white', border: '2px solid black', boxShadow: CARD_SHADOW }}
       >
         <h1
-          style={{ fontFamily: 'var(--font-family-display)', fontWeight: 700, fontSize: '24px', color: 'black' }}
+          style={{ fontFamily: 'var(--font-family-display)', fontWeight: 700, fontSize: 'var(--fs-2xl)', color: 'black' }}
         >
           Reutlingen University Connect
         </h1>
-        <p className="mt-2" style={{ fontSize: '14px', fontWeight: 500, color: 'black' }}>
+        <p className="mt-2" style={{ fontSize: 'var(--fs-sm)', fontWeight: 500, color: 'black' }}>
           Klicken Sie auf die Schaltfläche, um sich anzumelden.
         </p>
 

@@ -17,12 +17,12 @@ export default function PaginationControls({
 
   return (
     <div className="flex items-center justify-end gap-3">
-      <span style={{ fontSize: '14px', fontWeight: 500 }}>{t('items_per_page')}</span>
+      <span style={{ fontSize: 'var(--fs-sm)', fontWeight: 500 }}>{t('items_per_page')}</span>
       <select
         value={itemsPerPage}
         onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
         className="px-4 py-2 cursor-pointer appearance-none rounded-xl"
-        style={{ background: 'white', color: 'black', border: '2px solid black', fontSize: '14px', fontWeight: 500 }}
+        style={{ background: 'white', color: 'black', border: '2px solid black', fontSize: 'var(--fs-control-input)', fontWeight: 500 }}
       >
         <option value={15}>15</option>
         <option value={30}>30</option>
@@ -38,7 +38,7 @@ export default function PaginationControls({
         <ChevronLeft className="w-5 h-5" />
       </button>
 
-      <span style={{ fontSize: '14px', fontWeight: 500, minWidth: '100px', textAlign: 'center' }}>
+      <span style={{ fontSize: 'var(--fs-sm)', fontWeight: 500, minWidth: '100px', textAlign: 'center' }}>
         {t('page_of', { current: currentPage, total: totalPages })}
       </span>
 
