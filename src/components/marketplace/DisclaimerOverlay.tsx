@@ -24,7 +24,7 @@ export default function DisclaimerOverlay({ onClose }: DisclaimerOverlayProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <p style={{ fontWeight: 700, fontSize: '14px', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          <p style={{ fontWeight: 700, fontSize: 'var(--fs-sm)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
             {t('disclaimer_title')}
           </p>
           <button
@@ -39,7 +39,7 @@ export default function DisclaimerOverlay({ onClose }: DisclaimerOverlayProps) {
           </button>
         </div>
 
-        <ul className="space-y-3" style={{ fontSize: '13px', lineHeight: 1.6, fontWeight: 500 }}>
+        <ul className="space-y-3" style={{ fontSize: 'var(--fs-xs)', lineHeight: 1.6, fontWeight: 500 }}>
           <li>
             {t('disclaimer_bullet1_pre')}{' '}
             <span style={{ fontWeight: 700 }}>@(*.){INSTITUTION_DOMAIN}</span>{' '}
@@ -53,7 +53,7 @@ export default function DisclaimerOverlay({ onClose }: DisclaimerOverlayProps) {
           <li style={{ fontWeight: 700 }}>{t('disclaimer_bullet3')}</li>
         </ul>
 
-        <p className="mt-4" style={{ fontSize: '11px', color: '#666', fontWeight: 500 }}>
+        <p className="mt-4" style={{ fontSize: 'var(--fs-2xs)', color: '#666', fontWeight: 500 }}>
           {t('click_to_close')}
         </p>
       </div>

@@ -10,8 +10,10 @@ import { sendMagicLink } from '@/lib/email';
 import { checkAndConsume, cleanupRateLimits } from '@/lib/rate-limit';
 import { Email } from '@/lib/validators';
 import { env } from '@/lib/env';
+import { LANGUAGES, type LangCode } from '@/i18n/translations';
 
-const Body = z.object({ email: Email });
+const LANG_CODES = LANGUAGES.map((l) => l.code) as [LangCode, ...LangCode[]];
+const Body = z.object({ email: Email, lang: z.enum(LANG_CODES).optional() });
 const HOUR = 60 * 60 * 1000;
 
 export async function POST(req: Request) {
@@ -34,6 +36,7 @@ export async function POST(req: Request) {
   }
 
   const email = parsed.data.email;
+  const lang = parsed.data.lang ?? 'en';
   const ip = ((await headers()).get('x-forwarded-for') ?? '').split(',')[0].trim() || 'unknown';
 
   const ipLimit = await checkAndConsume(`send-link:ip:${ip}`, env.RATE_LIMIT_SEND_LINK_PER_IP, HOUR);
@@ -64,7 +67,7 @@ export async function POST(req: Request) {
   });
 
   const url = `${env.NEXT_PUBLIC_BASE_URL}/verify-prompt?token=${encodeURIComponent(raw)}`;
-  await sendMagicLink(email, url);
+  await sendMagicLink(email, url, lang);
 
   return NextResponse.json({ ok: true }, { status: 202 });
 }

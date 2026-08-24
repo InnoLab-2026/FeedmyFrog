@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Search, Plus, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { logout } from '@/actions/auth';
+import { getInitials } from '@/lib/initials';
 import DisclaimerOverlay from '@/components/marketplace/DisclaimerOverlay';
 import LanguageButton from '@/components/layout/LanguageButton';
 
@@ -16,6 +18,7 @@ interface HeaderProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
   showMyListingsButton?: boolean;
+  email: string;
 
   locationFilter?: LocationFilter | null;
   onLocationChange?: (value: LocationFilter | null) => void;
@@ -25,12 +28,35 @@ export default function Header({
   searchQuery,
   onSearchChange,
   showMyListingsButton = true,
+  email,
   locationFilter: externalLocationFilter,
   onLocationChange,
 }: HeaderProps) {
   const { t } = useTranslation();
 
   const [showDisclaimer, setShowDisclaimer] = useState(false);
+
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!showAccountMenu) return;
+
+    const handler = (event: MouseEvent) => {
+      if (
+        accountMenuRef.current &&
+        !accountMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowAccountMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handler);
+
+    return () => {
+      document.removeEventListener('mousedown', handler);
+    };
+  }, [showAccountMenu]);
 
   // Falls der Header ohne externe Standort-Props verwendet wird
   // (z.B. auf "Meine Anzeigen"), funktioniert das Feld trotzdem.
@@ -63,31 +89,75 @@ export default function Header({
       >
         {/* Oben rechts */}
         <div
-          className="absolute flex items-center gap-3"
+          className="absolute flex items-center gap-2"
           style={{
-            top: '22px',
-            right: '28px',
+            top: '14px',
+            right: '20px',
             zIndex: 20,
           }}
         >
           {/* User */}
-          <button
-            type="button"
-            aria-label="Benutzer"
-            style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '50%',
-              border: '1px solid rgba(47,47,47,0.15)',
-              background: '#8DC63F',
-              color: '#1a3200',
-              fontSize: '16px',
-              fontWeight: 700,
-              cursor: 'pointer',
-            }}
+          <div
+            className="relative"
+            ref={accountMenuRef}
           >
-            BA
-          </button>
+            <button
+              type="button"
+              onClick={() =>
+                setShowAccountMenu((current) => !current)
+              }
+              aria-label={t('account_menu')}
+              aria-haspopup="menu"
+              aria-expanded={showAccountMenu}
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                border: '1px solid rgba(47,47,47,0.15)',
+                background: '#8DC63F',
+                color: '#1a3200',
+                fontSize: 'var(--fs-sm)',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              {getInitials(email)}
+            </button>
+
+            {showAccountMenu && (
+              <div
+                role="menu"
+                className="absolute right-0"
+                style={{
+                  top: 'calc(100% + 8px)',
+                  minWidth: '160px',
+
+                  background: 'white',
+                  border: '1px solid rgba(47,47,47,0.15)',
+                  borderRadius: '10px',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                  padding: '8px',
+
+                  zIndex: 30,
+                }}
+              >
+                <form action={logout}>
+                  <button
+                    type="submit"
+                    role="menuitem"
+                    className="w-full rounded-xl px-3 py-1.5 text-sm font-medium"
+                    style={{
+                      background: 'white',
+                      border: '2px solid black',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {t('logout')}
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
 
           {/* Info */}
           <button
@@ -96,22 +166,22 @@ export default function Header({
             aria-label={t('disclaimer_btn')}
             aria-haspopup="dialog"
             style={{
-              width: '48px',
-              height: '48px',
+              width: '36px',
+              height: '36px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               background: 'white',
               border: '1px solid rgba(47,47,47,0.18)',
-              borderRadius: '10px',
+              borderRadius: '8px',
               cursor: 'pointer',
               color: '#6a6a6a',
             }}
           >
             <Info
               style={{
-                width: '20px',
-                height: '20px',
+                width: '16px',
+                height: '16px',
               }}
             />
           </button>
@@ -121,19 +191,25 @@ export default function Header({
         </div>
 
         {/* Header Inhalt */}
+        {/* pr reserves room for the absolutely-positioned avatar/info/language
+            cluster above so it never overlaps the location field once the
+            search+location row grows narrower than its 1100px max-width
+            (roughly 768px–1310px viewports). Inline `style` always beats a
+            plain class, so the md: override has to live in className. */}
         <div
-          className="flex flex-col md:flex-row md:items-center"
+          className="flex flex-col md:flex-row md:items-center pr-8 md:pr-[210px]"
           style={{
-            minHeight: '300px',
-            padding: '70px 68px 55px',
-            gap: '38px',
+            paddingTop: '20px',
+            paddingLeft: '32px',
+            paddingBottom: '22px',
+            gap: '20px',
           }}
         >
           {/* Logo */}
           <div
             className="flex-shrink-0"
             style={{
-              width: '260px',
+              width: '128px',
             }}
           >
             <img
@@ -152,14 +228,14 @@ export default function Header({
             className="flex flex-col"
             style={{
               flex: 1,
-              gap: '18px',
+              gap: '12px',
               maxWidth: '1100px',
             }}
           >
             <div
               className="flex flex-col md:flex-row"
               style={{
-                gap: '18px',
+                gap: '12px',
               }}
             >
               {/* Suche */}
@@ -171,10 +247,10 @@ export default function Header({
                 }}
               >
                 <Search
-                  className="absolute left-6 top-1/2 -translate-y-1/2"
+                  className="absolute left-4 top-1/2 -translate-y-1/2"
                   style={{
-                    width: '26px',
-                    height: '26px',
+                    width: '18px',
+                    height: '18px',
                     color: '#666',
                   }}
                 />
@@ -188,14 +264,14 @@ export default function Header({
                   }
                   className="w-full focus:outline-none"
                   style={{
-                    height: '72px',
-                    paddingLeft: '74px',
-                    paddingRight: '24px',
+                    height: '44px',
+                    paddingLeft: '42px',
+                    paddingRight: '16px',
                     background: '#F7FBF9',
                     border:
                       '1px solid rgba(47,47,47,0.15)',
-                    borderRadius: '10px',
-                    fontSize: '20px',
+                    borderRadius: '9px',
+                    fontSize: 'var(--fs-control-input)',
                     color: '#444',
                   }}
                 />
@@ -204,7 +280,7 @@ export default function Header({
               {/* Standort */}
               <div
                 style={{
-                  width: '320px',
+                  width: '240px',
                   flexShrink: 0,
                 }}
               >
@@ -222,22 +298,22 @@ export default function Header({
                   href="/meine"
                   className="inline-flex items-center justify-center"
                   style={{
-                    gap: '14px',
-                    minHeight: '64px',
-                    padding: '0 34px',
+                    gap: '8px',
+                    minHeight: '40px',
+                    padding: '0 18px',
                     background: '#8DC63F',
                     color: '#1a3200',
                     border: '1px solid #8DC63F',
-                    borderRadius: '9px',
-                    fontSize: '19px',
+                    borderRadius: '8px',
+                    fontSize: 'var(--fs-control-button)',
                     fontWeight: 600,
                     textDecoration: 'none',
                   }}
                 >
                   <Plus
                     style={{
-                      width: '26px',
-                      height: '26px',
+                      width: '18px',
+                      height: '18px',
                     }}
                   />
 

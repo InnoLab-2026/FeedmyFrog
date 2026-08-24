@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 
 import { deleteListing } from '@/actions/listings';
+import { logout } from '@/actions/auth';
 import type { Listing } from '@/types';
 
 import ListingCard from '@/components/marketplace/ListingCard';
@@ -23,7 +24,7 @@ export default function MyListingsPageContent({
 
   return (
     <>
-      <MyListingsHeader />
+      <MyListingsHeader email={email} />
 
       <main
         className="min-h-screen"
@@ -41,39 +42,64 @@ export default function MyListingsPageContent({
             position: 'relative',
           }}
         >
-          {/* Zurück zur Übersicht */}
-          <a
-            href="/"
-            className="inline-flex items-center gap-3"
+          {/* Zurück zur Übersicht + Abmelden */}
+          <div
+            className="flex items-center justify-between flex-wrap gap-3"
             style={{
-              background: 'white',
-              color: '#2f2f2f',
-              border: '1px solid rgba(47,47,47,0.18)',
-              borderRadius: '8px',
-              padding: '13px 18px',
-              fontSize: '15px',
-              fontWeight: 600,
-              textDecoration: 'none',
               marginBottom: '34px',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-              cursor: 'pointer',
               position: 'relative',
               zIndex: 20,
-              pointerEvents: 'auto',
             }}
           >
-            <span
-              aria-hidden="true"
+            <Link
+              href="/"
+              className="inline-flex items-center gap-3"
               style={{
-                fontSize: '20px',
-                lineHeight: 1,
+                background: 'white',
+                color: '#2f2f2f',
+                border: '1px solid rgba(47,47,47,0.18)',
+                borderRadius: '8px',
+                padding: '13px 18px',
+                fontSize: 'var(--fs-md)',
+                fontWeight: 600,
+                textDecoration: 'none',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                cursor: 'pointer',
+                pointerEvents: 'auto',
               }}
             >
-              ←
-            </span>
+              <span
+                aria-hidden="true"
+                style={{
+                  fontSize: 'var(--fs-lg)',
+                  lineHeight: 1,
+                }}
+              >
+                ←
+              </span>
 
-            {t('back_to_overview')}
-          </a>
+              {t('back_to_overview')}
+            </Link>
+
+            <form action={logout}>
+              <button
+                type="submit"
+                style={{
+                  background: 'white',
+                  color: '#2f2f2f',
+                  border: '1px solid rgba(47,47,47,0.18)',
+                  borderRadius: '8px',
+                  padding: '13px 18px',
+                  fontSize: 'var(--fs-md)',
+                  fontWeight: 600,
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                  cursor: 'pointer',
+                }}
+              >
+                {t('logout')}
+              </button>
+            </form>
+          </div>
 
           {/* Überschrift */}
           <div
@@ -85,7 +111,7 @@ export default function MyListingsPageContent({
               style={{
                 margin: '0 0 12px',
                 color: '#2f2f2f',
-                fontSize: '38px',
+                fontSize: 'var(--fs-4xl)',
                 lineHeight: 1.2,
                 fontWeight: 700,
               }}
@@ -97,7 +123,7 @@ export default function MyListingsPageContent({
               style={{
                 margin: 0,
                 color: '#6a6a6a',
-                fontSize: '18px',
+                fontSize: 'var(--fs-lg)',
                 lineHeight: 1.5,
               }}
             >
@@ -130,7 +156,7 @@ export default function MyListingsPageContent({
                 style={{
                   margin: '0 0 20px',
                   color: '#6a6a6a',
-                  fontSize: '16px',
+                  fontSize: 'var(--fs-base)',
                 }}
               >
                 {t('no_own_listings')}
@@ -162,7 +188,7 @@ export default function MyListingsPageContent({
                           color: '#2f2f2f',
                           border: '1px solid rgba(47,47,47,0.2)',
                           borderRadius: '7px',
-                          fontSize: '13px',
+                          fontSize: 'var(--fs-xs)',
                           fontWeight: 600,
                           textDecoration: 'none',
                         }}
@@ -187,7 +213,7 @@ export default function MyListingsPageContent({
                             color: '#b42318',
                             border: '1px solid rgba(180,35,24,0.3)',
                             borderRadius: '7px',
-                            fontSize: '13px',
+                            fontSize: 'var(--fs-xs)',
                             fontWeight: 600,
                             cursor: 'pointer',
                           }}
