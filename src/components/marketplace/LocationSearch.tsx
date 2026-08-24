@@ -208,10 +208,10 @@ export default function LocationSearch({
         onClick={() => setOpen((current) => !current)}
         className="w-full flex items-center text-left"
         style={{
-          height: '72px',
-          paddingLeft: '24px',
-          paddingRight: '18px',
-          gap: '14px',
+          height: '44px',
+          paddingLeft: '16px',
+          paddingRight: '14px',
+          gap: '10px',
 
           background: 'white',
           color: value ? '#444' : '#555',
@@ -228,14 +228,14 @@ export default function LocationSearch({
             ? '0 0 0 3px rgba(141,198,63,0.10)'
             : 'none',
 
-          fontSize: '19px',
+          fontSize: 'var(--fs-control-input)',
           cursor: 'pointer',
         }}
       >
         <MapPin
           style={{
-            width: '24px',
-            height: '24px',
+            width: '17px',
+            height: '17px',
             color: value ? '#8DC63F' : '#666',
             flexShrink: 0,
           }}
@@ -257,7 +257,7 @@ export default function LocationSearch({
             <span
               style={{
                 color: '#8DC63F',
-                fontSize: '13px',
+                fontSize: 'var(--fs-xs)',
                 fontWeight: 600,
                 whiteSpace: 'nowrap',
               }}
@@ -350,7 +350,7 @@ export default function LocationSearch({
 
                 borderRadius: '8px',
 
-                fontSize: '15px',
+                fontSize: 'var(--fs-md)',
                 outline: 'none',
               }}
             />
@@ -408,7 +408,7 @@ export default function LocationSearch({
                     background: 'white',
                     border: 'none',
 
-                    fontSize: '14px',
+                    fontSize: 'var(--fs-sm)',
                     textAlign: 'left',
 
                     cursor: 'pointer',
@@ -451,7 +451,7 @@ export default function LocationSearch({
 
               color: '#1a3200',
 
-              fontSize: '14px',
+              fontSize: 'var(--fs-sm)',
               fontWeight: 600,
 
               cursor: gpsLoading
@@ -477,7 +477,7 @@ export default function LocationSearch({
               style={{
                 marginTop: '8px',
                 color: '#dc2626',
-                fontSize: '12px',
+                fontSize: 'var(--fs-2xs)',
               }}
             >
               {gpsError}
@@ -494,7 +494,7 @@ export default function LocationSearch({
                 style={{
                   marginBottom: '7px',
                   color: '#777',
-                  fontSize: '12px',
+                  fontSize: 'var(--fs-2xs)',
                   fontWeight: 500,
                 }}
               >
@@ -539,7 +539,7 @@ export default function LocationSearch({
 
                         borderRadius: '7px',
 
-                        fontSize: '13px',
+                        fontSize: 'var(--fs-xs)',
                         fontWeight: active
                           ? 700
                           : 500,

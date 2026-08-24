@@ -57,7 +57,7 @@ export default function ListingCard({
         style={{
           fontFamily: 'var(--font-family-display)',
           fontWeight: 600,
-          fontSize: '18px',
+          fontSize: 'var(--fs-lg)',
           lineHeight: 1.3,
           color: '#2F2F2F',
         }}
@@ -68,7 +68,7 @@ export default function ListingCard({
       <p
         className="mb-4"
         style={{
-          fontSize: '14px',
+          fontSize: 'var(--fs-sm)',
           lineHeight: 1.6,
           color: '#5a5a5a',
         }}
@@ -97,7 +97,7 @@ export default function ListingCard({
       <div
         className="flex items-center justify-between pt-3"
         style={{
-          fontSize: '13px',
+          fontSize: 'var(--fs-xs)',
           fontWeight: 500,
           borderTop: '1px solid rgba(47, 47, 47, 0.08)',
         }}
@@ -118,7 +118,7 @@ export default function ListingCard({
             color: '#1a3200',
             border: '1px solid #8DC63F',
             borderRadius: '7px',
-            fontSize: '13px',
+            fontSize: 'var(--fs-xs)',
             fontWeight: 600,
             textDecoration: 'none',
           }}

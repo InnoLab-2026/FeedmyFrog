@@ -1,28 +1,31 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 type Status = 'idle' | 'sending' | 'sent' | 'error';
 
-const MESSAGES: Record<string, string> = {
-  forbidden_domain:
-    'Bitte verwenden Sie Ihre Hochschul-E-Mail-Adresse.',
-  invalid_email:
-    'Bitte geben Sie eine gültige E-Mail-Adresse ein.',
-  too_many_requests:
-    'Zu viele Anfragen. Bitte versuchen Sie es später erneut.',
-  unknown:
-    'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
-};
-
 export default function LoginForm({
-  initialError,
+  initialErrorCode,
 }: {
-  initialError: string | null;
+  initialErrorCode: string | null;
 }) {
+  const { t, i18n } = useTranslation();
+
+  const MESSAGES: Record<string, string> = {
+    forbidden_domain: t('error_forbidden_domain'),
+    invalid_email: t('error_invalid_email'),
+    too_many_requests: t('error_too_many_requests'),
+    unknown: t('error_unknown'),
+    missing_token: t('login_error_missing_token'),
+    invalid_or_expired: t('login_error_invalid_or_expired'),
+  };
+
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<Status>('idle');
-  const [error, setError] = useState<string | null>(initialError);
+  const [error, setError] = useState<string | null>(
+    initialErrorCode ? (MESSAGES[initialErrorCode] ?? null) : null,
+  );
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -36,7 +39,7 @@ export default function LoginForm({
         headers: {
           'content-type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, lang: i18n.language }),
       });
 
       if (res.status === 202) {
@@ -66,7 +69,7 @@ export default function LoginForm({
           background: '#F7FBF9',
           border: '1px solid rgba(141,198,63,0.35)',
           borderRadius: '12px',
-          fontSize: '14px',
+          fontSize: 'var(--fs-sm)',
         }}
       >
         <p
@@ -74,10 +77,10 @@ export default function LoginForm({
             margin: 0,
             color: '#2F2F2F',
             fontWeight: 700,
-            fontSize: '16px',
+            fontSize: 'var(--fs-base)',
           }}
         >
-          E-Mail unterwegs ✉️
+          {t('email_sent_title')}
         </p>
 
         <p
@@ -88,7 +91,7 @@ export default function LoginForm({
             lineHeight: 1.6,
           }}
         >
-          Wenn ein Konto für{' '}
+          {t('email_sent_body_pre')}{' '}
           <span
             style={{
               color: '#2F2F2F',
@@ -97,8 +100,7 @@ export default function LoginForm({
           >
             {email}
           </span>{' '}
-          möglich ist, finden Sie gleich einen Anmeldelink in Ihrem
-          Postfach. Der Link ist nur kurze Zeit und einmalig gültig.
+          {t('email_sent_body_post')}
         </p>
       </div>
     );
@@ -116,12 +118,12 @@ export default function LoginForm({
         htmlFor="email"
         className="block"
         style={{
-          fontSize: '14px',
+          fontSize: 'var(--fs-sm)',
           fontWeight: 600,
           color: '#2F2F2F',
         }}
       >
-        E-Mail-Adresse
+        {t('email_address_label')}
 
         <input
           id="email"
@@ -139,7 +141,7 @@ export default function LoginForm({
             border: '1px solid rgba(47,47,47,0.18)',
             borderRadius: '10px',
             color: '#2F2F2F',
-            fontSize: '14px',
+            fontSize: 'var(--fs-control-input)',
             transition:
               'border-color 150ms ease, box-shadow 150ms ease',
           }}
@@ -165,7 +167,7 @@ export default function LoginForm({
             border: '1px solid rgba(220,38,38,0.25)',
             borderRadius: '10px',
             color: '#dc2626',
-            fontSize: '13px',
+            fontSize: 'var(--fs-xs)',
             fontWeight: 600,
             background: '#fff7f7',
           }}
@@ -184,7 +186,7 @@ export default function LoginForm({
           color: '#1a3200',
           border: '1px solid #8DC63F',
           borderRadius: '10px',
-          fontSize: '15px',
+          fontSize: 'var(--fs-control-button)',
           fontWeight: 700,
           cursor:
             status === 'sending'
@@ -209,8 +211,8 @@ export default function LoginForm({
         }}
       >
         {status === 'sending'
-          ? 'Wird gesendet …'
-          : 'Anmeldelink senden'}
+          ? t('sending_link')
+          : t('send_login_link')}
       </button>
     </form>
   );
