@@ -26,7 +26,7 @@ export default function LanguageButton() {
       onClick={cycle}
       title={`Switch to ${next.label}`}
       aria-label={`Current language: ${current.label}. Click to switch to ${next.label}`}
-      className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl select-none"
+      className="flex items-center justify-center rounded-xl select-none"
       style={{
         background: 'white',
         border: '2px solid black',
@@ -35,10 +35,19 @@ export default function LanguageButton() {
         letterSpacing: '0.04em',
         cursor: 'pointer',
         whiteSpace: 'nowrap',
+        minWidth: '44px',
+        height: '32px',
+        padding: '0',
+        lineHeight: 1,
       }}
     >
-      <span style={{ fontSize: 'var(--fs-base)', lineHeight: 1 }}>{current.flag}</span>
-      <span>{current.label}</span>
+          <img
+        src={current.code === 'en' ? '/flags/gb.svg' : `/flags/${current.code}.svg`}
+        alt={current.label}
+        width={22}
+        height={16}
+        style={{ display: 'block' }}
+      />
     </button>
   );
 }

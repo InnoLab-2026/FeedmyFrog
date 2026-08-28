@@ -6,6 +6,69 @@ import { useTranslation } from 'react-i18next';
 import LoginForm from './LoginForm';
 import LanguageButton from '@/components/layout/LanguageButton';
 import { CARD_SHADOW } from '@/constants';
+import { useEffect, useState } from 'react';
+
+function HoppingFrog() {
+  const [x, setX] = useState(40);
+  const [hop, setHop] = useState(false);
+  const [mouthOpen, setMouthOpen] = useState(false);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      setX(e.clientX);
+      setHop(true);
+      window.setTimeout(() => setHop(false), 180);
+    };
+
+    const onClick = () => {
+      setMouthOpen(true);
+      window.setTimeout(() => setMouthOpen(false), 350);
+    };
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('click', onClick);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('click', onClick);
+    };
+  }, []);
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'fixed',
+        left: x,
+        bottom: hop ? 28 : 8,
+        transform: 'translateX(-50%)',
+        zIndex: 9999,
+        pointerEvents: 'none',
+        transition: 'left 0.12s linear, bottom 0.18s ease',
+      }}
+    >
+      <svg width="54" height="48" viewBox="0 0 54 48" fill="none">
+        <ellipse cx="27" cy="28" rx="20" ry="16" fill="#7CB342" />
+        <circle cx="16" cy="16" r="8" fill="#7CB342" />
+        <circle cx="38" cy="16" r="8" fill="#7CB342" />
+        <circle cx="16" cy="16" r="4.5" fill="white" />
+        <circle cx="38" cy="16" r="4.5" fill="white" />
+        <circle cx="17" cy="17" r="2.2" fill="#1a1a1a" />
+        <circle cx="39" cy="17" r="2.2" fill="#1a1a1a" />
+        {mouthOpen ? (
+          <ellipse cx="27" cy="34" rx="6" ry="4.5" fill="#1a1a1a" />
+        ) : (
+          <path
+            d="M22 33 Q27 36 32 33"
+            stroke="#1a1a1a"
+            strokeWidth="2"
+            strokeLinecap="round"
+            fill="none"
+          />
+        )}
+      </svg>
+    </div>
+  );
+ 
+}
 
 export default function LoginCard({
   initialErrorCode,
@@ -18,7 +81,7 @@ export default function LoginCard({
     <main
       className="relative flex min-h-screen items-center justify-center p-6"
       style={{
-        background: '#F6F8F7',
+        background: '#FFFFFF',
       }}
     >
       <div
@@ -76,7 +139,7 @@ export default function LoginCard({
             Reutlingen University Connect
           </h1>
 
-          <p
+                    <p
             style={{
               marginTop: '12px',
               marginBottom: 0,
@@ -86,7 +149,19 @@ export default function LoginCard({
               color: '#666',
             }}
           >
-            {t('login_subtitle')}
+            {t('login_subtitle').split('. ')[0]}.
+          </p>
+          <p
+            style={{
+              marginTop: '8px',
+              marginBottom: 0,
+              fontSize: 'var(--fs-md)',
+              lineHeight: 1.6,
+              fontWeight: 500,
+              color: '#666',
+            }}
+          >
+            {t('login_subtitle').split('. ').slice(1).join('. ')}
           </p>
 
           <div
@@ -143,6 +218,7 @@ export default function LoginCard({
           </p>
         </div>
       </div>
+            <HoppingFrog />
     </main>
   );
 }
