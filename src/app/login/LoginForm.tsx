@@ -85,21 +85,36 @@ export default function LoginForm({
 
         <p
           style={{
+            margin: '10px 0 0',
+            color: '#5f5f5f',
+            fontWeight: 500,
+            lineHeight: 1.6,
+            overflowWrap: 'anywhere',
+          }}
+        >
+          {t('email_sent_body_pre')}
+        </p>
+
+        <p
+          style={{
+            margin: '8px 0 0',
+            color: '#2F2F2F',
+            fontWeight: 700,
+            lineHeight: 1.5,
+            overflowWrap: 'anywhere',
+          }}
+        >
+          {email.trim().toLowerCase()}
+        </p>
+
+        <p
+          style={{
             margin: '8px 0 0',
             color: '#5f5f5f',
             fontWeight: 500,
             lineHeight: 1.6,
           }}
         >
-          {t('email_sent_body_pre')}{' '}
-          <span
-            style={{
-              color: '#2F2F2F',
-              fontWeight: 700,
-            }}
-          >
-            {email}
-          </span>{' '}
           {t('email_sent_body_post')}
         </p>
       </div>
