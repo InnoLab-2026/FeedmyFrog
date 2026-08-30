@@ -4,6 +4,7 @@ import { useMemo, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import ScrollToTop from '@/components/layout/ScrollToTop';
 
 import type { Listing, Mode, Category } from '@/types';
 import { iconMap } from '@/data/icons';
@@ -52,7 +53,21 @@ function getCategoryTranslationKey(tag: string) {
 
   return keys[tag] ?? tag;
 }
+const STANDARD_CATEGORY_TAGS = [
+  'Familie',
+  'Kinder',
+  'Wochenende',
+  'Mobilität',
+  'Pendeln',
+  'Verkauf',
+  'Dienstleistungen',
+  'Transport',
+  'Bildung',
+] as const;
 
+function isStandardCategory(tag: string) {
+  return (STANDARD_CATEGORY_TAGS as readonly string[]).includes(tag);
+}
 export default function Marketplace({
   listings,
   totalCount,
@@ -165,17 +180,13 @@ export default function Marketplace({
         label: t('category_all'),
         icon: <Search className="w-4 h-4" />,
       },
-
-      ...categoryTags.map((tag) => ({
+      ...STANDARD_CATEGORY_TAGS.map((tag) => ({
         id: tag,
         label: t(getCategoryTranslationKey(tag)),
-        icon:
-          iconMap[tag] ?? (
-            <Search className="w-4 h-4" />
-          ),
+        icon: iconMap[tag] ?? <Search className="w-4 h-4" />,
       })),
     ],
-    [categoryTags, t],
+    [t],
   );
 
   const totalPages = Math.max(
@@ -301,6 +312,7 @@ export default function Marketplace({
           </div>
         )}
       </main>
+      <ScrollToTop />
     </>
   );
 }

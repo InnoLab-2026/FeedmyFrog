@@ -1,9 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { MoreHorizontal } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-
 import CategoryTab from './CategoryTab';
 import type { Category } from '@/types';
 
@@ -19,200 +17,132 @@ export default function CategoryTabs({
   onSelectCategory,
 }: CategoryTabsProps) {
   const { t } = useTranslation();
-
-  // Desktop:
-  // Alle + 2 häufigste Kategorien
-  const [visibleCount, setVisibleCount] = useState(3);
-
+  const [visibleCount, setVisibleCount] = useState(5);
   const [showDropdown, setShowDropdown] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
-
-  // Auf kleineren Bildschirmen nur:
-  // Alle + häufigste Kategorie
   useEffect(() => {
     const calculate = () => {
       if (!containerRef.current) return;
 
-      const width = containerRef.current.offsetWidth;
-
-      if (width < 700) {
-        setVisibleCount(2);
-      } else {
-        setVisibleCount(3);
+      if (window.innerWidth < 768) {
+        setVisibleCount(1);
+        return;
       }
+
+      const containerWidth = containerRef.current.offsetWidth;
+      let totalWidth = 0;
+      let count = 0;
+
+      for (let i = 0; i < categories.length; i++) {
+        const tabWidth = 20 + 8 + categories[i].label.length * 9 + 80;
+        const withOverflow = totalWidth + tabWidth + (i < categories.length - 1 ? 60 : 0);
+        if (withOverflow <= containerWidth) {
+          totalWidth += tabWidth;
+          count = i + 1;
+        } else break;
+      }
+
+      setVisibleCount(Math.max(2, Math.min(count - 2, categories.length)));
     };
 
     calculate();
-
     window.addEventListener('resize', calculate);
+    return () => window.removeEventListener('resize', calculate);
+  }, [categories]);
 
-    return () => {
-      window.removeEventListener('resize', calculate);
-    };
-  }, []);
-
-  // Dropdown schließen, wenn außerhalb geklickt wird
   useEffect(() => {
     if (!showDropdown) return;
-
-    const handler = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setShowDropdown(false);
       }
     };
-
     document.addEventListener('mousedown', handler);
-
-    return () => {
-      document.removeEventListener('mousedown', handler);
-    };
+    return () => document.removeEventListener('mousedown', handler);
   }, [showDropdown]);
 
   const visible = categories.slice(0, visibleCount);
   const overflow = categories.slice(visibleCount);
 
   return (
-    <div
-      ref={containerRef}
-      className="flex w-full"
-      style={{
-        marginBottom: '16px',
-        overflow: 'visible',
-      }}
-    >
-      {/* Sichtbare Kategorien */}
-      {visible.map((category, index) => (
-        <CategoryTab
-          key={category.id}
-          isSelected={selectedCategory === category.id}
-          onClick={() => onSelectCategory(category.id)}
-          isFirst={index === 0}
-          isLast={
-            index === visible.length - 1 &&
-            overflow.length === 0
-          }
-          fullWidth
-        >
-          {category.icon}
-          {category.label}
-        </CategoryTab>
-      ))}
-
-      {/* Restliche Kategorien unter ... */}
-      {overflow.length > 0 && (
-        <div
-          ref={dropdownRef}
-          className="flex-1 relative flex items-stretch"
-        >
-          {/* ... Button */}
-          <button
-            type="button"
-            onClick={() =>
-              setShowDropdown((current) => !current)
-            }
-            className="w-full flex items-center justify-center"
-            style={{
-              minHeight: '44px',
-              background: 'white',
-              color: '#2f2f2f',
-
-              borderTop:
-                '1px solid rgba(47,47,47,0.15)',
-              borderBottom:
-                '1px solid rgba(47,47,47,0.15)',
-              borderRight:
-                '1px solid rgba(47,47,47,0.15)',
-              borderLeft: 'none',
-
-              borderTopRightRadius: '12px',
-              borderBottomRightRadius: '12px',
-
-              cursor: 'pointer',
-            }}
-            aria-label={t('more_categories')}
-            aria-expanded={showDropdown}
+    <div className="pb-6 relative" ref={containerRef}>
+      <div className="flex gap-0">
+        {visible.map((cat, i) => (
+          <CategoryTab
+            key={cat.id}
+            isSelected={selectedCategory === cat.id}
+            onClick={() => onSelectCategory(cat.id)}
+            isFirst={i === 0}
+            isLast={i === visible.length - 1 && overflow.length === 0}
           >
-            <MoreHorizontal
-              style={{
-                width: '22px',
-                height: '22px',
-              }}
-            />
-          </button>
+            {cat.icon}
+            <span>{cat.label}</span>
+          </CategoryTab>
+        ))}
 
-          {/* Dropdown */}
-          {showDropdown && (
-            <div
-              className="absolute top-full right-0"
-              style={{
-                marginTop: '8px',
-                width: '250px',
-
-                background: 'white',
-
-                border:
-                  '1px solid rgba(47,47,47,0.15)',
-
-                borderRadius: '10px',
-
-                boxShadow:
-                  '0 8px 24px rgba(0,0,0,0.12)',
-
-                overflow: 'hidden',
-                zIndex: 50,
-              }}
+        {overflow.length > 0 && (
+          <div className="flex-1 relative flex items-stretch" ref={dropdownRef}>
+            <CategoryTab
+              isSelected={false}
+              onClick={() => setShowDropdown((v) => !v)}
+              isFirst={false}
+              isLast
+              fullWidth
             >
-              {overflow.map((category, index) => {
-                const active =
-                  selectedCategory === category.id;
+              <span style={{ fontSize: '13px', whiteSpace: 'nowrap' }}>
+                {t('more_categories')}
+              </span>
+            </CategoryTab>
 
-                return (
+            {showDropdown && (
+              <div
+                className="absolute top-full left-0 mt-2 w-48 bg-white overflow-hidden"
+                style={{
+                  border: '1px solid rgba(47, 47, 47, 0.15)',
+                  borderRadius: '10px',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04)',
+                  zIndex: 20,
+                }}
+              >
+                {overflow.map((cat, i) => (
                   <button
-                    key={category.id}
+                    key={cat.id}
                     type="button"
                     onClick={() => {
-                      onSelectCategory(category.id);
+                      onSelectCategory(cat.id);
                       setShowDropdown(false);
                     }}
-                    className="flex items-center gap-3 w-full text-left"
+                    onMouseEnter={(e) => {
+                      if (selectedCategory !== cat.id) {
+                        e.currentTarget.style.background = 'rgba(141, 198, 63, 0.04)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedCategory !== cat.id) {
+                        e.currentTarget.style.background = 'white';
+                      }
+                    }}
+                    className="flex items-center gap-2 py-3 px-4 w-full text-left transition-colors duration-150"
                     style={{
-                      padding: '15px 18px',
-
-                      background: active
-                        ? 'rgba(141,198,63,0.12)'
-                        : 'white',
-
-                      color: '#2f2f2f',
-
-                      border: 'none',
-
+                      background: selectedCategory === cat.id ? '#8DC63F' : 'white',
+                      color: selectedCategory === cat.id ? '#1a3200' : '#2F2F2F',
                       borderBottom:
-                        index <
-                        overflow.length - 1
-                          ? '1px solid rgba(47,47,47,0.08)'
-                          : 'none',
-
-                      fontSize: 'var(--fs-md)',
-                      fontWeight: 500,
-
-                      cursor: 'pointer',
+                        i < overflow.length - 1 ? '1px solid rgba(47, 47, 47, 0.06)' : 'none',
+                      fontWeight: selectedCategory === cat.id ? 600 : 500,
+                      fontSize: '14px',
                     }}
                   >
-                    {category.icon}
-
-                    <span>{category.label}</span>
+                    {cat.icon}
+                    <span>{cat.label}</span>
                   </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
