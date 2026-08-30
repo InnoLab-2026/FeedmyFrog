@@ -199,19 +199,14 @@ export default function Header({
         <div
           className="flex flex-col md:flex-row md:items-center pr-8 md:pr-[210px]"
           style={{
-            paddingTop: '20px',
+            paddingTop: '28px',
             paddingLeft: '32px',
             paddingBottom: '22px',
             gap: '20px',
           }}
         >
           {/* Logo */}
-          <div
-            className="flex-shrink-0"
-            style={{
-              width: '128px',
-            }}
-          >
+          <div className="flex-shrink-0" style={{ width: '168px' }}>
             <img
               src="/feedmyfrog.jpg"
               alt="feedmyfrog"
