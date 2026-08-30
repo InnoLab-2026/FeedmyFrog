@@ -11,11 +11,18 @@ export interface LocationFilter {
   radius: number;
 }
 
-export const CITY_COORDS: Record<
-  string,
-  { lat: number; lng: number }
-> = {
+export const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
   Reutlingen: { lat: 48.4914, lng: 9.2042 },
+  Betzingen: { lat: 48.5089, lng: 9.1756 },
+  Sondelfingen: { lat: 48.508, lng: 9.233 },
+  Oferdingen: { lat: 48.526, lng: 9.24 },
+  Gönningen: { lat: 48.43, lng: 9.15 },
+  Degerschlacht: { lat: 48.515, lng: 9.168 },
+  Mössingen: { lat: 48.4064, lng: 9.0542 },
+  Pfullingen: { lat: 48.4644, lng: 9.2261 },
+  Eningen: { lat: 48.486, lng: 9.255 },
+  Wannweil: { lat: 48.515, lng: 9.15 },
+  Kirchentellinsfurt: { lat: 48.531, lng: 9.147 },
   Stuttgart: { lat: 48.7758, lng: 9.1829 },
   Tübingen: { lat: 48.5216, lng: 9.0576 },
   Esslingen: { lat: 48.7394, lng: 9.3068 },
@@ -36,21 +43,14 @@ function haversineKm(
   lng2: number,
 ) {
   const R = 6371;
-
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLng = ((lng2 - lng1) * Math.PI) / 180;
-
   const a =
     Math.sin(dLat / 2) ** 2 +
     Math.cos((lat1 * Math.PI) / 180) *
       Math.cos((lat2 * Math.PI) / 180) *
       Math.sin(dLng / 2) ** 2;
-
-  return (
-    R *
-    2 *
-    Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  );
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 interface LocationSearchProps {
@@ -69,32 +69,24 @@ export default function LocationSearch({
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState('');
+  const [pendingRadius, setPendingRadius] = useState(value?.radius ?? 10);
 
   const ref = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const handler = (event: MouseEvent) => {
-      if (
-        ref.current &&
-        !ref.current.contains(event.target as Node)
-      ) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
         setOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handler);
-
-    return () => {
-      document.removeEventListener('mousedown', handler);
-    };
+    return () => document.removeEventListener('mousedown', handler);
   }, []);
 
   useEffect(() => {
     if (open) {
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 50);
+      setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [open]);
 
@@ -107,23 +99,21 @@ export default function LocationSearch({
       return;
     }
 
+    const q = text.toLowerCase();
     const matches = Object.keys(CITY_COORDS).filter((city) =>
-      city.toLowerCase().startsWith(text.toLowerCase()),
+      city.toLowerCase().includes(q),
     );
-
     setSuggestions(matches);
   };
 
   const selectCity = (city: string) => {
     const coords = CITY_COORDS[city];
-
     onChange({
       city,
       lat: coords.lat,
       lng: coords.lng,
-      radius: value?.radius ?? 10,
+      radius: value?.radius ?? pendingRadius,
     });
-
     setInput('');
     setSuggestions([]);
     setOpen(false);
@@ -141,23 +131,14 @@ export default function LocationSearch({
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setGpsLoading(false);
-
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
 
         let nearestCity = 'Reutlingen';
         let nearestDistance = Infinity;
 
-        for (const [city, coords] of Object.entries(
-          CITY_COORDS,
-        )) {
-          const distance = haversineKm(
-            lat,
-            lng,
-            coords.lat,
-            coords.lng,
-          );
-
+        for (const [city, coords] of Object.entries(CITY_COORDS)) {
+          const distance = haversineKm(lat, lng, coords.lat, coords.lng);
           if (distance < nearestDistance) {
             nearestDistance = distance;
             nearestCity = city;
@@ -168,9 +149,8 @@ export default function LocationSearch({
           city: `${t('location_label')} (≈ ${nearestCity})`,
           lat,
           lng,
-          radius: value?.radius ?? 10,
+          radius: value?.radius ?? pendingRadius,
         });
-
         setOpen(false);
       },
       () => {
@@ -181,8 +161,8 @@ export default function LocationSearch({
   };
 
   const setRadius = (radius: number) => {
+    setPendingRadius(radius);
     if (!value) return;
-
     onChange({
       ...value,
       radius,
@@ -196,13 +176,7 @@ export default function LocationSearch({
   };
 
   return (
-    <div
-      ref={ref}
-      style={{
-        position: 'relative',
-        width: '100%',
-      }}
-    >
+    <div ref={ref} style={{ position: 'relative', width: '100%' }}>
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
@@ -212,22 +186,11 @@ export default function LocationSearch({
           paddingLeft: '16px',
           paddingRight: '14px',
           gap: '10px',
-
           background: 'white',
           color: value ? '#444' : '#555',
-
-          border: `1px solid ${
-            open
-              ? '#8DC63F'
-              : 'rgba(47,47,47,0.15)'
-          }`,
-
+          border: `1px solid ${open ? '#8DC63F' : 'rgba(47,47,47,0.15)'}`,
           borderRadius: '10px',
-
-          boxShadow: open
-            ? '0 0 0 3px rgba(141,198,63,0.10)'
-            : 'none',
-
+          boxShadow: open ? '0 0 0 3px rgba(141,198,63,0.10)' : 'none',
           fontSize: 'var(--fs-control-input)',
           cursor: 'pointer',
         }}
@@ -240,7 +203,6 @@ export default function LocationSearch({
             flexShrink: 0,
           }}
         />
-
         <span
           style={{
             flex: 1,
@@ -251,7 +213,6 @@ export default function LocationSearch({
         >
           {value ? value.city : t('location_label')}
         </span>
-
         {value && (
           <>
             <span
@@ -264,24 +225,15 @@ export default function LocationSearch({
             >
               {value.radius} km
             </span>
-
             <span
               role="button"
               onClick={(event) => {
                 event.stopPropagation();
                 clear();
               }}
-              style={{
-                display: 'flex',
-                color: '#aaa',
-              }}
+              style={{ display: 'flex', color: '#aaa' }}
             >
-              <X
-                style={{
-                  width: '16px',
-                  height: '16px',
-                }}
-              />
+              <X style={{ width: '16px', height: '16px' }} />
             </span>
           </>
         )}
@@ -294,67 +246,43 @@ export default function LocationSearch({
             top: 'calc(100% + 8px)',
             left: 0,
             right: 0,
-
             padding: '14px',
-
             background: 'white',
-
-            border:
-              '1px solid rgba(47,47,47,0.13)',
-
+            border: '1px solid rgba(47,47,47,0.13)',
             borderRadius: '12px',
-
-            boxShadow:
-              '0 8px 24px rgba(0,0,0,0.12)',
-
+            boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
             zIndex: 200,
           }}
         >
-          <div
-            style={{
-              position: 'relative',
-              marginBottom: '10px',
-            }}
-          >
+          <div style={{ position: 'relative', marginBottom: '10px' }}>
             <MapPin
               style={{
                 position: 'absolute',
                 left: '12px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-
                 width: '18px',
                 height: '18px',
                 color: '#aaa',
               }}
             />
-
             <input
               ref={inputRef}
               value={input}
-              onChange={(event) =>
-                handleInput(event.target.value)
-              }
+              onChange={(event) => handleInput(event.target.value)}
               placeholder={t('location_enter')}
               style={{
                 width: '100%',
                 height: '48px',
-
                 paddingLeft: '40px',
                 paddingRight: '36px',
-
                 background: 'white',
-
-                border:
-                  '1px solid rgba(47,47,47,0.2)',
-
+                border: '1px solid rgba(47,47,47,0.2)',
                 borderRadius: '8px',
-
                 fontSize: 'var(--fs-md)',
                 outline: 'none',
               }}
             />
-
             {input && (
               <X
                 onClick={() => {
@@ -366,10 +294,8 @@ export default function LocationSearch({
                   right: '12px',
                   top: '50%',
                   transform: 'translateY(-50%)',
-
                   width: '16px',
                   height: '16px',
-
                   color: '#aaa',
                   cursor: 'pointer',
                 }}
@@ -381,12 +307,8 @@ export default function LocationSearch({
             <div
               style={{
                 marginBottom: '10px',
-
-                border:
-                  '1px solid rgba(47,47,47,0.1)',
-
+                border: '1px solid rgba(47,47,47,0.1)',
                 borderRadius: '8px',
-
                 overflow: 'hidden',
               }}
             >
@@ -397,20 +319,14 @@ export default function LocationSearch({
                   onClick={() => selectCity(city)}
                   style={{
                     width: '100%',
-
                     display: 'flex',
                     alignItems: 'center',
-
                     gap: '8px',
-
                     padding: '10px 12px',
-
                     background: 'white',
                     border: 'none',
-
                     fontSize: 'var(--fs-sm)',
                     textAlign: 'left',
-
                     cursor: 'pointer',
                   }}
                 >
@@ -421,7 +337,6 @@ export default function LocationSearch({
                       color: '#8DC63F',
                     }}
                   />
-
                   {city}
                 </button>
               ))}
@@ -434,29 +349,17 @@ export default function LocationSearch({
             disabled={gpsLoading}
             style={{
               width: '100%',
-
               display: 'flex',
               alignItems: 'center',
-
               gap: '10px',
-
               padding: '12px',
-
               background: 'rgba(141,198,63,0.07)',
-
-              border:
-                '1px solid rgba(141,198,63,0.25)',
-
+              border: '1px solid rgba(141,198,63,0.25)',
               borderRadius: '8px',
-
               color: '#1a3200',
-
               fontSize: 'var(--fs-sm)',
               fontWeight: 600,
-
-              cursor: gpsLoading
-                ? 'default'
-                : 'pointer',
+              cursor: gpsLoading ? 'default' : 'pointer',
             }}
           >
             <Navigation
@@ -466,10 +369,7 @@ export default function LocationSearch({
                 color: '#8DC63F',
               }}
             />
-
-            {gpsLoading
-              ? t('gps_loading')
-              : t('gps_use')}
+            {gpsLoading ? t('gps_loading') : t('gps_use')}
           </button>
 
           {gpsError && (
@@ -484,76 +384,45 @@ export default function LocationSearch({
             </p>
           )}
 
-          {value && (
-            <div
+          <div style={{ marginTop: '14px' }}>
+            <p
               style={{
-                marginTop: '14px',
+                marginBottom: '7px',
+                color: '#777',
+                fontSize: 'var(--fs-2xs)',
+                fontWeight: 500,
               }}
             >
-              <p
-                style={{
-                  marginBottom: '7px',
-                  color: '#777',
-                  fontSize: 'var(--fs-2xs)',
-                  fontWeight: 500,
-                }}
-              >
-                {t('radius')}
-              </p>
-
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '7px',
-                }}
-              >
-                {RADII.map((radius) => {
-                  const active =
-                    value.radius === radius;
-
-                  return (
-                    <button
-                      key={radius}
-                      type="button"
-                      onClick={() =>
-                        setRadius(radius)
-                      }
-                      style={{
-                        flex: 1,
-
-                        padding: '8px 0',
-
-                        background: active
-                          ? '#8DC63F'
-                          : 'white',
-
-                        color: active
-                          ? '#1a3200'
-                          : '#2F2F2F',
-
-                        border: `1px solid ${
-                          active
-                            ? '#8DC63F'
-                            : 'rgba(47,47,47,0.2)'
-                        }`,
-
-                        borderRadius: '7px',
-
-                        fontSize: 'var(--fs-xs)',
-                        fontWeight: active
-                          ? 700
-                          : 500,
-
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {radius} km
-                    </button>
-                  );
-                })}
-              </div>
+              {t('radius')}
+            </p>
+            <div style={{ display: 'flex', gap: '7px' }}>
+              {RADII.map((radius) => {
+                const active = (value?.radius ?? pendingRadius) === radius;
+                return (
+                  <button
+                    key={radius}
+                    type="button"
+                    onClick={() => setRadius(radius)}
+                    style={{
+                      flex: 1,
+                      padding: '8px 0',
+                      background: active ? '#8DC63F' : 'white',
+                      color: active ? '#1a3200' : '#2F2F2F',
+                      border: `1px solid ${
+                        active ? '#8DC63F' : 'rgba(47,47,47,0.2)'
+                      }`,
+                      borderRadius: '7px',
+                      fontSize: 'var(--fs-xs)',
+                      fontWeight: active ? 700 : 500,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {radius} km
+                  </button>
+                );
+              })}
             </div>
-          )}
+          </div>
         </div>
       )}
     </div>
