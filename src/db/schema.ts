@@ -6,6 +6,7 @@ import {
   boolean,
   index,
   pgEnum,
+  doublePrecision,
 } from 'drizzle-orm/pg-core';
 
 export const listingType = pgEnum('listing_type', ['need', 'offer']);
@@ -21,11 +22,23 @@ export const listings = pgTable(
     description: text('description').notNull(),
     tags:        text('tags').array().notNull().default([]),
     location:    text('location').notNull(),
+
+    /*
+     * Coordinates of the place `location` names, filled in on write by
+     * resolveLocation() in src/lib/geo.ts. Nullable because the field is free
+     * text: a listing may name somewhere we cannot place, and such a row is
+     * simply not returned by a radius filter rather than being guessed at.
+     */
+    lat:         doublePrecision('lat'),
+    lng:         doublePrecision('lng'),
+
     createdAt:   timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [
     index('idx_listings_type_created').on(t.type, t.createdAt.desc()),
     index('idx_listings_user').on(t.userId),
+    // Narrows the bounding-box scan the radius filter starts with.
+    index('idx_listings_coords').on(t.lat, t.lng),
   ],
 );
 

@@ -4,7 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 import { MapPin, Navigation, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { CITY_COORDS, findNearestTown } from '@/lib/geo';
+import {
+  CITY_COORDS,
+  DEFAULT_RADIUS_KM,
+  RADII,
+  findNearestTown,
+} from '@/lib/geo';
 
 export interface LocationFilter {
   /**
@@ -32,7 +37,6 @@ const GEOLOCATION_OPTIONS: PositionOptions = {
   timeout: 10_000,
 };
 
-const RADII = [3, 5, 10, 20];
 
 interface LocationSearchProps {
   value: LocationFilter | null;
@@ -50,7 +54,7 @@ export default function LocationSearch({
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState('');
-  const [pendingRadius, setPendingRadius] = useState(value?.radius ?? 10);
+  const [pendingRadius, setPendingRadius] = useState(value?.radius ?? DEFAULT_RADIUS_KM);
 
   const ref = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);

@@ -129,7 +129,7 @@ export const resources = {
       email_address_label: 'Email address',
       sending_link: 'Sending …',
       send_login_link: 'Send login link',
-      email_sent_title: 'Email on its way ✉️',
+      email_sent_title: 'Email on its way',
       // Two independent sentences with the address rendered between them —
       // deliberately not a `_pre` + value + `_post` sandwich, which would fix
       // the word order around the address for every language at once.
@@ -310,7 +310,7 @@ export const resources = {
       email_address_label: 'E-Mail-Adresse',
       sending_link: 'Wird gesendet …',
       send_login_link: 'Anmeldelink senden',
-      email_sent_title: 'E-Mail unterwegs ✉️',
+      email_sent_title: 'E-Mail unterwegs',
       email_sent_intro:
         'Falls diese Adresse berechtigt ist, finden Sie den Link gleich im Postfach:',
       email_sent_note:
@@ -480,7 +480,7 @@ export const resources = {
       email_address_label: 'Adresse e-mail',
       sending_link: 'Envoi en cours …',
       send_login_link: 'Envoyer le lien de connexion',
-      email_sent_title: 'E-mail en route ✉️',
+      email_sent_title: 'E-mail en route',
       email_sent_intro:
         'Si cette adresse est autorisée, vous trouverez le lien dans votre boîte de réception :',
       email_sent_note:
@@ -647,7 +647,7 @@ export const resources = {
       email_address_label: 'E-posta adresi',
       sending_link: 'Gönderiliyor …',
       send_login_link: 'Giriş bağlantısı gönder',
-      email_sent_title: 'E-posta yolda ✉️',
+      email_sent_title: 'E-posta yolda',
       email_sent_intro:
         'Bu adres yetkiliyse bağlantıyı kısa süre içinde gelen kutunuzda bulacaksınız:',
       email_sent_note:
@@ -815,7 +815,7 @@ export const resources = {
       email_address_label: 'Dirección de correo electrónico',
       sending_link: 'Enviando …',
       send_login_link: 'Enviar enlace de acceso',
-      email_sent_title: 'Correo en camino ✉️',
+      email_sent_title: 'Correo en camino',
       email_sent_intro:
         'Si esta dirección está autorizada, encontrarás el enlace en tu bandeja de entrada:',
       email_sent_note:

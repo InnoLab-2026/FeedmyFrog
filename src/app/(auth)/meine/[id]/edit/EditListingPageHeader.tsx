@@ -19,7 +19,7 @@ export default function EditListingPageHeader() {
           className="py-2 px-4 rounded-xl"
           style={{ background: 'white', border: '2px solid black', fontWeight: 600 }}
         >
-          ← {t('my_entries')}
+          <span aria-hidden="true">←</span> {t('my_entries')}
         </Link>
       </div>
     </div>
