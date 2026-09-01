@@ -1,6 +1,7 @@
 export const resources = {
   en: {
     translation: {
+      // Header
       search_placeholder: 'What are you looking for?',
       location_label: 'Location',
       disclaimer_btn: 'Disclaimer',
@@ -9,6 +10,7 @@ export const resources = {
       my_entries: 'My listings',
       logout: 'Log out',
 
+      // Location search
       location_enter: 'Enter location...',
       gps_use: 'Use GPS location',
       gps_loading: 'Determining location...',
@@ -16,9 +18,11 @@ export const resources = {
       gps_error: 'Location could not be determined.',
       radius: 'Radius',
 
+      // Mode toggle
       mode_need: 'Need',
       mode_offer: 'Offer',
 
+      // Categories
       category_all: 'All',
       category_services: 'Services',
       category_education: 'Education',
@@ -29,15 +33,18 @@ export const resources = {
       category_weekend: 'Weekend',
       category_sale: 'Sale',
       category_transport: 'Transport',
-      more_categories: 'more Categories',
+      more_categories: 'More categories',
 
+      // Pagination
       items_per_page: 'Items per page:',
       page_of: 'Page {{current}} of {{total}}',
 
+      // Listing card
       contact: 'Contact',
       edit: 'Edit',
       delete: 'Delete',
 
+      // My listings
       back_to_overview: 'Back to overview',
       my_listings_title: 'My listings',
       my_listings_description:
@@ -46,16 +53,19 @@ export const resources = {
       no_own_listings: 'You have not created any listings yet.',
       create_first_listing: 'Create your first listing',
 
+      // Create listing modal
       create_listing_title: 'Create listing',
       type_and_tags: 'Type & categories',
       type: 'Type',
       choose_tags: 'Choose categories',
+      choose_tags_hint:
+        'Pick up to {{max}} categories. Anything else goes in as a hashtag in the next step.',
       custom_tags_optional:
         'Add hashtags so people can find your listing faster',
       custom_tags_placeholder:
         'e.g. plants, urgent (comma-separated)',
       custom_tags_hint:
-        'Extra hashtags on the card. They do not become category tabs.',
+        'Extra hashtags show on your card and become a category tab while a listing uses them.',
       next: 'Next',
       back: 'Back',
       details: 'Details',
@@ -70,6 +80,7 @@ export const resources = {
       publish: 'Publish',
       saving: 'Saving...',
 
+      // Disclaimer overlay
       disclaimer_title: 'Disclaimer',
       close: 'Close',
       disclaimer_bullet1_pre: 'Only people with a valid',
@@ -81,12 +92,15 @@ export const resources = {
       disclaimer_bullet3: 'No logs are stored.',
       click_to_close: 'Click outside to close',
 
+      // Empty state
       no_results: 'No results found',
       try_different: 'Try different search criteria',
 
+      // Listing card aria
       aria_tag: 'Tag: {{tag}}',
       aria_location: 'Location: {{location}}',
 
+      // Login page
       login_subtitle:
         'Sign in with your university email address. We will send you a one-time login link.',
       login_privacy_notice:
@@ -112,20 +126,27 @@ export const resources = {
         'Too many requests. Please try again later.',
       error_unknown: 'Something went wrong. Please try again.',
 
+      // Verify prompt page
       invalid_link_title: 'Invalid link',
       invalid_link_body: 'The login link was incomplete.',
       request_new_link: 'Request a new link',
       verify_prompt_subtitle: 'Click the button to sign in.',
       verify_now: 'Sign in now',
 
+      // 404 page
       not_found_title: 'Page not found',
       not_found_body: 'The requested page does not exist.',
       go_home: 'Go to homepage',
 
+      // Scroll to top
+      scroll_to_top: 'Back to top',
+
+      // Edit listing page
       edit_listing_title: 'Edit listing',
       tags_label: 'Tags (comma-separated)',
       save_changes: 'Save changes',
 
+      // Listing validation error codes returned by server actions
       error_type_invalid: 'Please choose a valid type.',
       error_title_too_short: 'Title must be at least 3 characters.',
       error_title_too_long: 'Title must be at most 120 characters.',
@@ -143,6 +164,7 @@ export const resources = {
 
   de: {
     translation: {
+      // Header
       search_placeholder: 'Wonach suchen Sie?',
       location_label: 'Standort',
       disclaimer_btn: 'Haftungsausschluss',
@@ -151,6 +173,7 @@ export const resources = {
       my_entries: 'Meine Einträge',
       logout: 'Abmelden',
 
+      // Location search
       location_enter: 'Ort eingeben...',
       gps_use: 'GPS-Standort verwenden',
       gps_loading: 'Standort wird ermittelt...',
@@ -158,9 +181,11 @@ export const resources = {
       gps_error: 'Standort konnte nicht ermittelt werden.',
       radius: 'Umkreis',
 
+      // Mode toggle
       mode_need: 'Suche',
       mode_offer: 'Biete',
 
+      // Categories
       category_all: 'Alle',
       category_services: 'Dienstleistungen',
       category_education: 'Bildung',
@@ -171,15 +196,18 @@ export const resources = {
       category_weekend: 'Wochenende',
       category_sale: 'Verkauf',
       category_transport: 'Transport',
-      more_categories: 'weitere Kategorien',
+      more_categories: 'Weitere Kategorien',
 
+      // Pagination
       items_per_page: 'Einträge pro Seite:',
       page_of: 'Seite {{current}} von {{total}}',
 
+      // Listing card
       contact: 'Kontakt aufnehmen',
       edit: 'Bearbeiten',
       delete: 'Löschen',
 
+      // My listings
       back_to_overview: 'Zurück zur Übersicht',
       my_listings_title: 'Meine Anzeigen',
       my_listings_description:
@@ -188,16 +216,19 @@ export const resources = {
       no_own_listings: 'Sie haben noch keine Anzeigen erstellt.',
       create_first_listing: 'Jetzt erste Anzeige erstellen',
 
+      // Create listing modal
       create_listing_title: 'Anzeige erstellen',
       type_and_tags: 'Art & Kategorien',
       type: 'Art',
       choose_tags: 'Kategorien auswählen',
+      choose_tags_hint:
+        'Wählen Sie bis zu {{max}} Kategorien. Alles Weitere im nächsten Schritt als Hashtag.',
       custom_tags_optional:
         'Setze Hashtags, um deine Anzeige schneller zu finden',
       custom_tags_placeholder:
         'z. B. Pflanzen, dringend (kommagetrennt)',
       custom_tags_hint:
-        'Zusätzliche Hashtags auf der Karte. Daraus werden keine Tabs.',
+        'Zusätzliche Hashtags erscheinen auf Ihrer Karte und werden zum Kategorie-Tab, solange eine Anzeige sie verwendet.',
       next: 'Weiter',
       back: 'Zurück',
       details: 'Details',
@@ -212,6 +243,7 @@ export const resources = {
       publish: 'Veröffentlichen',
       saving: 'Speichern...',
 
+      // Disclaimer overlay
       disclaimer_title: 'Haftungsausschluss',
       close: 'Schließen',
       disclaimer_bullet1_pre: 'Nur Personen mit einer gültigen',
@@ -223,12 +255,15 @@ export const resources = {
       disclaimer_bullet3: 'Es werden keine Logs gespeichert.',
       click_to_close: 'Klicken zum Schließen',
 
+      // Empty state
       no_results: 'Keine Ergebnisse gefunden',
       try_different: 'Versuchen Sie andere Suchkriterien',
 
+      // Listing card aria
       aria_tag: 'Schlagwort: {{tag}}',
       aria_location: 'Standort: {{location}}',
 
+      // Login page
       login_subtitle:
         'Melden Sie sich mit Ihrer Hochschul-E-Mail-Adresse an. Wir senden Ihnen einen einmaligen Anmeldelink.',
       login_privacy_notice:
@@ -256,6 +291,7 @@ export const resources = {
       error_unknown:
         'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.',
 
+      // Verify prompt page
       invalid_link_title: 'Ungültiger Link',
       invalid_link_body: 'Der Anmeldelink war unvollständig.',
       request_new_link: 'Neuen Link anfordern',
@@ -263,14 +299,20 @@ export const resources = {
         'Klicken Sie auf die Schaltfläche, um sich anzumelden.',
       verify_now: 'Jetzt anmelden',
 
+      // 404 page
       not_found_title: 'Seite nicht gefunden',
       not_found_body: 'Die angeforderte Seite existiert nicht.',
       go_home: 'Zur Startseite',
 
+      // Scroll to top
+      scroll_to_top: 'Nach oben',
+
+      // Edit listing page
       edit_listing_title: 'Eintrag bearbeiten',
       tags_label: 'Tags (kommagetrennt)',
       save_changes: 'Änderungen speichern',
 
+      // Listing validation error codes returned by server actions
       error_type_invalid: 'Bitte wählen Sie einen gültigen Typ.',
       error_title_too_short: 'Der Titel muss mindestens 3 Zeichen lang sein.',
       error_title_too_long: 'Der Titel darf höchstens 120 Zeichen lang sein.',
@@ -316,7 +358,7 @@ export const resources = {
       category_weekend: 'Week-end',
       category_sale: 'Vente',
       category_transport: 'Transport',
-      more_categories: 'autres Catégories',
+      more_categories: 'Plus de catégories',
 
       items_per_page: 'Éléments par page:',
       page_of: 'Page {{current}} sur {{total}}',
@@ -337,12 +379,14 @@ export const resources = {
       type_and_tags: 'Type et catégories',
       type: 'Type',
       choose_tags: 'Choisir des catégories',
+      choose_tags_hint:
+        'Choisissez jusqu’à {{max}} catégories. Le reste s’ajoute comme hashtag à l’étape suivante.',
       custom_tags_optional:
         'Ajoutez des hashtags pour que votre annonce soit plus facile à trouver',
       custom_tags_placeholder:
         'p. ex. plantes, urgent (séparés par des virgules)',
       custom_tags_hint:
-        'Hashtags supplémentaires sur la carte. Ils ne deviennent pas des onglets.',
+        'Les hashtags supplémentaires apparaissent sur votre annonce et deviennent un onglet de catégorie tant qu’une annonce les utilise.',
       next: 'Suivant',
       back: 'Retour',
       details: 'Détails',
@@ -375,6 +419,7 @@ export const resources = {
       aria_tag: 'Étiquette: {{tag}}',
       aria_location: 'Lieu: {{location}}',
 
+      // Login page
       login_subtitle:
         'Connectez-vous avec votre adresse e-mail universitaire. Nous vous enverrons un lien de connexion à usage unique.',
       login_privacy_notice:
@@ -400,20 +445,27 @@ export const resources = {
         'Trop de tentatives. Veuillez réessayer plus tard.',
       error_unknown: "Une erreur s'est produite. Veuillez réessayer.",
 
+      // Verify prompt page
       invalid_link_title: 'Lien invalide',
       invalid_link_body: 'Le lien de connexion était incomplet.',
       request_new_link: 'Demander un nouveau lien',
       verify_prompt_subtitle: 'Cliquez sur le bouton pour vous connecter.',
       verify_now: 'Se connecter maintenant',
 
+      // 404 page
       not_found_title: 'Page introuvable',
       not_found_body: "La page demandée n'existe pas.",
       go_home: "Retour à l'accueil",
 
+      // Scroll to top
+      scroll_to_top: 'Retour en haut',
+
+      // Edit listing page
       edit_listing_title: "Modifier l'annonce",
       tags_label: 'Mots-clés (séparés par des virgules)',
       save_changes: 'Enregistrer les modifications',
 
+      // Listing validation error codes returned by server actions
       error_type_invalid: 'Veuillez choisir un type valide.',
       error_title_too_short: 'Le titre doit comporter au moins 3 caractères.',
       error_title_too_long: 'Le titre ne doit pas dépasser 120 caractères.',
@@ -480,12 +532,14 @@ export const resources = {
       type_and_tags: 'Tür ve kategoriler',
       type: 'Tür',
       choose_tags: 'Kategori seçin',
+      choose_tags_hint:
+        'En fazla {{max}} kategori seçin. Diğerlerini sonraki adımda hashtag olarak ekleyin.',
       custom_tags_optional:
         'İlanınızın daha hızlı bulunması için hashtag ekleyin',
       custom_tags_placeholder:
         'örn. bitkiler, acil (virgülle ayrılmış)',
       custom_tags_hint:
-        'Karttaki ek hashtag’ler. Kategori sekmesi olmazlar.',
+        'Ek hashtag’ler kartınızda görünür ve bir ilan onları kullandığı sürece kategori sekmesi olur.',
       next: 'İleri',
       back: 'Geri',
       details: 'Detaylar',
@@ -517,6 +571,7 @@ export const resources = {
       aria_tag: 'Etiket: {{tag}}',
       aria_location: 'Konum: {{location}}',
 
+      // Login page
       login_subtitle:
         'Üniversite e-posta adresinizle giriş yapın. Size tek kullanımlık bir giriş bağlantısı göndereceğiz.',
       login_privacy_notice:
@@ -542,20 +597,27 @@ export const resources = {
         'Çok fazla istek. Lütfen daha sonra tekrar deneyin.',
       error_unknown: 'Bir şeyler ters gitti. Lütfen tekrar deneyin.',
 
+      // Verify prompt page
       invalid_link_title: 'Geçersiz bağlantı',
       invalid_link_body: 'Giriş bağlantısı eksikti.',
       request_new_link: 'Yeni bağlantı iste',
       verify_prompt_subtitle: 'Giriş yapmak için düğmeye tıklayın.',
       verify_now: 'Şimdi giriş yap',
 
+      // 404 page
       not_found_title: 'Sayfa bulunamadı',
       not_found_body: 'İstenen sayfa mevcut değil.',
       go_home: 'Ana sayfaya git',
 
+      // Scroll to top
+      scroll_to_top: 'Yukarı dön',
+
+      // Edit listing page
       edit_listing_title: 'İlanı düzenle',
       tags_label: 'Etiketler (virgülle ayrılmış)',
       save_changes: 'Değişiklikleri kaydet',
 
+      // Listing validation error codes returned by server actions
       error_type_invalid: 'Lütfen geçerli bir tür seçin.',
       error_title_too_short: 'Başlık en az 3 karakter olmalıdır.',
       error_title_too_long: 'Başlık en fazla 120 karakter olabilir.',
@@ -577,7 +639,7 @@ export const resources = {
       location_label: 'Ubicación',
       disclaimer_btn: 'Aviso Legal',
       account_menu: 'Menú de la cuenta',
-      manage_listings: 'Gestionar mis anuncios',
+      manage_listings: 'Publicar un anuncio',
       my_entries: 'Mis anuncios',
       logout: 'Cerrar sesión',
 
@@ -602,7 +664,7 @@ export const resources = {
       category_weekend: 'Fin de semana',
       category_sale: 'Venta',
       category_transport: 'Transporte',
-      more_categories: 'Categorías',
+      more_categories: 'Más categorías',
 
       items_per_page: 'Elementos por página:',
       page_of: 'Página {{current}} de {{total}}',
@@ -623,12 +685,14 @@ export const resources = {
       type_and_tags: 'Tipo y categorías',
       type: 'Tipo',
       choose_tags: 'Elegir categorías',
+      choose_tags_hint:
+        'Elige hasta {{max}} categorías. Lo demás se añade como hashtag en el siguiente paso.',
       custom_tags_optional:
         'Añade hashtags para que encuentren tu anuncio antes',
       custom_tags_placeholder:
         'p. ej. plantas, urgente (separadas por comas)',
       custom_tags_hint:
-        'Hashtags extra en la tarjeta. No se convierten en pestañas.',
+        'Los hashtags adicionales aparecen en tu anuncio y se convierten en una pestaña de categoría mientras algún anuncio los use.',
       next: 'Siguiente',
       back: 'Atrás',
       details: 'Detalles',
@@ -662,6 +726,7 @@ export const resources = {
       aria_tag: 'Etiqueta: {{tag}}',
       aria_location: 'Ubicación: {{location}}',
 
+      // Login page
       login_subtitle:
         'Inicia sesión con tu dirección de correo universitaria. Te enviaremos un enlace de acceso de un solo uso.',
       login_privacy_notice:
@@ -687,20 +752,27 @@ export const resources = {
         'Demasiadas solicitudes. Inténtalo de nuevo más tarde.',
       error_unknown: 'Algo salió mal. Inténtalo de nuevo.',
 
+      // Verify prompt page
       invalid_link_title: 'Enlace no válido',
       invalid_link_body: 'El enlace de acceso estaba incompleto.',
       request_new_link: 'Solicitar un nuevo enlace',
       verify_prompt_subtitle: 'Haz clic en el botón para iniciar sesión.',
       verify_now: 'Iniciar sesión ahora',
 
+      // 404 page
       not_found_title: 'Página no encontrada',
       not_found_body: 'La página solicitada no existe.',
       go_home: 'Ir al inicio',
 
+      // Scroll to top
+      scroll_to_top: 'Volver arriba',
+
+      // Edit listing page
       edit_listing_title: 'Editar anuncio',
       tags_label: 'Etiquetas (separadas por comas)',
       save_changes: 'Guardar cambios',
 
+      // Listing validation error codes returned by server actions
       error_type_invalid: 'Selecciona un tipo válido.',
       error_title_too_short: 'El título debe tener al menos 3 caracteres.',
       error_title_too_long: 'El título no puede superar los 120 caracteres.',

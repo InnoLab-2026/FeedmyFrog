@@ -11,40 +11,73 @@ interface CategoryTabsProps {
   onSelectCategory: (id: string) => void;
 }
 
+/*
+ * Estimated width of one tab: icon + gap + label + horizontal padding. It has
+ * to be an estimate rather than a measurement, because CategoryTab lays its
+ * children out with flex-1 — a rendered tab is as wide as the row lets it be,
+ * which says nothing about how much room the label actually needs.
+ */
+const ICON_WIDTH = 20;
+const LABEL_GAP = 8;
+const CHAR_WIDTH = 9;
+const TAB_PADDING = 80;
+
+/** Room the "more categories" tab needs when there is anything to fold away. */
+const OVERFLOW_TRIGGER_WIDTH = 150;
+
+/** "All" plus at least one category, even on the narrowest phone. */
+const MIN_VISIBLE = 2;
+
 export default function CategoryTabs({
   categories,
   selectedCategory,
   onSelectCategory,
 }: CategoryTabsProps) {
   const { t } = useTranslation();
-  const [visibleCount, setVisibleCount] = useState(5);
+  const [visibleCount, setVisibleCount] = useState(MIN_VISIBLE);
   const [showDropdown, setShowDropdown] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const calculate = () => {
-      if (!containerRef.current) return;
+      const container = containerRef.current;
+      if (!container) return;
 
-      if (window.innerWidth < 768) {
-        setVisibleCount(1);
+      const containerWidth = container.offsetWidth;
+      if (containerWidth === 0) return;
+
+      const widths = categories.map(
+        (category) =>
+          ICON_WIDTH +
+          LABEL_GAP +
+          category.label.length * CHAR_WIDTH +
+          TAB_PADDING,
+      );
+
+      const total = widths.reduce((sum, width) => sum + width, 0);
+
+      // Everything fits: show every tab and skip the overflow menu entirely.
+      // (The previous `count - 2` folded two tabs away even then.)
+      if (total <= containerWidth) {
+        setVisibleCount(categories.length);
         return;
       }
 
-      const containerWidth = containerRef.current.offsetWidth;
-      let totalWidth = 0;
-      let count = 0;
+      // Something has to be folded away, so the trigger needs room as well.
+      const budget = containerWidth - OVERFLOW_TRIGGER_WIDTH;
 
-      for (let i = 0; i < categories.length; i++) {
-        const tabWidth = 20 + 8 + categories[i].label.length * 9 + 80;
-        const withOverflow = totalWidth + tabWidth + (i < categories.length - 1 ? 60 : 0);
-        if (withOverflow <= containerWidth) {
-          totalWidth += tabWidth;
-          count = i + 1;
-        } else break;
+      let used = 0;
+      let count = 0;
+      for (const width of widths) {
+        if (used + width > budget) break;
+        used += width;
+        count += 1;
       }
 
-      setVisibleCount(Math.max(2, Math.min(count - 2, categories.length)));
+      setVisibleCount(
+        Math.min(categories.length, Math.max(MIN_VISIBLE, count)),
+      );
     };
 
     calculate();
@@ -90,8 +123,10 @@ export default function CategoryTabs({
               isFirst={false}
               isLast
               fullWidth
+              ariaHasPopup="menu"
+              ariaExpanded={showDropdown}
             >
-              <span style={{ fontSize: '13px', whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: 'var(--fs-xs)', whiteSpace: 'nowrap' }}>
                 {t('more_categories')}
               </span>
             </CategoryTab>
@@ -131,7 +166,7 @@ export default function CategoryTabs({
                       borderBottom:
                         i < overflow.length - 1 ? '1px solid rgba(47, 47, 47, 0.06)' : 'none',
                       fontWeight: selectedCategory === cat.id ? 600 : 500,
-                      fontSize: '14px',
+                      fontSize: 'var(--fs-sm)',
                     }}
                   >
                     {cat.icon}

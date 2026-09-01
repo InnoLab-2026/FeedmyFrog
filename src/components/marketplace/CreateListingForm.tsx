@@ -10,38 +10,22 @@ import {
 } from '@/actions/listings';
 
 import type { Mode } from '@/types';
+import {
+  STANDARD_CATEGORY_TAGS,
+  getCategoryTranslationKey,
+  isStandardCategory,
+} from '@/data/categories';
 
 interface CreateListingFormProps {
   email: string;
 }
 
-const STANDARD_TAGS = [
-  'Familie',
-  'Kinder',
-  'Wochenende',
-  'Mobilität',
-  'Pendeln',
-  'Verkauf',
-  'Dienstleistungen',
-  'Transport',
-  'Bildung',
-];
-
-function getTagTranslationKey(tag: string) {
-  const keys: Record<string, string> = {
-    Familie: 'category_family',
-    Kinder: 'category_children',
-    Wochenende: 'category_weekend',
-    Mobilität: 'category_mobility',
-    Pendeln: 'category_commuting',
-    Verkauf: 'category_sale',
-    Dienstleistungen: 'category_services',
-    Transport: 'category_transport',
-    Bildung: 'category_education',
-  };
-
-  return keys[tag] ?? tag;
-}
+/*
+ * How many of the built-in categories one listing may carry. Kept well under
+ * the server's overall cap of 8 tags (ListingInput in src/lib/validators.ts)
+ * so there is room left for the free-form hashtags added in step 2.
+ */
+const MAX_CATEGORIES = 2;
 
 export default function CreateListingForm({
   email,
@@ -69,7 +53,7 @@ export default function CreateListingForm({
       if (current.includes(tag)) {
         return current.filter((item) => item !== tag);
       }
-      if (current.length >= 2) {
+      if (current.length >= MAX_CATEGORIES) {
         return current;
       }
       return [...current, tag];
@@ -83,8 +67,9 @@ export default function CreateListingForm({
 
   const allTags = [...selectedTags, ...customTagList];
 
-  const step1Valid =
-    selectedTags.length >= 1 && selectedTags.length <= 2;
+  const categoryLimitReached = selectedTags.length >= MAX_CATEGORIES;
+
+  const step1Valid = selectedTags.length > 0;
 
   const step2Valid =
     title.trim().length > 0 &&
@@ -195,14 +180,29 @@ export default function CreateListingForm({
               {t('choose_tags')} *
             </label>
 
+            {/* The picker caps the selection at MAX_CATEGORIES. Say so, and
+                disable the unpicked buttons once the cap is reached — a
+                click that silently does nothing reads as a broken button. */}
+            <p
+              style={{
+                margin: '-6px 0 12px',
+                color: '#666',
+                fontSize: 'var(--fs-xs)',
+              }}
+            >
+              {t('choose_tags_hint', { max: MAX_CATEGORIES })}
+            </p>
+
             <div className="grid grid-cols-2" style={{ gap: '10px' }}>
-              {STANDARD_TAGS.map((tag) => {
+              {STANDARD_CATEGORY_TAGS.map((tag) => {
                 const selected = selectedTags.includes(tag);
+                const blocked = categoryLimitReached && !selected;
 
                 return (
                   <button
                     key={tag}
                     type="button"
+                    disabled={blocked}
                     onClick={() => toggleTag(tag)}
                     style={{
                       minHeight: '50px',
@@ -216,12 +216,13 @@ export default function CreateListingForm({
                       borderRadius: '8px',
                       fontSize: 'var(--fs-md)',
                       fontWeight: 500,
-                      cursor: 'pointer',
+                      cursor: blocked ? 'not-allowed' : 'pointer',
+                      opacity: blocked ? 0.45 : 1,
                       boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
                     }}
                   >
                     {selected ? '✓ ' : ''}
-                    {t(getTagTranslationKey(tag))}
+                    {t(getCategoryTranslationKey(tag))}
                   </button>
                 );
               })}
@@ -471,8 +472,8 @@ export default function CreateListingForm({
               style={{ gap: '7px', marginBottom: '12px' }}
             >
               {allTags.map((tag) => {
-                const translatedTag = STANDARD_TAGS.includes(tag)
-                  ? t(getTagTranslationKey(tag))
+                const translatedTag = isStandardCategory(tag)
+                  ? t(getCategoryTranslationKey(tag))
                   : tag;
 
                 return (

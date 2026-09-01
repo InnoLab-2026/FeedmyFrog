@@ -10,6 +10,7 @@ import {
   Truck,
 } from 'lucide-react';
 
+/** Maps tag names to their icon element. App falls back to <Search> for unknown tags. */
 export const iconMap: Record<string, React.ReactNode> = {
   Familie: <Users className="w-4 h-4" />,
   Kinder: <Baby className="w-4 h-4" />,

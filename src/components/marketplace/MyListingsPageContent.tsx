@@ -46,12 +46,12 @@ export default function MyListingsPageContent({
               gap: '8px',
               marginBottom: '12px',
               color: '#659629',
-              fontSize: '14px',
+              fontSize: 'var(--fs-sm)',
               fontWeight: 600,
               textDecoration: 'none',
             }}
           >
-            ← {t('back_to_overview')}
+            <span aria-hidden="true">←</span> {t('back_to_overview')}
           </Link>
 
           <div
@@ -63,7 +63,7 @@ export default function MyListingsPageContent({
                 style={{
                   margin: '0 0 6px',
                   color: '#2f2f2f',
-                  fontSize: '28px',
+                  fontSize: 'var(--fs-3xl)',
                   lineHeight: 1.25,
                   fontWeight: 700,
                 }}
@@ -74,7 +74,7 @@ export default function MyListingsPageContent({
                 style={{
                   margin: 0,
                   color: '#6a6a6a',
-                  fontSize: '15px',
+                  fontSize: 'var(--fs-md)',
                   lineHeight: 1.5,
                 }}
               >

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getInitials } from './initials';
+import { displayNameFromEmail, getInitials } from './initials';
 
 describe('getInitials', () => {
   it('uses the first letter when there is no dot', () => {
@@ -28,5 +28,35 @@ describe('getInitials', () => {
 
   it('ignores the domain entirely', () => {
     expect(getInitials('anna@sub.reutlingen-university.de')).toBe('A');
+  });
+});
+
+describe('displayNameFromEmail', () => {
+  it('capitalises a single-segment local part', () => {
+    expect(displayNameFromEmail('anna@reutlingen-university.de')).toBe('Anna');
+  });
+
+  it('turns dot-separated segments into capitalised words', () => {
+    expect(displayNameFromEmail('max.mustermann@reutlingen-university.de')).toBe(
+      'Max Mustermann',
+    );
+  });
+
+  it('keeps the rest of a segment as typed instead of lowercasing it', () => {
+    expect(displayNameFromEmail('mcDonald@reutlingen-university.de')).toBe('McDonald');
+  });
+
+  it('drops empty segments produced by repeated dots', () => {
+    expect(displayNameFromEmail('a..b@reutlingen-university.de')).toBe('A B');
+  });
+
+  it('falls back to the full address when the local part yields no name', () => {
+    expect(displayNameFromEmail('...@reutlingen-university.de')).toBe(
+      '...@reutlingen-university.de',
+    );
+  });
+
+  it('ignores the domain entirely', () => {
+    expect(displayNameFromEmail('anna@sub.reutlingen-university.de')).toBe('Anna');
   });
 });
