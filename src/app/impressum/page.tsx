@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
-import { CARD_SHADOW } from '@/constants';
+import { getRequestLanguage, serverLegalTitle } from '@/i18n/server';
+import { APP_NAME, CARD_SHADOW } from '@/constants';
 import LegalPageTopBar from '@/components/layout/LegalPageTopBar';
 import ImpressumContent from './ImpressumContent';
 
-export const metadata: Metadata = {
-  title: 'Impressum · Reutlingen University Connect',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const language = await getRequestLanguage();
+
+  return { title: `${serverLegalTitle(language, 'imprint')} · ${APP_NAME}` };
+}
 
 // Dynamic rendering keeps the HTML nonce in sync with the per-request CSP
 // header set in src/proxy.ts.

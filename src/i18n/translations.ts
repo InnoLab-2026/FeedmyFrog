@@ -10,12 +10,29 @@ export const resources = {
       my_entries: 'My listings',
       logout: 'Log out',
 
+      // App metadata
+      app_description:
+        'Internal exchange platform for students and staff of Reutlingen University.',
+      page_title_login: 'Sign in',
+
+      // Language switcher
+      language_switch_to: 'Switch to {{language}}',
+      language_switch_aria:
+        'Language: {{current}}. Switch to {{next}}.',
+
+      // Contact mail
+      contact_subject: 'Listing: {{title}}',
+
+
       // Location search
       location_enter: 'Enter location...',
       gps_use: 'Use GPS location',
       gps_loading: 'Determining location...',
       gps_unavailable: 'GPS is not available on this device.',
       gps_error: 'Location could not be determined.',
+      gps_near_city: 'Near {{city}}',
+      gps_out_of_area:
+        'You appear to be outside the region this platform covers.',
       radius: 'Radius',
 
       // Mode toggle
@@ -83,12 +100,10 @@ export const resources = {
       // Disclaimer overlay
       disclaimer_title: 'Disclaimer',
       close: 'Close',
-      disclaimer_bullet1_pre: 'Only people with a valid',
-      disclaimer_bullet1_post:
-        'email address have access to this page.',
-      disclaimer_bullet2_pre: 'All people with a valid',
-      disclaimer_bullet2_post:
-        'email address can see all information displayed here and submit their own Need/Offer listings.',
+      disclaimer_bullet1:
+        'Only people with a valid <domain>{{domain}}</domain> email address have access to this page.',
+      disclaimer_bullet2:
+        'All people with a valid <domain>{{domain}}</domain> email address can see all information displayed here and submit their own Need/Offer listings.',
       disclaimer_bullet3: 'No logs are stored.',
       click_to_close: 'Click outside to close',
 
@@ -115,9 +130,12 @@ export const resources = {
       sending_link: 'Sending …',
       send_login_link: 'Send login link',
       email_sent_title: 'Email on its way ✉️',
-      email_sent_body_pre:
+      // Two independent sentences with the address rendered between them —
+      // deliberately not a `_pre` + value + `_post` sandwich, which would fix
+      // the word order around the address for every language at once.
+      email_sent_intro:
         'If this address is eligible, you will find the link in your inbox shortly:',
-      email_sent_body_post:
+      email_sent_note:
         'Please note: the link is valid only once. If it has expired, you can request a new one at any time.',
       error_forbidden_domain:
         'Please use your university email address.',
@@ -173,12 +191,29 @@ export const resources = {
       my_entries: 'Meine Einträge',
       logout: 'Abmelden',
 
+      // App metadata
+      app_description:
+        'Hochschulinterne Vermittlungsplattform für Studierende und Beschäftigte der Hochschule Reutlingen.',
+      page_title_login: 'Anmelden',
+
+      // Language switcher
+      language_switch_to: 'Zu {{language}} wechseln',
+      language_switch_aria:
+        'Sprache: {{current}}. Zu {{next}} wechseln.',
+
+      // Contact mail
+      contact_subject: 'Anzeige: {{title}}',
+
+
       // Location search
       location_enter: 'Ort eingeben...',
       gps_use: 'GPS-Standort verwenden',
       gps_loading: 'Standort wird ermittelt...',
       gps_unavailable: 'GPS ist auf diesem Gerät nicht verfügbar.',
       gps_error: 'Standort konnte nicht ermittelt werden.',
+      gps_near_city: 'In der Nähe von {{city}}',
+      gps_out_of_area:
+        'Sie befinden sich offenbar außerhalb der Region, die diese Plattform abdeckt.',
       radius: 'Umkreis',
 
       // Mode toggle
@@ -246,12 +281,10 @@ export const resources = {
       // Disclaimer overlay
       disclaimer_title: 'Haftungsausschluss',
       close: 'Schließen',
-      disclaimer_bullet1_pre: 'Nur Personen mit einer gültigen',
-      disclaimer_bullet1_post:
-        'E-Mail-Adresse haben Zugang zu dieser Seite.',
-      disclaimer_bullet2_pre: 'Alle Personen mit einer gültigen',
-      disclaimer_bullet2_post:
-        'E-Mail-Adresse sehen alle hier angezeigten Informationen und können eigene Suche/Biete-Einträge einreichen.',
+      disclaimer_bullet1:
+        'Nur Personen mit einer gültigen <domain>{{domain}}</domain> E-Mail-Adresse haben Zugang zu dieser Seite.',
+      disclaimer_bullet2:
+        'Alle Personen mit einer gültigen <domain>{{domain}}</domain> E-Mail-Adresse sehen alle hier angezeigten Informationen und können eigene Suche/Biete-Einträge einreichen.',
       disclaimer_bullet3: 'Es werden keine Logs gespeichert.',
       click_to_close: 'Klicken zum Schließen',
 
@@ -278,9 +311,9 @@ export const resources = {
       sending_link: 'Wird gesendet …',
       send_login_link: 'Anmeldelink senden',
       email_sent_title: 'E-Mail unterwegs ✉️',
-      email_sent_body_pre:
+      email_sent_intro:
         'Falls diese Adresse berechtigt ist, finden Sie den Link gleich im Postfach:',
-      email_sent_body_post:
+      email_sent_note:
         'Bitte beachten: Der Link ist nur einmal gültig. Wenn der Link abgelaufen ist, können Sie jederzeit einen neuen erzeugen.',
       error_forbidden_domain:
         'Bitte verwenden Sie Ihre Hochschul-E-Mail-Adresse.',
@@ -338,11 +371,28 @@ export const resources = {
       my_entries: 'Mes annonces',
       logout: 'Déconnexion',
 
+      // App metadata
+      app_description:
+        'Plateforme d’échange interne pour les étudiants et le personnel de la Hochschule Reutlingen.',
+      page_title_login: 'Connexion',
+
+      // Language switcher
+      language_switch_to: 'Passer en {{language}}',
+      language_switch_aria:
+        'Langue : {{current}}. Passer en {{next}}.',
+
+      // Contact mail
+      contact_subject: 'Annonce : {{title}}',
+
+
       location_enter: 'Saisir un lieu...',
       gps_use: 'Utiliser la position GPS',
       gps_loading: 'Localisation en cours...',
       gps_unavailable: "Le GPS n'est pas disponible sur cet appareil.",
       gps_error: "La position n'a pas pu être déterminée.",
+      gps_near_city: 'À proximité de {{city}}',
+      gps_out_of_area:
+        'Vous semblez être en dehors de la région couverte par cette plateforme.',
       radius: 'Rayon',
 
       mode_need: 'Cherche',
@@ -403,13 +453,10 @@ export const resources = {
 
       disclaimer_title: 'Avertissement',
       close: 'Fermer',
-      disclaimer_bullet1_pre:
-        'Seules les personnes avec une adresse e-mail',
-      disclaimer_bullet1_post: 'valide ont accès à cette page.',
-      disclaimer_bullet2_pre:
-        'Toutes les personnes avec une adresse e-mail',
-      disclaimer_bullet2_post:
-        'valide peuvent voir toutes les informations affichées ici et soumettre leurs propres annonces Cherche/Offre.',
+      disclaimer_bullet1:
+        'Seules les personnes disposant d’une adresse e-mail <domain>{{domain}}</domain> valide ont accès à cette page.',
+      disclaimer_bullet2:
+        'Toutes les personnes disposant d’une adresse e-mail <domain>{{domain}}</domain> valide peuvent voir toutes les informations affichées ici et soumettre leurs propres annonces Cherche/Offre.',
       disclaimer_bullet3: "Aucun journal n'est enregistré.",
       click_to_close: 'Cliquer pour fermer',
 
@@ -434,9 +481,9 @@ export const resources = {
       sending_link: 'Envoi en cours …',
       send_login_link: 'Envoyer le lien de connexion',
       email_sent_title: 'E-mail en route ✉️',
-      email_sent_body_pre:
+      email_sent_intro:
         'Si cette adresse est autorisée, vous trouverez le lien dans votre boîte de réception :',
-      email_sent_body_post:
+      email_sent_note:
         'Attention : le lien n’est valable qu’une seule fois. S’il a expiré, vous pouvez en demander un nouveau à tout moment.',
       error_forbidden_domain:
         'Veuillez utiliser votre adresse e-mail universitaire.',
@@ -491,11 +538,28 @@ export const resources = {
       my_entries: 'İlanlarım',
       logout: 'Çıkış yap',
 
+      // App metadata
+      app_description:
+        'Reutlingen Üniversitesi öğrencileri ve çalışanları için üniversite içi aracılık platformu.',
+      page_title_login: 'Giriş yap',
+
+      // Language switcher
+      language_switch_to: '{{language}} diline geç',
+      language_switch_aria:
+        'Dil: {{current}}. {{next}} diline geç.',
+
+      // Contact mail
+      contact_subject: 'İlan: {{title}}',
+
+
       location_enter: 'Konum girin...',
       gps_use: 'GPS konumunu kullan',
       gps_loading: 'Konum belirleniyor...',
       gps_unavailable: 'GPS bu cihazda kullanılamıyor.',
       gps_error: 'Konum belirlenemedi.',
+      gps_near_city: '{{city}} yakınında',
+      gps_out_of_area:
+        'Görünüşe göre bu platformun kapsadığı bölgenin dışındasınız.',
       radius: 'Yarıçap',
 
       mode_need: 'İstek',
@@ -556,12 +620,10 @@ export const resources = {
 
       disclaimer_title: 'Sorumluluk Reddi',
       close: 'Kapat',
-      disclaimer_bullet1_pre: 'Yalnızca geçerli bir',
-      disclaimer_bullet1_post:
-        'e-posta adresine sahip kişiler bu sayfaya erişebilir.',
-      disclaimer_bullet2_pre: 'Geçerli bir',
-      disclaimer_bullet2_post:
-        'e-posta adresine sahip tüm kişiler buradaki tüm bilgileri görebilir ve kendi İstek/Teklif ilanlarını gönderebilir.',
+      disclaimer_bullet1:
+        'Bu sayfaya yalnızca geçerli bir <domain>{{domain}}</domain> e-posta adresine sahip kişiler erişebilir.',
+      disclaimer_bullet2:
+        'Geçerli bir <domain>{{domain}}</domain> e-posta adresine sahip tüm kişiler buradaki tüm bilgileri görebilir ve kendi İstek/Teklif ilanlarını gönderebilir.',
       disclaimer_bullet3: 'Hiçbir kayıt tutulmaz.',
       click_to_close: 'Kapatmak için tıklayın',
 
@@ -586,9 +648,9 @@ export const resources = {
       sending_link: 'Gönderiliyor …',
       send_login_link: 'Giriş bağlantısı gönder',
       email_sent_title: 'E-posta yolda ✉️',
-      email_sent_body_pre:
+      email_sent_intro:
         'Bu adres yetkiliyse bağlantıyı kısa süre içinde gelen kutunuzda bulacaksınız:',
-      email_sent_body_post:
+      email_sent_note:
         'Lütfen dikkat: Bağlantı yalnızca bir kez geçerlidir. Süresi dolduysa istediğiniz zaman yeni bir tane isteyebilirsiniz.',
       error_forbidden_domain:
         'Lütfen üniversite e-posta adresinizi kullanın.',
@@ -643,12 +705,29 @@ export const resources = {
       my_entries: 'Mis anuncios',
       logout: 'Cerrar sesión',
 
+      // App metadata
+      app_description:
+        'Plataforma interna de intercambio para estudiantes y personal de la Universidad de Reutlingen.',
+      page_title_login: 'Iniciar sesión',
+
+      // Language switcher
+      language_switch_to: 'Cambiar a {{language}}',
+      language_switch_aria:
+        'Idioma: {{current}}. Cambiar a {{next}}.',
+
+      // Contact mail
+      contact_subject: 'Anuncio: {{title}}',
+
+
       location_enter: 'Introducir ubicación...',
       gps_use: 'Usar ubicación GPS',
       gps_loading: 'Determinando ubicación...',
       gps_unavailable:
         'El GPS no está disponible en este dispositivo.',
       gps_error: 'No se pudo determinar la ubicación.',
+      gps_near_city: 'Cerca de {{city}}',
+      gps_out_of_area:
+        'Parece que estás fuera de la región que cubre esta plataforma.',
       radius: 'Radio',
 
       mode_need: 'Busco',
@@ -709,14 +788,10 @@ export const resources = {
 
       disclaimer_title: 'Aviso Legal',
       close: 'Cerrar',
-      disclaimer_bullet1_pre:
-        'Solo las personas con una dirección de correo',
-      disclaimer_bullet1_post:
-        'válida tienen acceso a esta página.',
-      disclaimer_bullet2_pre:
-        'Todas las personas con una dirección de correo',
-      disclaimer_bullet2_post:
-        'válida pueden ver toda la información aquí mostrada y enviar sus propios anuncios de Busco/Ofrezco.',
+      disclaimer_bullet1:
+        'Solo las personas con una dirección de correo <domain>{{domain}}</domain> válida tienen acceso a esta página.',
+      disclaimer_bullet2:
+        'Todas las personas con una dirección de correo <domain>{{domain}}</domain> válida pueden ver toda la información aquí mostrada y enviar sus propios anuncios de Busco/Ofrezco.',
       disclaimer_bullet3: 'No se almacenan registros.',
       click_to_close: 'Haga clic para cerrar',
 
@@ -741,9 +816,9 @@ export const resources = {
       sending_link: 'Enviando …',
       send_login_link: 'Enviar enlace de acceso',
       email_sent_title: 'Correo en camino ✉️',
-      email_sent_body_pre:
+      email_sent_intro:
         'Si esta dirección está autorizada, encontrarás el enlace en tu bandeja de entrada:',
-      email_sent_body_post:
+      email_sent_note:
         'Ten en cuenta: el enlace solo es válido una vez. Si ha caducado, puedes solicitar uno nuevo en cualquier momento.',
       error_forbidden_domain:
         'Utiliza tu dirección de correo universitaria.',
@@ -789,12 +864,18 @@ export const resources = {
   },
 } as const;
 
+/*
+ * `name` is each language's endonym — the name it calls itself. A reader
+ * hunting for their language scans for "Deutsch", not for "German", so an
+ * endonym is what belongs in a switcher, and it is deliberately the same in
+ * every locale rather than being translated.
+ */
 export const LANGUAGES = [
-  { code: 'en', flag: '🇬🇧', label: 'EN' },
-  { code: 'de', flag: '🇩🇪', label: 'DE' },
-  { code: 'fr', flag: '🇫🇷', label: 'FR' },
-  { code: 'tr', flag: '🇹🇷', label: 'TR' },
-  { code: 'es', flag: '🇪🇸', label: 'ES' },
+  { code: 'en', label: 'EN', name: 'English' },
+  { code: 'de', label: 'DE', name: 'Deutsch' },
+  { code: 'fr', label: 'FR', name: 'Français' },
+  { code: 'tr', label: 'TR', name: 'Türkçe' },
+  { code: 'es', label: 'ES', name: 'Español' },
 ] as const;
 
 export type LangCode = (typeof LANGUAGES)[number]['code'];
