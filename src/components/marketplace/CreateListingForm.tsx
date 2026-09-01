@@ -10,38 +10,25 @@ import {
 } from '@/actions/listings';
 
 import type { Mode } from '@/types';
+import {
+  STANDARD_CATEGORY_TAGS,
+  getCategoryTranslationKey,
+  isStandardCategory,
+} from '@/data/categories';
+import KnownPlacesDatalist, {
+  KNOWN_PLACES_LIST_ID,
+} from '@/components/marketplace/KnownPlacesDatalist';
 
 interface CreateListingFormProps {
   email: string;
 }
 
-const STANDARD_TAGS = [
-  'Familie',
-  'Kinder',
-  'Wochenende',
-  'Mobilität',
-  'Pendeln',
-  'Verkauf',
-  'Dienstleistungen',
-  'Transport',
-  'Bildung',
-];
-
-function getTagTranslationKey(tag: string) {
-  const keys: Record<string, string> = {
-    Familie: 'category_family',
-    Kinder: 'category_children',
-    Wochenende: 'category_weekend',
-    Mobilität: 'category_mobility',
-    Pendeln: 'category_commuting',
-    Verkauf: 'category_sale',
-    Dienstleistungen: 'category_services',
-    Transport: 'category_transport',
-    Bildung: 'category_education',
-  };
-
-  return keys[tag] ?? tag;
-}
+/*
+ * How many of the built-in categories one listing may carry. Kept well under
+ * the server's overall cap of 8 tags (ListingInput in src/lib/validators.ts)
+ * so there is room left for the free-form hashtags added in step 2.
+ */
+const MAX_CATEGORIES = 2;
 
 export default function CreateListingForm({
   email,
@@ -65,11 +52,15 @@ export default function CreateListingForm({
   const [location, setLocation] = useState('');
 
   const toggleTag = (tag: string) => {
-    setSelectedTags((current) =>
-      current.includes(tag)
-        ? current.filter((item) => item !== tag)
-        : [...current, tag],
-    );
+    setSelectedTags((current) => {
+      if (current.includes(tag)) {
+        return current.filter((item) => item !== tag);
+      }
+      if (current.length >= MAX_CATEGORIES) {
+        return current;
+      }
+      return [...current, tag];
+    });
   };
 
   const customTagList = customTags
@@ -77,12 +68,11 @@ export default function CreateListingForm({
     .map((tag) => tag.trim())
     .filter(Boolean);
 
-  const allTags = [
-    ...selectedTags,
-    ...customTagList,
-  ];
+  const allTags = [...selectedTags, ...customTagList];
 
-  const step1Valid = allTags.length > 0;
+  const categoryLimitReached = selectedTags.length >= MAX_CATEGORIES;
+
+  const step1Valid = selectedTags.length > 0;
 
   const step2Valid =
     title.trim().length > 0 &&
@@ -103,44 +93,15 @@ export default function CreateListingForm({
 
   return (
     <form action={action}>
-      {/* Werte für bestehende Backend-Action */}
-      <input
-        type="hidden"
-        name="type"
-        value={type}
-      />
+      <input type="hidden" name="type" value={type} />
+      <input type="hidden" name="tags" value={allTags.join(',')} />
+      <input type="hidden" name="title" value={title} />
+      <input type="hidden" name="description" value={description} />
+      <input type="hidden" name="location" value={location} />
 
-      <input
-        type="hidden"
-        name="tags"
-        value={allTags.join(',')}
-      />
-
-      <input
-        type="hidden"
-        name="title"
-        value={title}
-      />
-
-      <input
-        type="hidden"
-        name="description"
-        value={description}
-      />
-
-      <input
-        type="hidden"
-        name="location"
-        value={location}
-      />
-
-      {/* Fortschritt */}
       <div
         className="flex"
-        style={{
-          gap: '12px',
-          marginBottom: '34px',
-        }}
+        style={{ gap: '12px', marginBottom: '34px' }}
       >
         {[1, 2, 3].map((item) => (
           <div
@@ -149,16 +110,12 @@ export default function CreateListingForm({
               height: '8px',
               flex: 1,
               borderRadius: '999px',
-              background:
-                item <= step
-                  ? '#8DC63F'
-                  : '#dedede',
+              background: item <= step ? '#8DC63F' : '#dedede',
             }}
           />
         ))}
       </div>
 
-      {/* STEP 1 */}
       {step === 1 && (
         <div>
           <h2
@@ -172,11 +129,7 @@ export default function CreateListingForm({
             {t('type_and_tags')}
           </h2>
 
-          <div
-            style={{
-              marginBottom: '30px',
-            }}
-          >
+          <div style={{ marginBottom: '30px' }}>
             <label
               style={{
                 display: 'block',
@@ -188,62 +141,37 @@ export default function CreateListingForm({
               {t('type')} *
             </label>
 
-            <div
-              className="grid grid-cols-2"
-              style={{
-                gap: '12px',
-              }}
-            >
-              {(['need', 'offer'] as Mode[]).map(
-                (item) => {
-                  const active = type === item;
+            <div className="grid grid-cols-2" style={{ gap: '12px' }}>
+              {(['need', 'offer'] as Mode[]).map((item) => {
+                const active = type === item;
 
-                  return (
-                    <button
-                      key={item}
-                      type="button"
-                      onClick={() =>
-                        setType(item)
-                      }
-                      style={{
-                        minHeight: '62px',
-
-                        background: active
-                          ? '#8DC63F'
-                          : 'white',
-
-                        color: active
-                          ? 'white'
-                          : '#2F2F2F',
-
-                        border: active
-                          ? '1px solid #8DC63F'
-                          : '1px solid rgba(47,47,47,0.2)',
-
-                        borderRadius: '9px',
-                        fontSize: 'var(--fs-lg)',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-
-                        boxShadow:
-                          '0 1px 2px rgba(0,0,0,0.04)',
-                      }}
-                    >
-                      {item === 'need'
-                        ? t('mode_need')
-                        : t('mode_offer')}
-                    </button>
-                  );
-                },
-              )}
+                return (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => setType(item)}
+                    style={{
+                      minHeight: '62px',
+                      background: active ? '#8DC63F' : 'white',
+                      color: active ? 'white' : '#2F2F2F',
+                      border: active
+                        ? '1px solid #8DC63F'
+                        : '1px solid rgba(47,47,47,0.2)',
+                      borderRadius: '9px',
+                      fontSize: 'var(--fs-lg)',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                    }}
+                  >
+                    {item === 'need' ? t('mode_need') : t('mode_offer')}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <div
-            style={{
-              marginBottom: '30px',
-            }}
-          >
+          <div style={{ marginBottom: '30px' }}>
             <label
               style={{
                 display: 'block',
@@ -255,100 +183,53 @@ export default function CreateListingForm({
               {t('choose_tags')} *
             </label>
 
-            <div
-              className="grid grid-cols-2"
+            {/* The picker caps the selection at MAX_CATEGORIES. Say so, and
+                disable the unpicked buttons once the cap is reached — a
+                click that silently does nothing reads as a broken button. */}
+            <p
               style={{
-                gap: '10px',
+                margin: '-6px 0 12px',
+                color: '#666',
+                fontSize: 'var(--fs-xs)',
               }}
             >
-              {STANDARD_TAGS.map((tag) => {
-                const selected =
-                  selectedTags.includes(tag);
+              {t('choose_tags_hint', { max: MAX_CATEGORIES })}
+            </p>
+
+            <div className="grid grid-cols-2" style={{ gap: '10px' }}>
+              {STANDARD_CATEGORY_TAGS.map((tag) => {
+                const selected = selectedTags.includes(tag);
+                const blocked = categoryLimitReached && !selected;
 
                 return (
                   <button
                     key={tag}
                     type="button"
-                    onClick={() =>
-                      toggleTag(tag)
-                    }
+                    aria-pressed={selected}
+                    disabled={blocked}
+                    onClick={() => toggleTag(tag)}
                     style={{
                       minHeight: '50px',
                       padding: '0 16px',
-
                       textAlign: 'left',
-
-                      background: selected
-                        ? '#8DC63F'
-                        : 'white',
-
-                      color: selected
-                        ? '#1a3200'
-                        : '#2F2F2F',
-
+                      background: selected ? '#8DC63F' : 'white',
+                      color: selected ? '#1a3200' : '#2F2F2F',
                       border: selected
                         ? '1px solid #8DC63F'
                         : '1px solid rgba(47,47,47,0.2)',
-
                       borderRadius: '8px',
-
                       fontSize: 'var(--fs-md)',
                       fontWeight: 500,
-
-                      cursor: 'pointer',
-
-                      boxShadow:
-                        '0 1px 2px rgba(0,0,0,0.04)',
+                      cursor: blocked ? 'not-allowed' : 'pointer',
+                      opacity: blocked ? 0.45 : 1,
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
                     }}
                   >
-                    {selected ? '✓ ' : ''}
-
-                    {t(
-                      getTagTranslationKey(tag),
-                    )}
+                    {t(getCategoryTranslationKey(tag))}
                   </button>
                 );
               })}
             </div>
-          </div>
-
-          <div>
-            <label
-              style={{
-                display: 'block',
-                marginBottom: '12px',
-                fontSize: 'var(--fs-base)',
-                fontWeight: 600,
-              }}
-            >
-              {t('custom_tags_optional')}
-            </label>
-
-            <input
-              type="text"
-              value={customTags}
-              onChange={(e) =>
-                setCustomTags(e.target.value)
-              }
-              placeholder={t(
-                'custom_tags_placeholder',
-              )}
-              style={{
-                ...inputStyle,
-                height: '58px',
-                fontSize: 'var(--fs-base)',
-              }}
-            />
-
-            <p
-              style={{
-                margin: '7px 0 0',
-                color: '#666',
-                fontSize: 'var(--fs-xs)',
-              }}
-            >
-              {t('custom_tags_hint')}
-            </p>
           </div>
 
           <button
@@ -358,25 +239,15 @@ export default function CreateListingForm({
             style={{
               width: '100%',
               minHeight: '58px',
-
               marginTop: '30px',
-
               background: '#8DC63F',
               color: '#1a3200',
-
               border: 'none',
               borderRadius: '8px',
-
               fontSize: 'var(--fs-lg)',
               fontWeight: 600,
-
-              cursor: step1Valid
-                ? 'pointer'
-                : 'not-allowed',
-
-              opacity: step1Valid
-                ? 1
-                : 0.5,
+              cursor: step1Valid ? 'pointer' : 'not-allowed',
+              opacity: step1Valid ? 1 : 0.5,
             }}
           >
             {t('next')}
@@ -384,7 +255,6 @@ export default function CreateListingForm({
         </div>
       )}
 
-      {/* STEP 2 */}
       {step === 2 && (
         <div>
           <h2
@@ -398,11 +268,7 @@ export default function CreateListingForm({
             {t('details')}
           </h2>
 
-          <div
-            style={{
-              marginBottom: '20px',
-            }}
-          >
+          <div style={{ marginBottom: '20px' }}>
             <label
               style={{
                 display: 'block',
@@ -412,23 +278,16 @@ export default function CreateListingForm({
             >
               {t('title')} *
             </label>
-
             <input
               type="text"
               value={title}
               maxLength={120}
-              onChange={(e) =>
-                setTitle(e.target.value)
-              }
+              onChange={(e) => setTitle(e.target.value)}
               style={inputStyle}
             />
           </div>
 
-          <div
-            style={{
-              marginBottom: '20px',
-            }}
-          >
+          <div style={{ marginBottom: '20px' }}>
             <label
               style={{
                 display: 'block',
@@ -438,18 +297,12 @@ export default function CreateListingForm({
             >
               {t('description')} *
             </label>
-
             <textarea
               value={description}
               maxLength={2000}
               rows={6}
-              onChange={(e) =>
-                setDescription(e.target.value)
-              }
-              style={{
-                ...inputStyle,
-                resize: 'vertical',
-              }}
+              onChange={(e) => setDescription(e.target.value)}
+              style={{ ...inputStyle, resize: 'vertical' }}
             />
           </div>
 
@@ -463,69 +316,80 @@ export default function CreateListingForm({
             >
               {t('location')} *
             </label>
-
             <input
               type="text"
               value={location}
               maxLength={80}
-              onChange={(e) =>
-                setLocation(e.target.value)
-              }
+              list={KNOWN_PLACES_LIST_ID}
+              onChange={(e) => setLocation(e.target.value)}
               style={inputStyle}
             />
+            <KnownPlacesDatalist />
+          </div>
+
+          <div style={{ marginTop: '20px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '9px',
+                fontWeight: 600,
+              }}
+            >
+              {t('custom_tags_optional')}
+            </label>
+            <input
+              type="text"
+              value={customTags}
+              onChange={(e) => setCustomTags(e.target.value)}
+              placeholder={t('custom_tags_placeholder')}
+              style={{
+                ...inputStyle,
+                height: '58px',
+                fontSize: 'var(--fs-base)',
+              }}
+            />
+            <p
+              style={{
+                margin: '7px 0 0',
+                color: '#666',
+                fontSize: 'var(--fs-xs)',
+              }}
+            >
+              {t('custom_tags_hint')}
+            </p>
           </div>
 
           <div
             className="grid grid-cols-2"
-            style={{
-              gap: '12px',
-              marginTop: '28px',
-            }}
+            style={{ gap: '12px', marginTop: '28px' }}
           >
             <button
               type="button"
               onClick={() => setStep(1)}
               style={{
                 minHeight: '52px',
-
                 background: 'white',
-
-                border:
-                  '1px solid rgba(47,47,47,0.2)',
-
+                border: '1px solid rgba(47,47,47,0.2)',
                 borderRadius: '8px',
-
                 fontWeight: 600,
-
                 cursor: 'pointer',
               }}
             >
               {t('back')}
             </button>
-
             <button
               type="button"
               disabled={!step2Valid}
               onClick={() => setStep(3)}
               style={{
                 minHeight: '52px',
-
                 background: '#8DC63F',
                 color: '#1a3200',
-
                 border: 'none',
-
                 borderRadius: '8px',
-
                 fontWeight: 600,
-
-                cursor: step2Valid
-                  ? 'pointer'
-                  : 'not-allowed',
-
-                opacity: step2Valid
-                  ? 1
-                  : 0.5,
+                cursor: step2Valid ? 'pointer' : 'not-allowed',
+                opacity: step2Valid ? 1 : 0.5,
               }}
             >
               {t('next')}
@@ -534,7 +398,6 @@ export default function CreateListingForm({
         </div>
       )}
 
-      {/* STEP 3 */}
       {step === 3 && (
         <div>
           <h2
@@ -548,11 +411,7 @@ export default function CreateListingForm({
             {t('contact_and_preview')}
           </h2>
 
-          <div
-            style={{
-              marginBottom: '24px',
-            }}
-          >
+          <div style={{ marginBottom: '24px' }}>
             <label
               style={{
                 display: 'block',
@@ -562,7 +421,6 @@ export default function CreateListingForm({
             >
               {t('email')}
             </label>
-
             <input
               type="email"
               disabled
@@ -573,7 +431,6 @@ export default function CreateListingForm({
                 color: '#666',
               }}
             />
-
             <p
               style={{
                 margin: '6px 0 0',
@@ -588,24 +445,14 @@ export default function CreateListingForm({
           <div
             style={{
               padding: '20px',
-
               background: '#F7FBF9',
-
-              border:
-                '1px solid rgba(47,47,47,0.15)',
-
+              border: '1px solid rgba(47,47,47,0.15)',
               borderRadius: '10px',
             }}
           >
-            <p
-              style={{
-                margin: '0 0 10px',
-                fontWeight: 600,
-              }}
-            >
+            <p style={{ margin: '0 0 10px', fontWeight: 600 }}>
               {t('preview')}
             </p>
-
             <h3
               style={{
                 margin: '0 0 8px',
@@ -615,7 +462,6 @@ export default function CreateListingForm({
             >
               {title}
             </h3>
-
             <p
               style={{
                 margin: '0 0 12px',
@@ -626,38 +472,24 @@ export default function CreateListingForm({
             >
               {description}
             </p>
-
             <div
               className="flex flex-wrap"
-              style={{
-                gap: '7px',
-                marginBottom: '12px',
-              }}
+              style={{ gap: '7px', marginBottom: '12px' }}
             >
               {allTags.map((tag) => {
-                const translatedTag =
-                  STANDARD_TAGS.includes(tag)
-                    ? t(
-                        getTagTranslationKey(tag),
-                      )
-                    : tag;
+                const translatedTag = isStandardCategory(tag)
+                  ? t(getCategoryTranslationKey(tag))
+                  : tag;
 
                 return (
                   <span
                     key={tag}
                     style={{
                       padding: '5px 9px',
-
-                      background:
-                        'rgba(141,198,63,0.08)',
-
+                      background: 'rgba(141,198,63,0.08)',
                       color: '#8DC63F',
-
-                      border:
-                        '1px solid rgba(141,198,63,0.2)',
-
+                      border: '1px solid rgba(141,198,63,0.2)',
                       borderRadius: '6px',
-
                       fontSize: 'var(--fs-2xs)',
                       fontWeight: 600,
                     }}
@@ -667,7 +499,6 @@ export default function CreateListingForm({
                 );
               })}
             </div>
-
             <p
               style={{
                 margin: 0,
@@ -688,51 +519,32 @@ export default function CreateListingForm({
                 fontSize: 'var(--fs-xs)',
               }}
             >
-              {Object.entries(
-                state.errors,
-              ).flatMap(
-                ([key, codes]) =>
-                  codes.map(
-                    (code, index) => (
-                      <li
-                        key={`${key}-${index}`}
-                      >
-                        {t(`error_${code}`)}
-                      </li>
-                    ),
-                  ),
+              {Object.entries(state.errors).flatMap(([key, codes]) =>
+                codes.map((code, index) => (
+                  <li key={`${key}-${index}`}>{t(`error_${code}`)}</li>
+                )),
               )}
             </ul>
           )}
 
           <div
             className="grid grid-cols-2"
-            style={{
-              gap: '12px',
-              marginTop: '28px',
-            }}
+            style={{ gap: '12px', marginTop: '28px' }}
           >
             <button
               type="button"
               onClick={() => setStep(2)}
               style={{
                 minHeight: '52px',
-
                 background: 'white',
-
-                border:
-                  '1px solid rgba(47,47,47,0.2)',
-
+                border: '1px solid rgba(47,47,47,0.2)',
                 borderRadius: '8px',
-
                 fontWeight: 600,
-
                 cursor: 'pointer',
               }}
             >
               {t('back')}
             </button>
-
             <button
               type="submit"
               disabled={pending}
@@ -740,30 +552,17 @@ export default function CreateListingForm({
               style={{
                 gap: '8px',
                 minHeight: '52px',
-
                 background: '#8DC63F',
                 color: '#1a3200',
-
                 border: 'none',
-
                 borderRadius: '8px',
-
                 fontWeight: 600,
-
-                cursor: pending
-                  ? 'not-allowed'
-                  : 'pointer',
-
-                opacity: pending
-                  ? 0.6
-                  : 1,
+                cursor: pending ? 'not-allowed' : 'pointer',
+                opacity: pending ? 0.6 : 1,
               }}
             >
               <Plus className="w-4 h-4" />
-
-              {pending
-                ? t('saving')
-                : t('publish')}
+              {pending ? t('saving') : t('publish')}
             </button>
           </div>
         </div>

@@ -15,3 +15,22 @@ export function getInitials(email: string): string {
 
   return letters.join('') || '?';
 }
+
+/**
+ * A human-readable name derived from the same local part `getInitials`
+ * reads: dot-separated segments become space-separated, capitalised words —
+ * e.g. "max.mustermann@..." -> "Max Mustermann". Falls back to the full
+ * address when the local part carries nothing to capitalise, so the account
+ * menu never renders an empty line.
+ */
+export function displayNameFromEmail(email: string): string {
+  const local = email.split('@')[0] ?? '';
+
+  const name = local
+    .split('.')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+
+  return name || email;
+}

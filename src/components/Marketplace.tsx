@@ -4,11 +4,19 @@ import { useMemo, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import ScrollToTop from '@/components/layout/ScrollToTop';
 
 import type { Listing, Mode, Category } from '@/types';
 import { iconMap } from '@/data/icons';
+import {
+  STANDARD_CATEGORY_TAGS,
+  getCategoryTranslationKey,
+  isStandardCategory,
+} from '@/data/categories';
 
 import Header from '@/components/layout/Header';
+import type { LocationFilter } from '@/components/marketplace/LocationSearch';
+import { CITY_COORDS, DEFAULT_RADIUS_KM } from '@/lib/geo';
 import ModeToggle from '@/components/marketplace/ModeToggle';
 import CategoryTabs from '@/components/marketplace/CategoryTabs';
 import PaginationControls from '@/components/marketplace/PaginationControls';
@@ -27,31 +35,15 @@ interface MarketplaceProps {
 
   /** Tags of the current mode, ordered by frequency (server-aggregated). */
   categoryTags: string[];
+
+  /** Place the radius filter is centred on, or null when it is off. */
+  place: string | null;
+  radiusKm: number;
+  /** The place came from a GPS fix, so the control says "Near X". */
+  approximate: boolean;
 }
 
 const SEARCH_DEBOUNCE_MS = 300;
-
-/*
- * Maps the 9 built-in categories (also offered as quick-pick tags when
- * creating a listing) to their translation key. Any other tag is a free-form
- * one a user typed in — falls through to the tag string itself, which is
- * exactly right since there's no translation for made-up text.
- */
-function getCategoryTranslationKey(tag: string) {
-  const keys: Record<string, string> = {
-    Familie: 'category_family',
-    Kinder: 'category_children',
-    Wochenende: 'category_weekend',
-    Mobilität: 'category_mobility',
-    Pendeln: 'category_commuting',
-    Verkauf: 'category_sale',
-    Dienstleistungen: 'category_services',
-    Transport: 'category_transport',
-    Bildung: 'category_education',
-  };
-
-  return keys[tag] ?? tag;
-}
 
 export default function Marketplace({
   listings,
@@ -63,6 +55,9 @@ export default function Marketplace({
   query,
   email,
   categoryTags,
+  place,
+  radiusKm,
+  approximate,
 }: MarketplaceProps) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -88,6 +83,9 @@ export default function Marketplace({
       q: string;
       page: number;
       per: number;
+      place: string | null;
+      radiusKm: number;
+      approximate: boolean;
     }>,
     replace = false,
   ) {
@@ -97,6 +95,9 @@ export default function Marketplace({
       q: query,
       page,
       per: perPage,
+      place,
+      radiusKm,
+      approximate,
       ...next,
     };
 
@@ -120,6 +121,23 @@ export default function Marketplace({
 
     if (merged.per !== 15) {
       params.set('per', String(merged.per));
+    }
+
+    /*
+     * The place travels as a name and the server looks its coordinates up
+     * again, so a shared link stays readable and cannot ask about an
+     * arbitrary point on the map.
+     */
+    if (merged.place) {
+      params.set('loc', merged.place);
+
+      if (merged.radiusKm !== DEFAULT_RADIUS_KM) {
+        params.set('r', String(merged.radiusKm));
+      }
+
+      if (merged.approximate) {
+        params.set('near', '1');
+      }
     }
 
     const qs = params.toString();
@@ -153,30 +171,50 @@ export default function Marketplace({
   }
 
   /*
-   * categoryTags comes from the server already ranked by how many current
-   * listings use each tag (most-used first) — every tag actually in use
-   * becomes a tab, not just the 9 built-in categories. CategoryTabs takes
-   * care of only showing the top few and folding the rest under "...".
+   * "All" first, then the built-in categories in their fixed order so the
+   * tab strip looks the same on every visit (and stays translated), then
+   * every other tag actually in use — categoryTags comes from the server
+   * already ranked by how many current listings carry each tag. Without
+   * that tail, a free-form hashtag would render on the card but have no tab
+   * that filters to it. CategoryTabs shows the ones that fit and folds the
+   * rest under "more categories".
    */
-  const categories = useMemo<Category[]>(
-    () => [
+  const categories = useMemo<Category[]>(() => {
+    const extraTags = categoryTags.filter((tag) => !isStandardCategory(tag));
+
+    return [
       {
         id: 'All',
         label: t('category_all'),
         icon: <Search className="w-4 h-4" />,
       },
-
-      ...categoryTags.map((tag) => ({
+      ...[...STANDARD_CATEGORY_TAGS, ...extraTags].map((tag) => ({
         id: tag,
         label: t(getCategoryTranslationKey(tag)),
-        icon:
-          iconMap[tag] ?? (
-            <Search className="w-4 h-4" />
-          ),
+        icon: iconMap[tag] ?? <Search className="w-4 h-4" />,
       })),
-    ],
-    [categoryTags, t],
-  );
+    ];
+  }, [categoryTags, t]);
+
+  const locationFilter: LocationFilter | null =
+    place && CITY_COORDS[place]
+      ? {
+          city: place,
+          approximate,
+          lat: CITY_COORDS[place].lat,
+          lng: CITY_COORDS[place].lng,
+          radius: radiusKm,
+        }
+      : null;
+
+  function onLocationChange(value: LocationFilter | null) {
+    navigate({
+      place: value ? value.city : null,
+      radiusKm: value?.radius ?? DEFAULT_RADIUS_KM,
+      approximate: value?.approximate ?? false,
+      page: 1,
+    });
+  }
 
   const totalPages = Math.max(
     1,
@@ -191,6 +229,8 @@ export default function Marketplace({
         searchQuery={searchInput}
         onSearchChange={onSearchChange}
         email={email}
+        locationFilter={locationFilter}
+        onLocationChange={onLocationChange}
       />
 
       <main className="max-w-[1400px] w-full mx-auto px-5 flex-grow pb-8">
@@ -301,6 +341,7 @@ export default function Marketplace({
           </div>
         )}
       </main>
+      <ScrollToTop />
     </>
   );
 }

@@ -297,7 +297,9 @@ internal tables hold hashed magic-link tokens and rate-limit counters.
 
 ```ts
 // src/db/schema.ts
-import { pgTable, uuid, text, timestamp, boolean, pgEnum } from 'drizzle-orm/pg-core';
+import {
+  pgTable, uuid, text, timestamp, boolean, pgEnum, doublePrecision,
+} from 'drizzle-orm/pg-core';
 
 export const listingType = pgEnum('listing_type', ['need', 'offer']);
 
@@ -310,6 +312,8 @@ export const listings = pgTable('listings', {
   description: text('description').notNull(),
   tags:        text('tags').array().notNull().default([]),
   location:    text('location').notNull(),
+  lat:         doublePrecision('lat'),                       // resolved from `location` on write
+  lng:         doublePrecision('lng'),                       // null when the text names nowhere we know
   createdAt:   timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
@@ -327,17 +331,30 @@ export const rateLimits = pgTable('rate_limits', {
 });
 ```
 
-The `listings` row shape is identical to the Figma `Listing`
-TypeScript interface (`id`, `userId`, `email`, `type`, `title`,
-`description`, `tags`, `location`, `createdAt`).
+The `listings` row shape matches the Figma `Listing` TypeScript
+interface (`id`, `userId`, `email`, `type`, `title`, `description`,
+`tags`, `location`, `createdAt`), plus the `lat`/`lng` pair the
+location filter needs.
 
-**Server-side pagination and search.** The marketplace page reads its
-entire filter state from the URL (`?mode=`, `?cat=`, `?q=`, `?page=`,
-`?per=`) and translates it into SQL: mode and category filter via
-`WHERE type = … AND tags @> ARRAY[…]`, search via parameterized `ILIKE`
-on title and description (LIKE wildcards in user input are escaped),
-and pagination via `LIMIT`/`OFFSET` with a `COUNT(*)` for page
-clamping. Category tabs are aggregated in the database
+**Location.** `location` stays free text — "Campus Reutlingen" is a
+reasonable thing to write — and `resolveLocation()` in `src/lib/geo.ts`
+resolves it to coordinates when it names a place the app knows, on
+write rather than on every read. A listing whose location cannot be
+placed keeps `NULL` coordinates and is absent from radius-filtered
+results rather than being pinned to a guess. Migration `0001`
+backfills rows written before the columns existed.
+
+**Server-side pagination, search and radius.** The marketplace page
+reads its entire filter state from the URL (`?mode=`, `?cat=`, `?q=`,
+`?page=`, `?per=`, `?loc=`, `?r=`) and translates it into SQL: mode and
+category filter via `WHERE type = … AND tags @> ARRAY[…]`, search via
+parameterized `ILIKE` on title and description (LIKE wildcards in user
+input are escaped), and pagination via `LIMIT`/`OFFSET` with a
+`COUNT(*)` for page clamping. `?loc=` carries a place *name*, never
+coordinates — the server looks the name up against its own table, so a
+crafted link cannot ask about an arbitrary point — and the radius
+filter is a bounding-box range scan (index-served) narrowed by an exact
+great-circle distance. Category tabs are aggregated in the database
 (`unnest(tags) … GROUP BY`), ranked by frequency within the current
 mode. `Marketplace.tsx` owns no filter state of its own: the
 designer-owned components keep their prop contracts, and their

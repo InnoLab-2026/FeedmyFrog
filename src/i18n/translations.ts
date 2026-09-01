@@ -6,9 +6,23 @@ export const resources = {
       location_label: 'Location',
       disclaimer_btn: 'Disclaimer',
       account_menu: 'Account menu',
-      manage_listings: 'Manage my listings',
+      manage_listings: 'Post a new listing',
       my_entries: 'My listings',
       logout: 'Log out',
+
+      // App metadata
+      app_description:
+        'Internal exchange platform for students and staff of Reutlingen University.',
+      page_title_login: 'Sign in',
+
+      // Language switcher
+      language_switch_to: 'Switch to {{language}}',
+      language_switch_aria:
+        'Language: {{current}}. Switch to {{next}}.',
+
+      // Contact mail
+      contact_subject: 'Listing: {{title}}',
+
 
       // Location search
       location_enter: 'Enter location...',
@@ -16,6 +30,9 @@ export const resources = {
       gps_loading: 'Determining location...',
       gps_unavailable: 'GPS is not available on this device.',
       gps_error: 'Location could not be determined.',
+      gps_near_city: 'Near {{city}}',
+      gps_out_of_area:
+        'You appear to be outside the region this platform covers.',
       radius: 'Radius',
 
       // Mode toggle
@@ -55,14 +72,17 @@ export const resources = {
 
       // Create listing modal
       create_listing_title: 'Create listing',
-      type_and_tags: 'Type & tags',
+      type_and_tags: 'Type & categories',
       type: 'Type',
-      choose_tags: 'Choose tags',
-      custom_tags_optional: 'Add custom tags (optional)',
+      choose_tags: 'Choose categories',
+      choose_tags_hint:
+        'Pick up to {{max}} categories. Anything else goes in as a hashtag in the next step.',
+      custom_tags_optional:
+        'Add hashtags so people can find your listing faster',
       custom_tags_placeholder:
-        'e.g. Weekend, Urgent (comma-separated)',
+        'e.g. plants, urgent (comma-separated)',
       custom_tags_hint:
-        'Max 20 characters per tag. Letters, numbers, spaces, hyphens only.',
+        'Extra hashtags show on your card and become a category tab while a listing uses them.',
       next: 'Next',
       back: 'Back',
       details: 'Details',
@@ -80,12 +100,10 @@ export const resources = {
       // Disclaimer overlay
       disclaimer_title: 'Disclaimer',
       close: 'Close',
-      disclaimer_bullet1_pre: 'Only people with a valid',
-      disclaimer_bullet1_post:
-        'email address have access to this page.',
-      disclaimer_bullet2_pre: 'All people with a valid',
-      disclaimer_bullet2_post:
-        'email address can see all information displayed here and submit their own Need/Offer listings.',
+      disclaimer_bullet1:
+        'Only people with a valid <domain>{{domain}}</domain> email address have access to this page.',
+      disclaimer_bullet2:
+        'All people with a valid <domain>{{domain}}</domain> email address can see all information displayed here and submit their own Need/Offer listings.',
       disclaimer_bullet3: 'No logs are stored.',
       click_to_close: 'Click outside to close',
 
@@ -111,10 +129,14 @@ export const resources = {
       email_address_label: 'Email address',
       sending_link: 'Sending …',
       send_login_link: 'Send login link',
-      email_sent_title: 'Email on its way ✉️',
-      email_sent_body_pre: 'If an account exists for',
-      email_sent_body_post:
-        'you will find a login link in your inbox shortly. The link is valid for a short time and only once.',
+      email_sent_title: 'Email on its way',
+      // Two independent sentences with the address rendered between them —
+      // deliberately not a `_pre` + value + `_post` sandwich, which would fix
+      // the word order around the address for every language at once.
+      email_sent_intro:
+        'If this address is eligible, you will find the link in your inbox shortly:',
+      email_sent_note:
+        'Please note: the link is valid only once. If it has expired, you can request a new one at any time.',
       error_forbidden_domain:
         'Please use your university email address.',
       error_invalid_email: 'Please enter a valid email address.',
@@ -133,6 +155,9 @@ export const resources = {
       not_found_title: 'Page not found',
       not_found_body: 'The requested page does not exist.',
       go_home: 'Go to homepage',
+
+      // Scroll to top
+      scroll_to_top: 'Back to top',
 
       // Edit listing page
       edit_listing_title: 'Edit listing',
@@ -162,9 +187,23 @@ export const resources = {
       location_label: 'Standort',
       disclaimer_btn: 'Haftungsausschluss',
       account_menu: 'Kontomenü',
-      manage_listings: 'Eigene Anzeigen verwalten',
+      manage_listings: 'Neue Anzeige aufgeben',
       my_entries: 'Meine Einträge',
       logout: 'Abmelden',
+
+      // App metadata
+      app_description:
+        'Hochschulinterne Vermittlungsplattform für Studierende und Beschäftigte der Hochschule Reutlingen.',
+      page_title_login: 'Anmelden',
+
+      // Language switcher
+      language_switch_to: 'Zu {{language}} wechseln',
+      language_switch_aria:
+        'Sprache: {{current}}. Zu {{next}} wechseln.',
+
+      // Contact mail
+      contact_subject: 'Anzeige: {{title}}',
+
 
       // Location search
       location_enter: 'Ort eingeben...',
@@ -172,6 +211,9 @@ export const resources = {
       gps_loading: 'Standort wird ermittelt...',
       gps_unavailable: 'GPS ist auf diesem Gerät nicht verfügbar.',
       gps_error: 'Standort konnte nicht ermittelt werden.',
+      gps_near_city: 'In der Nähe von {{city}}',
+      gps_out_of_area:
+        'Sie befinden sich offenbar außerhalb der Region, die diese Plattform abdeckt.',
       radius: 'Umkreis',
 
       // Mode toggle
@@ -211,15 +253,17 @@ export const resources = {
 
       // Create listing modal
       create_listing_title: 'Anzeige erstellen',
-      type_and_tags: 'Art & Schlagwörter',
+      type_and_tags: 'Art & Kategorien',
       type: 'Art',
-      choose_tags: 'Schlagwörter auswählen',
+      choose_tags: 'Kategorien auswählen',
+      choose_tags_hint:
+        'Wählen Sie bis zu {{max}} Kategorien. Alles Weitere im nächsten Schritt als Hashtag.',
       custom_tags_optional:
-        'Eigene Schlagwörter hinzufügen (optional)',
+        'Setze Hashtags, um deine Anzeige schneller zu finden',
       custom_tags_placeholder:
-        'z.B. Wochenende, Dringend (kommagetrennt)',
+        'z. B. Pflanzen, dringend (kommagetrennt)',
       custom_tags_hint:
-        'Max. 20 Zeichen pro Schlagwort. Nur Buchstaben, Zahlen, Leerzeichen und Bindestriche.',
+        'Zusätzliche Hashtags erscheinen auf Ihrer Karte und werden zum Kategorie-Tab, solange eine Anzeige sie verwendet.',
       next: 'Weiter',
       back: 'Zurück',
       details: 'Details',
@@ -237,12 +281,10 @@ export const resources = {
       // Disclaimer overlay
       disclaimer_title: 'Haftungsausschluss',
       close: 'Schließen',
-      disclaimer_bullet1_pre: 'Nur Personen mit einer gültigen',
-      disclaimer_bullet1_post:
-        'E-Mail-Adresse haben Zugang zu dieser Seite.',
-      disclaimer_bullet2_pre: 'Alle Personen mit einer gültigen',
-      disclaimer_bullet2_post:
-        'E-Mail-Adresse sehen alle hier angezeigten Informationen und können eigene Suche/Biete-Einträge einreichen.',
+      disclaimer_bullet1:
+        'Nur Personen mit einer gültigen <domain>{{domain}}</domain> E-Mail-Adresse haben Zugang zu dieser Seite.',
+      disclaimer_bullet2:
+        'Alle Personen mit einer gültigen <domain>{{domain}}</domain> E-Mail-Adresse sehen alle hier angezeigten Informationen und können eigene Suche/Biete-Einträge einreichen.',
       disclaimer_bullet3: 'Es werden keine Logs gespeichert.',
       click_to_close: 'Klicken zum Schließen',
 
@@ -268,10 +310,11 @@ export const resources = {
       email_address_label: 'E-Mail-Adresse',
       sending_link: 'Wird gesendet …',
       send_login_link: 'Anmeldelink senden',
-      email_sent_title: 'E-Mail unterwegs ✉️',
-      email_sent_body_pre: 'Wenn ein Konto für',
-      email_sent_body_post:
-        'möglich ist, finden Sie gleich einen Anmeldelink in Ihrem Postfach. Der Link ist nur kurze Zeit und einmalig gültig.',
+      email_sent_title: 'E-Mail unterwegs',
+      email_sent_intro:
+        'Falls diese Adresse berechtigt ist, finden Sie den Link gleich im Postfach:',
+      email_sent_note:
+        'Bitte beachten: Der Link ist nur einmal gültig. Wenn der Link abgelaufen ist, können Sie jederzeit einen neuen erzeugen.',
       error_forbidden_domain:
         'Bitte verwenden Sie Ihre Hochschul-E-Mail-Adresse.',
       error_invalid_email:
@@ -293,6 +336,9 @@ export const resources = {
       not_found_title: 'Seite nicht gefunden',
       not_found_body: 'Die angeforderte Seite existiert nicht.',
       go_home: 'Zur Startseite',
+
+      // Scroll to top
+      scroll_to_top: 'Nach oben',
 
       // Edit listing page
       edit_listing_title: 'Eintrag bearbeiten',
@@ -321,15 +367,32 @@ export const resources = {
       location_label: 'Lieu',
       disclaimer_btn: 'Avertissement',
       account_menu: 'Menu du compte',
-      manage_listings: 'Gérer mes annonces',
+      manage_listings: 'Publier une annonce',
       my_entries: 'Mes annonces',
       logout: 'Déconnexion',
+
+      // App metadata
+      app_description:
+        'Plateforme d’échange interne pour les étudiants et le personnel de la Hochschule Reutlingen.',
+      page_title_login: 'Connexion',
+
+      // Language switcher
+      language_switch_to: 'Passer en {{language}}',
+      language_switch_aria:
+        'Langue : {{current}}. Passer en {{next}}.',
+
+      // Contact mail
+      contact_subject: 'Annonce : {{title}}',
+
 
       location_enter: 'Saisir un lieu...',
       gps_use: 'Utiliser la position GPS',
       gps_loading: 'Localisation en cours...',
       gps_unavailable: "Le GPS n'est pas disponible sur cet appareil.",
       gps_error: "La position n'a pas pu être déterminée.",
+      gps_near_city: 'À proximité de {{city}}',
+      gps_out_of_area:
+        'Vous semblez être en dehors de la région couverte par cette plateforme.',
       radius: 'Rayon',
 
       mode_need: 'Cherche',
@@ -363,14 +426,17 @@ export const resources = {
       create_first_listing: 'Créer la première annonce',
 
       create_listing_title: 'Créer une annonce',
-      type_and_tags: 'Type et mots-clés',
+      type_and_tags: 'Type et catégories',
       type: 'Type',
-      choose_tags: 'Choisir des mots-clés',
-      custom_tags_optional: 'Ajouter des mots-clés (facultatif)',
+      choose_tags: 'Choisir des catégories',
+      choose_tags_hint:
+        'Choisissez jusqu’à {{max}} catégories. Le reste s’ajoute comme hashtag à l’étape suivante.',
+      custom_tags_optional:
+        'Ajoutez des hashtags pour que votre annonce soit plus facile à trouver',
       custom_tags_placeholder:
-        'p. ex. Week-end, Urgent (séparés par des virgules)',
+        'p. ex. plantes, urgent (séparés par des virgules)',
       custom_tags_hint:
-        '20 caractères max. par mot-clé. Lettres, chiffres, espaces et tirets uniquement.',
+        'Les hashtags supplémentaires apparaissent sur votre annonce et deviennent un onglet de catégorie tant qu’une annonce les utilise.',
       next: 'Suivant',
       back: 'Retour',
       details: 'Détails',
@@ -387,20 +453,15 @@ export const resources = {
 
       disclaimer_title: 'Avertissement',
       close: 'Fermer',
-      disclaimer_bullet1_pre:
-        'Seules les personnes avec une adresse e-mail',
-      disclaimer_bullet1_post:
-        'valide ont accès à cette page.',
-      disclaimer_bullet2_pre:
-        'Toutes les personnes avec une adresse e-mail',
-      disclaimer_bullet2_post:
-        'valide peuvent voir toutes les informations affichées ici et soumettre leurs propres annonces Cherche/Offre.',
+      disclaimer_bullet1:
+        'Seules les personnes disposant d’une adresse e-mail <domain>{{domain}}</domain> valide ont accès à cette page.',
+      disclaimer_bullet2:
+        'Toutes les personnes disposant d’une adresse e-mail <domain>{{domain}}</domain> valide peuvent voir toutes les informations affichées ici et soumettre leurs propres annonces Cherche/Offre.',
       disclaimer_bullet3: "Aucun journal n'est enregistré.",
       click_to_close: 'Cliquer pour fermer',
 
       no_results: 'Aucun résultat',
-      try_different:
-        "Essayez d'autres critères de recherche",
+      try_different: "Essayez d'autres critères de recherche",
 
       aria_tag: 'Étiquette: {{tag}}',
       aria_location: 'Lieu: {{location}}',
@@ -419,18 +480,17 @@ export const resources = {
       email_address_label: 'Adresse e-mail',
       sending_link: 'Envoi en cours …',
       send_login_link: 'Envoyer le lien de connexion',
-      email_sent_title: 'E-mail en route ✉️',
-      email_sent_body_pre: 'Si un compte existe pour',
-      email_sent_body_post:
-        "vous trouverez sous peu un lien de connexion dans votre boîte de réception. Le lien n'est valable que peu de temps et une seule fois.",
+      email_sent_title: 'E-mail en route',
+      email_sent_intro:
+        'Si cette adresse est autorisée, vous trouverez le lien dans votre boîte de réception :',
+      email_sent_note:
+        'Attention : le lien n’est valable qu’une seule fois. S’il a expiré, vous pouvez en demander un nouveau à tout moment.',
       error_forbidden_domain:
         'Veuillez utiliser votre adresse e-mail universitaire.',
-      error_invalid_email:
-        'Veuillez saisir une adresse e-mail valide.',
+      error_invalid_email: 'Veuillez saisir une adresse e-mail valide.',
       error_too_many_requests:
         'Trop de tentatives. Veuillez réessayer plus tard.',
-      error_unknown:
-        "Une erreur s'est produite. Veuillez réessayer.",
+      error_unknown: "Une erreur s'est produite. Veuillez réessayer.",
 
       // Verify prompt page
       invalid_link_title: 'Lien invalide',
@@ -443,6 +503,9 @@ export const resources = {
       not_found_title: 'Page introuvable',
       not_found_body: "La page demandée n'existe pas.",
       go_home: "Retour à l'accueil",
+
+      // Scroll to top
+      scroll_to_top: 'Retour en haut',
 
       // Edit listing page
       edit_listing_title: "Modifier l'annonce",
@@ -471,15 +534,32 @@ export const resources = {
       location_label: 'Konum',
       disclaimer_btn: 'Sorumluluk Reddi',
       account_menu: 'Hesap menüsü',
-      manage_listings: 'İlanlarımı yönet',
+      manage_listings: 'Yeni ilan ver',
       my_entries: 'İlanlarım',
       logout: 'Çıkış yap',
+
+      // App metadata
+      app_description:
+        'Reutlingen Üniversitesi öğrencileri ve çalışanları için üniversite içi aracılık platformu.',
+      page_title_login: 'Giriş yap',
+
+      // Language switcher
+      language_switch_to: '{{language}} diline geç',
+      language_switch_aria:
+        'Dil: {{current}}. {{next}} diline geç.',
+
+      // Contact mail
+      contact_subject: 'İlan: {{title}}',
+
 
       location_enter: 'Konum girin...',
       gps_use: 'GPS konumunu kullan',
       gps_loading: 'Konum belirleniyor...',
       gps_unavailable: 'GPS bu cihazda kullanılamıyor.',
       gps_error: 'Konum belirlenemedi.',
+      gps_near_city: '{{city}} yakınında',
+      gps_out_of_area:
+        'Görünüşe göre bu platformun kapsadığı bölgenin dışındasınız.',
       radius: 'Yarıçap',
 
       mode_need: 'İstek',
@@ -513,14 +593,17 @@ export const resources = {
       create_first_listing: 'İlk ilanı oluştur',
 
       create_listing_title: 'İlan oluştur',
-      type_and_tags: 'Tür ve etiketler',
+      type_and_tags: 'Tür ve kategoriler',
       type: 'Tür',
-      choose_tags: 'Etiket seçin',
-      custom_tags_optional: 'Özel etiketler ekleyin (isteğe bağlı)',
+      choose_tags: 'Kategori seçin',
+      choose_tags_hint:
+        'En fazla {{max}} kategori seçin. Diğerlerini sonraki adımda hashtag olarak ekleyin.',
+      custom_tags_optional:
+        'İlanınızın daha hızlı bulunması için hashtag ekleyin',
       custom_tags_placeholder:
-        'örn. Hafta sonu, Acil (virgülle ayrılmış)',
+        'örn. bitkiler, acil (virgülle ayrılmış)',
       custom_tags_hint:
-        'Etiket başına en fazla 20 karakter. Yalnızca harf, sayı, boşluk ve kısa çizgi.',
+        'Ek hashtag’ler kartınızda görünür ve bir ilan onları kullandığı sürece kategori sekmesi olur.',
       next: 'İleri',
       back: 'Geri',
       details: 'Detaylar',
@@ -537,12 +620,10 @@ export const resources = {
 
       disclaimer_title: 'Sorumluluk Reddi',
       close: 'Kapat',
-      disclaimer_bullet1_pre: 'Yalnızca geçerli bir',
-      disclaimer_bullet1_post:
-        'e-posta adresine sahip kişiler bu sayfaya erişebilir.',
-      disclaimer_bullet2_pre: 'Geçerli bir',
-      disclaimer_bullet2_post:
-        'e-posta adresine sahip tüm kişiler buradaki tüm bilgileri görebilir ve kendi İstek/Teklif ilanlarını gönderebilir.',
+      disclaimer_bullet1:
+        'Bu sayfaya yalnızca geçerli bir <domain>{{domain}}</domain> e-posta adresine sahip kişiler erişebilir.',
+      disclaimer_bullet2:
+        'Geçerli bir <domain>{{domain}}</domain> e-posta adresine sahip tüm kişiler buradaki tüm bilgileri görebilir ve kendi İstek/Teklif ilanlarını gönderebilir.',
       disclaimer_bullet3: 'Hiçbir kayıt tutulmaz.',
       click_to_close: 'Kapatmak için tıklayın',
 
@@ -566,10 +647,11 @@ export const resources = {
       email_address_label: 'E-posta adresi',
       sending_link: 'Gönderiliyor …',
       send_login_link: 'Giriş bağlantısı gönder',
-      email_sent_title: 'E-posta yolda ✉️',
-      email_sent_body_pre: 'Eğer',
-      email_sent_body_post:
-        'için bir hesap mevcutsa, gelen kutunuzda kısa süre içinde bir giriş bağlantısı bulacaksınız. Bağlantı yalnızca kısa bir süre ve tek seferlik geçerlidir.',
+      email_sent_title: 'E-posta yolda',
+      email_sent_intro:
+        'Bu adres yetkiliyse bağlantıyı kısa süre içinde gelen kutunuzda bulacaksınız:',
+      email_sent_note:
+        'Lütfen dikkat: Bağlantı yalnızca bir kez geçerlidir. Süresi dolduysa istediğiniz zaman yeni bir tane isteyebilirsiniz.',
       error_forbidden_domain:
         'Lütfen üniversite e-posta adresinizi kullanın.',
       error_invalid_email: 'Lütfen geçerli bir e-posta adresi girin.',
@@ -588,6 +670,9 @@ export const resources = {
       not_found_title: 'Sayfa bulunamadı',
       not_found_body: 'İstenen sayfa mevcut değil.',
       go_home: 'Ana sayfaya git',
+
+      // Scroll to top
+      scroll_to_top: 'Yukarı dön',
 
       // Edit listing page
       edit_listing_title: 'İlanı düzenle',
@@ -616,9 +701,23 @@ export const resources = {
       location_label: 'Ubicación',
       disclaimer_btn: 'Aviso Legal',
       account_menu: 'Menú de la cuenta',
-      manage_listings: 'Gestionar mis anuncios',
+      manage_listings: 'Publicar un anuncio',
       my_entries: 'Mis anuncios',
       logout: 'Cerrar sesión',
+
+      // App metadata
+      app_description:
+        'Plataforma interna de intercambio para estudiantes y personal de la Universidad de Reutlingen.',
+      page_title_login: 'Iniciar sesión',
+
+      // Language switcher
+      language_switch_to: 'Cambiar a {{language}}',
+      language_switch_aria:
+        'Idioma: {{current}}. Cambiar a {{next}}.',
+
+      // Contact mail
+      contact_subject: 'Anuncio: {{title}}',
+
 
       location_enter: 'Introducir ubicación...',
       gps_use: 'Usar ubicación GPS',
@@ -626,6 +725,9 @@ export const resources = {
       gps_unavailable:
         'El GPS no está disponible en este dispositivo.',
       gps_error: 'No se pudo determinar la ubicación.',
+      gps_near_city: 'Cerca de {{city}}',
+      gps_out_of_area:
+        'Parece que estás fuera de la región que cubre esta plataforma.',
       radius: 'Radio',
 
       mode_need: 'Busco',
@@ -659,15 +761,17 @@ export const resources = {
       create_first_listing: 'Crear el primer anuncio',
 
       create_listing_title: 'Crear anuncio',
-      type_and_tags: 'Tipo y etiquetas',
+      type_and_tags: 'Tipo y categorías',
       type: 'Tipo',
-      choose_tags: 'Seleccionar etiquetas',
+      choose_tags: 'Elegir categorías',
+      choose_tags_hint:
+        'Elige hasta {{max}} categorías. Lo demás se añade como hashtag en el siguiente paso.',
       custom_tags_optional:
-        'Añadir etiquetas propias (opcional)',
+        'Añade hashtags para que encuentren tu anuncio antes',
       custom_tags_placeholder:
-        'p. ej. Fin de semana, Urgente (separadas por comas)',
+        'p. ej. plantas, urgente (separadas por comas)',
       custom_tags_hint:
-        'Máx. 20 caracteres por etiqueta. Solo letras, números, espacios y guiones.',
+        'Los hashtags adicionales aparecen en tu anuncio y se convierten en una pestaña de categoría mientras algún anuncio los use.',
       next: 'Siguiente',
       back: 'Atrás',
       details: 'Detalles',
@@ -684,20 +788,15 @@ export const resources = {
 
       disclaimer_title: 'Aviso Legal',
       close: 'Cerrar',
-      disclaimer_bullet1_pre:
-        'Solo las personas con una dirección de correo',
-      disclaimer_bullet1_post:
-        'válida tienen acceso a esta página.',
-      disclaimer_bullet2_pre:
-        'Todas las personas con una dirección de correo',
-      disclaimer_bullet2_post:
-        'válida pueden ver toda la información aquí mostrada y enviar sus propios anuncios de Busco/Ofrezco.',
+      disclaimer_bullet1:
+        'Solo las personas con una dirección de correo <domain>{{domain}}</domain> válida tienen acceso a esta página.',
+      disclaimer_bullet2:
+        'Todas las personas con una dirección de correo <domain>{{domain}}</domain> válida pueden ver toda la información aquí mostrada y enviar sus propios anuncios de Busco/Ofrezco.',
       disclaimer_bullet3: 'No se almacenan registros.',
       click_to_close: 'Haga clic para cerrar',
 
       no_results: 'Sin resultados',
-      try_different:
-        'Pruebe con otros criterios de búsqueda',
+      try_different: 'Pruebe con otros criterios de búsqueda',
 
       aria_tag: 'Etiqueta: {{tag}}',
       aria_location: 'Ubicación: {{location}}',
@@ -716,10 +815,11 @@ export const resources = {
       email_address_label: 'Dirección de correo electrónico',
       sending_link: 'Enviando …',
       send_login_link: 'Enviar enlace de acceso',
-      email_sent_title: 'Correo en camino ✉️',
-      email_sent_body_pre: 'Si existe una cuenta para',
-      email_sent_body_post:
-        'en breve encontrarás un enlace de acceso en tu bandeja de entrada. El enlace solo es válido por poco tiempo y una sola vez.',
+      email_sent_title: 'Correo en camino',
+      email_sent_intro:
+        'Si esta dirección está autorizada, encontrarás el enlace en tu bandeja de entrada:',
+      email_sent_note:
+        'Ten en cuenta: el enlace solo es válido una vez. Si ha caducado, puedes solicitar uno nuevo en cualquier momento.',
       error_forbidden_domain:
         'Utiliza tu dirección de correo universitaria.',
       error_invalid_email: 'Introduce una dirección de correo válida.',
@@ -738,6 +838,9 @@ export const resources = {
       not_found_title: 'Página no encontrada',
       not_found_body: 'La página solicitada no existe.',
       go_home: 'Ir al inicio',
+
+      // Scroll to top
+      scroll_to_top: 'Volver arriba',
 
       // Edit listing page
       edit_listing_title: 'Editar anuncio',
@@ -761,13 +864,18 @@ export const resources = {
   },
 } as const;
 
+/*
+ * `name` is each language's endonym — the name it calls itself. A reader
+ * hunting for their language scans for "Deutsch", not for "German", so an
+ * endonym is what belongs in a switcher, and it is deliberately the same in
+ * every locale rather than being translated.
+ */
 export const LANGUAGES = [
-  { code: 'en', flag: '🇬🇧', label: 'EN' },
-  { code: 'de', flag: '🇩🇪', label: 'DE' },
-  { code: 'fr', flag: '🇫🇷', label: 'FR' },
-  { code: 'tr', flag: '🇹🇷', label: 'TR' },
-  { code: 'es', flag: '🇪🇸', label: 'ES' },
+  { code: 'en', label: 'EN', name: 'English' },
+  { code: 'de', label: 'DE', name: 'Deutsch' },
+  { code: 'fr', label: 'FR', name: 'Français' },
+  { code: 'tr', label: 'TR', name: 'Türkçe' },
+  { code: 'es', label: 'ES', name: 'Español' },
 ] as const;
 
-export type LangCode =
-  (typeof LANGUAGES)[number]['code'];
+export type LangCode = (typeof LANGUAGES)[number]['code'];

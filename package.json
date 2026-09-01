@@ -20,7 +20,6 @@
     "@neondatabase/serverless": "^1.1.0",
     "drizzle-orm": "^0.45.2",
     "i18next": "^26.0.10",
-    "i18next-browser-languagedetector": "^8.2.1",
     "jose": "^6.2.3",
     "lucide-react": "^1.14.0",
     "next": "16.2.12",
@@ -55,6 +54,7 @@
     }
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24",
     "@types/react": "^19",

@@ -27,8 +27,11 @@ export default function ListingCard({
     t('aria_location', { location: listing.location }),
   ].join('. ');
 
+  // The subject is one translated string with the title interpolated, not
+  // `t('contact') + ': ' + title` — the separator and its spacing are part of
+  // the sentence (French, for one, puts a space before the colon).
   const mailtoLink = `mailto:${listing.email}?subject=${encodeURIComponent(
-    `${t('contact')}: ${listing.title}`
+    t('contact_subject', { title: listing.title }),
   )}`;
 
   return (
