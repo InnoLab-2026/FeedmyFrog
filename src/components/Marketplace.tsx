@@ -8,6 +8,11 @@ import ScrollToTop from '@/components/layout/ScrollToTop';
 
 import type { Listing, Mode, Category } from '@/types';
 import { iconMap } from '@/data/icons';
+import {
+  STANDARD_CATEGORY_TAGS,
+  getCategoryTranslationKey,
+  isStandardCategory,
+} from '@/data/categories';
 
 import Header from '@/components/layout/Header';
 import ModeToggle from '@/components/marketplace/ModeToggle';
@@ -32,42 +37,6 @@ interface MarketplaceProps {
 
 const SEARCH_DEBOUNCE_MS = 300;
 
-/*
- * Maps the 9 built-in categories (also offered as quick-pick tags when
- * creating a listing) to their translation key. Any other tag is a free-form
- * one a user typed in — falls through to the tag string itself, which is
- * exactly right since there's no translation for made-up text.
- */
-function getCategoryTranslationKey(tag: string) {
-  const keys: Record<string, string> = {
-    Familie: 'category_family',
-    Kinder: 'category_children',
-    Wochenende: 'category_weekend',
-    Mobilität: 'category_mobility',
-    Pendeln: 'category_commuting',
-    Verkauf: 'category_sale',
-    Dienstleistungen: 'category_services',
-    Transport: 'category_transport',
-    Bildung: 'category_education',
-  };
-
-  return keys[tag] ?? tag;
-}
-const STANDARD_CATEGORY_TAGS = [
-  'Familie',
-  'Kinder',
-  'Wochenende',
-  'Mobilität',
-  'Pendeln',
-  'Verkauf',
-  'Dienstleistungen',
-  'Transport',
-  'Bildung',
-] as const;
-
-function isStandardCategory(tag: string) {
-  return (STANDARD_CATEGORY_TAGS as readonly string[]).includes(tag);
-}
 export default function Marketplace({
   listings,
   totalCount,
@@ -168,26 +137,30 @@ export default function Marketplace({
   }
 
   /*
-   * categoryTags comes from the server already ranked by how many current
-   * listings use each tag (most-used first) — every tag actually in use
-   * becomes a tab, not just the 9 built-in categories. CategoryTabs takes
-   * care of only showing the top few and folding the rest under "...".
+   * "All" first, then the built-in categories in their fixed order so the
+   * tab strip looks the same on every visit (and stays translated), then
+   * every other tag actually in use — categoryTags comes from the server
+   * already ranked by how many current listings carry each tag. Without
+   * that tail, a free-form hashtag would render on the card but have no tab
+   * that filters to it. CategoryTabs shows the ones that fit and folds the
+   * rest under "more categories".
    */
-  const categories = useMemo<Category[]>(
-    () => [
+  const categories = useMemo<Category[]>(() => {
+    const extraTags = categoryTags.filter((tag) => !isStandardCategory(tag));
+
+    return [
       {
         id: 'All',
         label: t('category_all'),
         icon: <Search className="w-4 h-4" />,
       },
-      ...STANDARD_CATEGORY_TAGS.map((tag) => ({
+      ...[...STANDARD_CATEGORY_TAGS, ...extraTags].map((tag) => ({
         id: tag,
         label: t(getCategoryTranslationKey(tag)),
         icon: iconMap[tag] ?? <Search className="w-4 h-4" />,
       })),
-    ],
-    [t],
-  );
+    ];
+  }, [categoryTags, t]);
 
   const totalPages = Math.max(
     1,

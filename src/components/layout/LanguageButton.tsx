@@ -2,6 +2,16 @@
 import { useTranslation } from 'react-i18next';
 import { LANGUAGES, type LangCode } from '@/i18n/translations';
 
+/* The English entry flies the Union Jack — there is no "en" flag, and the
+   file names follow ISO 3166 country codes rather than the language codes. */
+const FLAG_FILES: Record<LangCode, string> = {
+  en: '/flags/gb.svg',
+  de: '/flags/de.svg',
+  fr: '/flags/fr.svg',
+  tr: '/flags/tr.svg',
+  es: '/flags/es.svg',
+};
+
 export default function LanguageButton() {
   const { i18n } = useTranslation();
   const currentCode = i18n.language as LangCode;
@@ -41,9 +51,11 @@ export default function LanguageButton() {
         lineHeight: 1,
       }}
     >
-          <img
-        src={current.code === 'en' ? '/flags/gb.svg' : `/flags/${current.code}.svg`}
-        alt={current.label}
+      {/* Decorative: the button's aria-label already names the current and
+          next language, so an alt text here would only repeat it. */}
+      <img
+        src={FLAG_FILES[current.code]}
+        alt=""
         width={22}
         height={16}
         style={{ display: 'block' }}

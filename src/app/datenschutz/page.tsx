@@ -11,10 +11,9 @@ export const metadata: Metadata = {
 // header set in src/proxy.ts.
 export const dynamic = 'force-dynamic';
 
-
 // Informationspflichten nach Art. 13 DSGVO. Die mit [ ] markierten
-// Platzhalter müssen vor dem Produktivbetrieb gefüllt werden.
-//---> in der File Datenschutz Content
+// Platzhalter müssen vor dem Produktivbetrieb gefüllt werden. Der sichtbare
+// Text steht — in allen fünf Sprachen — in DatenschutzContent.tsx.
 export default function DatenschutzPage() {
   return (
     <main className="min-h-screen p-6 py-12" style={{ background: '#f5f5f5' }}>
@@ -25,7 +24,7 @@ export default function DatenschutzPage() {
         className="mx-auto w-full max-w-3xl p-8 rounded-2xl"
         style={{ background: 'white', border: '2px solid black', boxShadow: CARD_SHADOW }}
       >
-              <DatenschutzContent />
+        <DatenschutzContent />
       </div>
     </main>
   );

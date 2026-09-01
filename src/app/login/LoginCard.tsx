@@ -6,38 +6,73 @@ import { useTranslation } from 'react-i18next';
 import LoginForm from './LoginForm';
 import LanguageButton from '@/components/layout/LanguageButton';
 import { CARD_SHADOW } from '@/constants';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
+/*
+ * A frog that follows the pointer along the bottom of the login page.
+ *
+ * Mouse movement fires dozens of times a second, so the position is written
+ * straight to the node through a ref inside one requestAnimationFrame per
+ * frame instead of through React state — a setState per mousemove re-renders
+ * the whole card on every pixel. The two timers are held in refs and cleared
+ * on unmount so a late callback cannot fire against an unmounted component.
+ *
+ * Purely decorative, so it is aria-hidden, ignores pointer events, and — for
+ * anyone who asked for reduced motion — simply never starts following the
+ * pointer instead of animating across the screen.
+ */
 function HoppingFrog() {
-  const [x, setX] = useState(40);
+  const frogRef = useRef<HTMLDivElement | null>(null);
+  const frameRef = useRef<number | null>(null);
+  const hopTimer = useRef<number | null>(null);
+  const mouthTimer = useRef<number | null>(null);
+
   const [hop, setHop] = useState(false);
   const [mouthOpen, setMouthOpen] = useState(false);
 
   useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      setX(e.clientX);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const onMove = (event: MouseEvent) => {
+      const x = event.clientX;
+
+      if (frameRef.current === null) {
+        frameRef.current = window.requestAnimationFrame(() => {
+          frameRef.current = null;
+          if (frogRef.current) frogRef.current.style.left = `${x}px`;
+        });
+      }
+
       setHop(true);
-      window.setTimeout(() => setHop(false), 180);
+      if (hopTimer.current !== null) window.clearTimeout(hopTimer.current);
+      hopTimer.current = window.setTimeout(() => setHop(false), 180);
     };
 
     const onClick = () => {
       setMouthOpen(true);
-      window.setTimeout(() => setMouthOpen(false), 350);
+      if (mouthTimer.current !== null) window.clearTimeout(mouthTimer.current);
+      mouthTimer.current = window.setTimeout(() => setMouthOpen(false), 350);
     };
 
     window.addEventListener('mousemove', onMove);
     window.addEventListener('click', onClick);
+
     return () => {
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('click', onClick);
+      if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current);
+      if (hopTimer.current !== null) window.clearTimeout(hopTimer.current);
+      if (mouthTimer.current !== null) window.clearTimeout(mouthTimer.current);
     };
   }, []);
+
   return (
     <div
+      ref={frogRef}
       aria-hidden="true"
       style={{
         position: 'fixed',
-        left: x,
+        left: '40px',
         bottom: hop ? 28 : 8,
         transform: 'translateX(-50%)',
         zIndex: 9999,
@@ -67,7 +102,6 @@ function HoppingFrog() {
       </svg>
     </div>
   );
- 
 }
 
 export default function LoginCard({
@@ -139,7 +173,7 @@ export default function LoginCard({
             Reutlingen University Connect
           </h1>
 
-                    <p
+          <p
             style={{
               marginTop: '12px',
               marginBottom: 0,
@@ -149,19 +183,7 @@ export default function LoginCard({
               color: '#666',
             }}
           >
-            {t('login_subtitle').split('. ')[0]}.
-          </p>
-          <p
-            style={{
-              marginTop: '8px',
-              marginBottom: 0,
-              fontSize: 'var(--fs-md)',
-              lineHeight: 1.6,
-              fontWeight: 500,
-              color: '#666',
-            }}
-          >
-            {t('login_subtitle').split('. ').slice(1).join('. ')}
+            {t('login_subtitle')}
           </p>
 
           <div
@@ -218,7 +240,8 @@ export default function LoginCard({
           </p>
         </div>
       </div>
-            <HoppingFrog />
+
+      <HoppingFrog />
     </main>
   );
 }

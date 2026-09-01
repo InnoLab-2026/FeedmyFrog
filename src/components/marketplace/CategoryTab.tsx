@@ -7,6 +7,11 @@ interface CategoryTabProps {
   isFirst: boolean;
   isLast: boolean;
   fullWidth?: boolean;
+
+  /* Only the overflow ("more categories") tab uses these: it opens a menu,
+     so it has to announce that and whether the menu is currently open. */
+  ariaHasPopup?: 'menu';
+  ariaExpanded?: boolean;
 }
 
 const CategoryTab = ({
@@ -16,9 +21,14 @@ const CategoryTab = ({
   isFirst,
   isLast,
   fullWidth = false,
+  ariaHasPopup,
+  ariaExpanded,
 }: CategoryTabProps) => (
   <button
+    type="button"
     onClick={onClick}
+    aria-haspopup={ariaHasPopup}
+    aria-expanded={ariaExpanded}
     className={`flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-200 ${
       fullWidth ? 'w-full h-full' : 'flex-1'
     }`}

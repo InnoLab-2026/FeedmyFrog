@@ -19,7 +19,7 @@ export default function CreateListingModal({
   return (
     <>
       {/* Button auf Meine Anzeigen */}
-          <button
+      <button
         type="button"
         onClick={() => setOpen(true)}
         className="inline-flex items-center justify-center"
@@ -31,7 +31,7 @@ export default function CreateListingModal({
           color: '#1a3200',
           border: 'none',
           borderRadius: '8px',
-          fontSize: '14px',
+          fontSize: 'var(--fs-sm)',
           fontWeight: 600,
           cursor: 'pointer',
         }}

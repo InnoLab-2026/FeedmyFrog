@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
 // Angaben gemäß § 5 DDG. Die mit [ ] markierten Platzhalter müssen vor dem
 // Produktivbetrieb (interner Pilot) mit den Angaben des tatsächlichen
 // Betreibers gefüllt werden.
-// Der sichtbare Text liegt in ImpressumContent.tsx.
+// Der sichtbare Text steht — in allen fünf Sprachen — in ImpressumContent.tsx.
 export default function ImpressumPage() {
   return (
     <main className="min-h-screen p-6 py-12" style={{ background: '#f5f5f5' }}>

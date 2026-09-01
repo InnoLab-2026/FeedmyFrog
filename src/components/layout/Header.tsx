@@ -6,7 +6,7 @@ import { Search, Plus, Info, List, LogOut, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { logout } from '@/actions/auth';
-import { getInitials } from '@/lib/initials';
+import { getInitials, displayNameFromEmail } from '@/lib/initials';
 import DisclaimerOverlay from '@/components/marketplace/DisclaimerOverlay';
 import LanguageButton from '@/components/layout/LanguageButton';
 
@@ -21,16 +21,6 @@ interface HeaderProps {
   email: string;
   locationFilter?: LocationFilter | null;
   onLocationChange?: (value: LocationFilter | null) => void;
-}
-
-function displayNameFromEmail(email: string) {
-  const local = email.split('@')[0] ?? '';
-  const name = local
-    .split('.')
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
-  return name || email;
 }
 
 export default function Header({
@@ -139,7 +129,7 @@ export default function Header({
                       background: '#8DC63F',
                       color: '#1a3200',
                       fontWeight: 700,
-                      fontSize: '13px',
+                      fontSize: 'var(--fs-xs)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -152,7 +142,7 @@ export default function Header({
                     <div
                       style={{
                         fontWeight: 700,
-                        fontSize: '14px',
+                        fontSize: 'var(--fs-sm)',
                         color: '#2F2F2F',
                       }}
                     >
@@ -165,7 +155,7 @@ export default function Header({
                         alignItems: 'center',
                         gap: '6px',
                         color: '#888',
-                        fontSize: '12px',
+                        fontSize: 'var(--fs-2xs)',
                         textDecoration: 'none',
                       }}
                     >
@@ -194,7 +184,7 @@ export default function Header({
                     gap: '10px',
                     padding: '12px 16px',
                     color: '#2F2F2F',
-                    fontSize: '14px',
+                    fontSize: 'var(--fs-sm)',
                     fontWeight: 600,
                     textDecoration: 'none',
                     background: 'white',
@@ -217,7 +207,7 @@ export default function Header({
                       background: 'white',
                       border: 'none',
                       color: '#dc2626',
-                      fontSize: '14px',
+                      fontSize: 'var(--fs-sm)',
                       fontWeight: 600,
                       cursor: 'pointer',
                     }}
@@ -254,6 +244,11 @@ export default function Header({
           <LanguageButton />
         </div>
 
+        {/* pr reserves room for the absolutely-positioned avatar/info/language
+            cluster above so it never overlaps the location field once the
+            search+location row grows narrower than its 1100px max-width
+            (roughly 768px-1310px viewports). Inline `style` always beats a
+            plain class, so the md: override has to live in className. */}
         <div
           className="flex flex-col md:flex-row md:items-center pr-8 md:pr-[210px]"
           style={{
@@ -311,7 +306,7 @@ export default function Header({
             {showMyListingsButton && (
               <div>
                 <Link
-                  href="/meine"
+                  href="/new"
                   className="inline-flex items-center justify-center"
                   style={{
                     gap: '8px',
@@ -322,8 +317,8 @@ export default function Header({
                     color: '#1a3200',
                     border: '1px solid #8DC63F',
                     borderRadius: '9px',
-                    fontSize: 'var(--fs-control-input)',
-                    fontWeight: 500,
+                    fontSize: 'var(--fs-control-button)',
+                    fontWeight: 600,
                     textDecoration: 'none',
                   }}
                 >
