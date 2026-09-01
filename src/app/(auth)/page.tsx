@@ -11,6 +11,8 @@ import {
 import { db } from '@/db/client';
 import { listings } from '@/db/schema';
 import { requireSession } from '@/lib/session';
+import { DEFAULT_RADIUS_KM, isRadius } from '@/lib/geo';
+import { resolvePlaceParam, withinRadius } from '@/db/filters';
 
 import type { Listing, Mode } from '@/types';
 import Marketplace from '@/components/Marketplace';
@@ -32,6 +34,9 @@ export default async function HomePage({
     q?: string;
     page?: string;
     per?: string;
+    loc?: string;
+    r?: string;
+    near?: string;
   }>;
 }) {
   const session = await requireSession();
@@ -54,6 +59,16 @@ export default async function HomePage({
     Math.floor(Number(params.page)) || 1,
   );
 
+  const place = resolvePlaceParam(params.loc);
+
+  const radiusKm = isRadius(Number(params.r))
+    ? Number(params.r)
+    : DEFAULT_RADIUS_KM;
+
+  // Display-only: remembers that the place came from a GPS fix, so the
+  // control can keep saying "Near X" across a navigation.
+  const approximate = params.near === '1';
+
   const where = and(
     eq(listings.type, mode),
 
@@ -67,6 +82,8 @@ export default async function HomePage({
           ilike(listings.description, likePattern(query)),
         )
       : undefined,
+
+    place ? withinRadius(place, radiusKm) : undefined,
   );
 
   const [[{ count }], tagRows] = await Promise.all([
@@ -127,6 +144,9 @@ export default async function HomePage({
       query={query}
       email={session.email}
       categoryTags={tagRows.map((r) => r.tag)}
+      place={place}
+      radiusKm={radiusKm}
+      approximate={approximate}
     />
   );
 }

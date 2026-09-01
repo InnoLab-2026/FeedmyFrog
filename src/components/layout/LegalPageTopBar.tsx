@@ -20,7 +20,7 @@ export default function LegalPageTopBar() {
         className="py-2 px-4 rounded-xl inline-block"
         style={{ background: 'white', border: '2px solid black', fontWeight: 600, fontSize: 'var(--fs-sm)' }}
       >
-        ← {t('back_to_overview')}
+        <span aria-hidden="true">←</span> {t('back_to_overview')}
       </Link>
 
       <LanguageButton />

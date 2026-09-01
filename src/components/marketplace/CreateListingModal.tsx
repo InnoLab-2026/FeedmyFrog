@@ -24,25 +24,19 @@ export default function CreateListingModal({
         onClick={() => setOpen(true)}
         className="inline-flex items-center justify-center"
         style={{
-          gap: '10px',
-          minHeight: '54px',
-          padding: '0 26px',
+          gap: '6px',
+          height: '40px',
+          padding: '0 14px',
           background: '#8DC63F',
           color: '#1a3200',
           border: 'none',
-          borderRadius: '9px',
-          fontSize: 'var(--fs-control-button)',
+          borderRadius: '8px',
+          fontSize: 'var(--fs-sm)',
           fontWeight: 600,
           cursor: 'pointer',
         }}
       >
-        <Plus
-          style={{
-            width: '22px',
-            height: '22px',
-          }}
-        />
-
+        <Plus style={{ width: '16px', height: '16px' }} />
         {t('create_listing')}
       </button>
 
