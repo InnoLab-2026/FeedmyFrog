@@ -91,6 +91,28 @@ describe('createListing', () => {
     );
   });
 
+  it('stores coordinates for a location it can place, so the radius filter finds it', async () => {
+    getSessionMock.mockResolvedValue(SESSION);
+    await expect(
+      createListing(null, formData({ ...validFields, location: '72762 Reutlingen' })),
+    ).rejects.toThrow('NEXT_REDIRECT:/');
+
+    expect(insertValues).toHaveBeenCalledWith(
+      expect.objectContaining({ lat: 48.4914, lng: 9.2042 }),
+    );
+  });
+
+  it('stores null coordinates rather than guessing at an unknown location', async () => {
+    getSessionMock.mockResolvedValue(SESSION);
+    await expect(
+      createListing(null, formData({ ...validFields, location: 'bei mir zu Hause' })),
+    ).rejects.toThrow('NEXT_REDIRECT:/');
+
+    expect(insertValues).toHaveBeenCalledWith(
+      expect.objectContaining({ lat: null, lng: null }),
+    );
+  });
+
   it('scopes the insert to the session user and revalidates + redirects on success', async () => {
     getSessionMock.mockResolvedValue(SESSION);
     await expect(createListing(null, formData(validFields))).rejects.toThrow('NEXT_REDIRECT:/');
@@ -142,6 +164,32 @@ describe('updateListing', () => {
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.errors.id).toEqual(['not_found']);
     expect(redirectMock).not.toHaveBeenCalled();
+  });
+
+  it('re-resolves coordinates on update so a moved listing is filtered correctly', async () => {
+    getSessionMock.mockResolvedValue(SESSION);
+    returningMock.mockResolvedValue([{ id: VALID_ID }]);
+
+    await expect(
+      updateListing(null, formData({ id: VALID_ID, ...validFields, location: 'Stuttgart' })),
+    ).rejects.toThrow('NEXT_REDIRECT:/meine');
+
+    expect(updateSet).toHaveBeenCalledWith(
+      expect.objectContaining({ lat: 48.7758, lng: 9.1829 }),
+    );
+  });
+
+  it('clears stale coordinates when the location becomes unplaceable', async () => {
+    getSessionMock.mockResolvedValue(SESSION);
+    returningMock.mockResolvedValue([{ id: VALID_ID }]);
+
+    await expect(
+      updateListing(null, formData({ id: VALID_ID, ...validFields, location: 'Hamburg' })),
+    ).rejects.toThrow('NEXT_REDIRECT:/meine');
+
+    expect(updateSet).toHaveBeenCalledWith(
+      expect.objectContaining({ lat: null, lng: null }),
+    );
   });
 
   it('redirects to /meine and revalidates on a successful update', async () => {

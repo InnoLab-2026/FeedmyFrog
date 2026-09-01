@@ -15,6 +15,9 @@ import {
   getCategoryTranslationKey,
   isStandardCategory,
 } from '@/data/categories';
+import KnownPlacesDatalist, {
+  KNOWN_PLACES_LIST_ID,
+} from '@/components/marketplace/KnownPlacesDatalist';
 
 interface CreateListingFormProps {
   email: string;
@@ -202,6 +205,7 @@ export default function CreateListingForm({
                   <button
                     key={tag}
                     type="button"
+                    aria-pressed={selected}
                     disabled={blocked}
                     onClick={() => toggleTag(tag)}
                     style={{
@@ -221,7 +225,6 @@ export default function CreateListingForm({
                       boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
                     }}
                   >
-                    {selected ? '✓ ' : ''}
                     {t(getCategoryTranslationKey(tag))}
                   </button>
                 );
@@ -317,9 +320,11 @@ export default function CreateListingForm({
               type="text"
               value={location}
               maxLength={80}
+              list={KNOWN_PLACES_LIST_ID}
               onChange={(e) => setLocation(e.target.value)}
               style={inputStyle}
             />
+            <KnownPlacesDatalist />
           </div>
 
           <div style={{ marginTop: '20px' }}>

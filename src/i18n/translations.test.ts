@@ -101,6 +101,22 @@ describe('translations', () => {
     expect(new Set(LANGUAGES.map((l) => l.code)).size).toBe(LANGUAGES.length);
   });
 
+  it.each(LOCALES)('%s carries no emoji', (code) => {
+    /*
+     * Emoji render differently on every platform, are read aloud by screen
+     * readers ("envelope"), and carry meaning that does not survive
+     * translation. UI copy states things in words instead.
+     */
+    const EMOJI =
+      /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}]/u;
+
+    const offenders = Object.entries(entries(code))
+      .filter(([, text]) => EMOJI.test(text))
+      .map(([key]) => key);
+
+    expect(offenders).toEqual([]);
+  });
+
   it.each(LOCALES)('%s actually differs from English where it should', (code) => {
     if (code === REFERENCE) return;
 

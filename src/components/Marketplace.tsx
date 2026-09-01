@@ -15,6 +15,8 @@ import {
 } from '@/data/categories';
 
 import Header from '@/components/layout/Header';
+import type { LocationFilter } from '@/components/marketplace/LocationSearch';
+import { CITY_COORDS, DEFAULT_RADIUS_KM } from '@/lib/geo';
 import ModeToggle from '@/components/marketplace/ModeToggle';
 import CategoryTabs from '@/components/marketplace/CategoryTabs';
 import PaginationControls from '@/components/marketplace/PaginationControls';
@@ -33,6 +35,12 @@ interface MarketplaceProps {
 
   /** Tags of the current mode, ordered by frequency (server-aggregated). */
   categoryTags: string[];
+
+  /** Place the radius filter is centred on, or null when it is off. */
+  place: string | null;
+  radiusKm: number;
+  /** The place came from a GPS fix, so the control says "Near X". */
+  approximate: boolean;
 }
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -47,6 +55,9 @@ export default function Marketplace({
   query,
   email,
   categoryTags,
+  place,
+  radiusKm,
+  approximate,
 }: MarketplaceProps) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -72,6 +83,9 @@ export default function Marketplace({
       q: string;
       page: number;
       per: number;
+      place: string | null;
+      radiusKm: number;
+      approximate: boolean;
     }>,
     replace = false,
   ) {
@@ -81,6 +95,9 @@ export default function Marketplace({
       q: query,
       page,
       per: perPage,
+      place,
+      radiusKm,
+      approximate,
       ...next,
     };
 
@@ -104,6 +121,23 @@ export default function Marketplace({
 
     if (merged.per !== 15) {
       params.set('per', String(merged.per));
+    }
+
+    /*
+     * The place travels as a name and the server looks its coordinates up
+     * again, so a shared link stays readable and cannot ask about an
+     * arbitrary point on the map.
+     */
+    if (merged.place) {
+      params.set('loc', merged.place);
+
+      if (merged.radiusKm !== DEFAULT_RADIUS_KM) {
+        params.set('r', String(merged.radiusKm));
+      }
+
+      if (merged.approximate) {
+        params.set('near', '1');
+      }
     }
 
     const qs = params.toString();
@@ -162,6 +196,26 @@ export default function Marketplace({
     ];
   }, [categoryTags, t]);
 
+  const locationFilter: LocationFilter | null =
+    place && CITY_COORDS[place]
+      ? {
+          city: place,
+          approximate,
+          lat: CITY_COORDS[place].lat,
+          lng: CITY_COORDS[place].lng,
+          radius: radiusKm,
+        }
+      : null;
+
+  function onLocationChange(value: LocationFilter | null) {
+    navigate({
+      place: value ? value.city : null,
+      radiusKm: value?.radius ?? DEFAULT_RADIUS_KM,
+      approximate: value?.approximate ?? false,
+      page: 1,
+    });
+  }
+
   const totalPages = Math.max(
     1,
     Math.ceil(totalCount / perPage),
@@ -175,6 +229,8 @@ export default function Marketplace({
         searchQuery={searchInput}
         onSearchChange={onSearchChange}
         email={email}
+        locationFilter={locationFilter}
+        onLocationChange={onLocationChange}
       />
 
       <main className="max-w-[1400px] w-full mx-auto px-5 flex-grow pb-8">

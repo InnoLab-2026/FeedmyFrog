@@ -6,6 +6,23 @@ import { db } from '@/db/client';
 import { listings } from '@/db/schema';
 import { getSession } from '@/lib/session';
 import { ListingInput, Uuid } from '@/lib/validators';
+import { resolveLocation } from '@/lib/geo';
+
+/**
+ * Coordinates for a listing's free-text location, so the radius filter on the
+ * home page can find it. Resolved once here on write rather than on every
+ * read, and left null when the text names somewhere we cannot place — such a
+ * listing is absent from radius-filtered results instead of being pinned to a
+ * guess.
+ */
+function coordinatesFor(location: string): { lat: number | null; lng: number | null } {
+  const resolved = resolveLocation(location);
+
+  return {
+    lat: resolved?.coords.lat ?? null,
+    lng: resolved?.coords.lng ?? null,
+  };
+}
 
 export type CreateState =
   | { ok: true }
@@ -43,6 +60,7 @@ export async function createListing(
     userId: session.userId,
     email: session.email,
     ...parsed.data,
+    ...coordinatesFor(parsed.data.location),
   });
 
   revalidatePath('/');
@@ -82,7 +100,7 @@ export async function updateListing(
 
   const updated = await db
     .update(listings)
-    .set(parsed.data)
+    .set({ ...parsed.data, ...coordinatesFor(parsed.data.location) })
     .where(and(eq(listings.id, id.data), eq(listings.userId, session.userId)))
     .returning({ id: listings.id });
 

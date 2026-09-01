@@ -118,3 +118,97 @@ export function findNearestTown(
     distanceKm: nearest.distanceKm,
   };
 }
+
+/** Radius options offered in the UI, in kilometres. */
+export const RADII = [3, 5, 10, 20] as const;
+
+export const DEFAULT_RADIUS_KM = 10;
+
+export function isRadius(value: number): boolean {
+  return (RADII as readonly number[]).includes(value);
+}
+
+/**
+ * Coordinates for a listing's free-text location, or null when it names
+ * nowhere we know.
+ *
+ * The create form takes free text on purpose — "Campus Reutlingen" is a
+ * perfectly good thing to write — so this has to be forgiving: an exact name
+ * first, then a known place appearing as a whole word inside the text, which
+ * catches the "72762 Reutlingen" people actually type. Whole words only, so
+ * "Reutlingenhausen" is not read as Reutlingen.
+ *
+ * When a text names two places at once ("Reutlingen-Betzingen"), the longest
+ * name wins. That is the broader of the two, which is the safe direction:
+ * the district lies inside its town, so the answer is right either way, and
+ * the rule is at least deterministic.
+ *
+ * Unlike a GPS fix, a district resolves to itself: the author chose to say
+ * where their listing is, and narrowing that to the parent town would only
+ * make the filter less accurate.
+ */
+export function resolveLocation(text: string): { place: string; coords: Coordinates } | null {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+
+  const normalized = trimmed.toLowerCase();
+
+  for (const place of Object.keys(CITY_COORDS)) {
+    if (place.toLowerCase() === normalized) {
+      return { place, coords: CITY_COORDS[place] };
+    }
+  }
+
+  let best: string | null = null;
+  let bestLength = 0;
+
+  for (const place of Object.keys(CITY_COORDS)) {
+    const name = place.toLowerCase();
+    // Word boundaries by hand: \b does not treat "ö" or "ü" as word
+    // characters, so it would split "Mössingen" in the wrong places.
+    const index = normalized.indexOf(name);
+    if (index === -1) continue;
+
+    const before = normalized[index - 1];
+    const after = normalized[index + name.length];
+    const isBoundary = (char: string | undefined) =>
+      char === undefined || !/[\p{L}\p{N}]/u.test(char);
+
+    if (!isBoundary(before) || !isBoundary(after)) continue;
+
+    if (name.length > bestLength) {
+      best = place;
+      bestLength = name.length;
+    }
+  }
+
+  return best ? { place: best, coords: CITY_COORDS[best] } : null;
+}
+
+/**
+ * Latitude/longitude bounds enclosing a circle, so the database can narrow
+ * with an index before the exact great-circle distance is computed. The box
+ * is deliberately a little generous — it may admit rows the precise check
+ * then rejects, which is the safe direction to be wrong in.
+ */
+export function boundingBox(
+  lat: number,
+  lng: number,
+  radiusKm: number,
+): { minLat: number; maxLat: number; minLng: number; maxLng: number } {
+  const KM_PER_DEGREE_LAT = 111.32;
+
+  const deltaLat = radiusKm / KM_PER_DEGREE_LAT;
+
+  // A degree of longitude shrinks towards the poles. The floor keeps the
+  // division finite if this is ever called somewhere extreme.
+  const shrink = Math.max(Math.cos((lat * Math.PI) / 180), 0.01);
+  const deltaLng = radiusKm / (KM_PER_DEGREE_LAT * shrink);
+
+  return {
+    minLat: lat - deltaLat,
+    maxLat: lat + deltaLat,
+    minLng: lng - deltaLng,
+    maxLng: lng + deltaLng,
+  };
+}
