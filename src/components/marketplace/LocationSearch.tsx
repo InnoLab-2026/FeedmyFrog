@@ -4,54 +4,35 @@ import { useEffect, useRef, useState } from 'react';
 import { MapPin, Navigation, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { CITY_COORDS, findNearestTown } from '@/lib/geo';
+
 export interface LocationFilter {
+  /**
+   * The place itself, never a translated label — a stored label would keep
+   * saying "Near Reutlingen" in English after the reader switches language.
+   * The label is built at render time from this plus `approximate`.
+   */
   city: string;
+  /** True when the place was derived from a GPS fix rather than picked. */
+  approximate?: boolean;
   lat: number;
   lng: number;
   radius: number;
 }
 
-export const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
-  Reutlingen: { lat: 48.4914, lng: 9.2042 },
-  Betzingen: { lat: 48.5089, lng: 9.1756 },
-  Sondelfingen: { lat: 48.508, lng: 9.233 },
-  Oferdingen: { lat: 48.526, lng: 9.24 },
-  Gönningen: { lat: 48.43, lng: 9.15 },
-  Degerschlacht: { lat: 48.515, lng: 9.168 },
-  Mössingen: { lat: 48.4064, lng: 9.0542 },
-  Pfullingen: { lat: 48.4644, lng: 9.2261 },
-  Eningen: { lat: 48.486, lng: 9.255 },
-  Wannweil: { lat: 48.515, lng: 9.15 },
-  Kirchentellinsfurt: { lat: 48.531, lng: 9.147 },
-  Stuttgart: { lat: 48.7758, lng: 9.1829 },
-  Tübingen: { lat: 48.5216, lng: 9.0576 },
-  Esslingen: { lat: 48.7394, lng: 9.3068 },
-  Ludwigsburg: { lat: 48.8975, lng: 9.1916 },
-  Waiblingen: { lat: 48.8302, lng: 9.3189 },
-  Böblingen: { lat: 48.6831, lng: 9.0107 },
-  Sindelfingen: { lat: 48.7155, lng: 9.0018 },
-  Göppingen: { lat: 48.703, lng: 9.6531 },
-  Fellbach: { lat: 48.8132, lng: 9.2755 },
+/*
+ * Town-level is all this feature needs, so ask the browser for the cheap,
+ * coarse network fix rather than switching on the GPS chip, and accept a
+ * recent cached one. The timeout matters: without it the success callback can
+ * simply never arrive and the spinner turns forever.
+ */
+const GEOLOCATION_OPTIONS: PositionOptions = {
+  enableHighAccuracy: false,
+  maximumAge: 30 * 60 * 1000,
+  timeout: 10_000,
 };
 
 const RADII = [3, 5, 10, 20];
-
-function haversineKm(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number,
-) {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLng = ((lng2 - lng1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
 
 interface LocationSearchProps {
   value: LocationFilter | null;
@@ -131,24 +112,30 @@ export default function LocationSearch({
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setGpsLoading(false);
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
 
-        let nearestCity = 'Reutlingen';
-        let nearestDistance = Infinity;
+        /*
+         * The reader's own coordinates exist only inside this callback. They
+         * answer one question — which town? — and are then dropped; what gets
+         * stored is that town's coordinates, so nothing downstream can see a
+         * position more precise than a town centre.
+         */
+        const nearest = findNearestTown(
+          position.coords.latitude,
+          position.coords.longitude,
+        );
 
-        for (const [city, coords] of Object.entries(CITY_COORDS)) {
-          const distance = haversineKm(lat, lng, coords.lat, coords.lng);
-          if (distance < nearestDistance) {
-            nearestDistance = distance;
-            nearestCity = city;
-          }
+        if (!nearest) {
+          setGpsError(t('gps_out_of_area'));
+          return;
         }
 
+        const town = CITY_COORDS[nearest.town];
+
         onChange({
-          city: `${t('location_label')} (≈ ${nearestCity})`,
-          lat,
-          lng,
+          city: nearest.town,
+          approximate: true,
+          lat: town.lat,
+          lng: town.lng,
           radius: value?.radius ?? pendingRadius,
         });
         setOpen(false);
@@ -157,6 +144,7 @@ export default function LocationSearch({
         setGpsLoading(false);
         setGpsError(t('gps_error'));
       },
+      GEOLOCATION_OPTIONS,
     );
   };
 
@@ -211,7 +199,11 @@ export default function LocationSearch({
             whiteSpace: 'nowrap',
           }}
         >
-          {value ? value.city : t('location_label')}
+          {value
+            ? value.approximate
+              ? t('gps_near_city', { city: value.city })
+              : value.city
+            : t('location_label')}
         </span>
         {value && (
           <>

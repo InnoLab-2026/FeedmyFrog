@@ -1,8 +1,11 @@
 'use client';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { CARD_SHADOW } from '@/constants';
 
 const INSTITUTION_DOMAIN = process.env.NEXT_PUBLIC_INSTITUTION_DOMAIN ?? '';
+
+/** What an accepted address looks like, e.g. `@(*.)reutlingen-university.de`. */
+const DOMAIN_PATTERN = `@(*.)${INSTITUTION_DOMAIN}`;
 
 interface DisclaimerOverlayProps {
   onClose: () => void;
@@ -40,15 +43,24 @@ export default function DisclaimerOverlay({ onClose }: DisclaimerOverlayProps) {
         </div>
 
         <ul className="space-y-3" style={{ fontSize: 'var(--fs-xs)', lineHeight: 1.6, fontWeight: 500 }}>
+          {/* One sentence per bullet with the domain interpolated into it,
+              rather than a `_pre` + domain + `_post` sandwich. The sandwich
+              pinned the domain to the middle of the sentence, which is not
+              where every language puts it, and gave translators two
+              half-sentences with no way to see the whole. */}
           <li>
-            {t('disclaimer_bullet1_pre')}{' '}
-            <span style={{ fontWeight: 700 }}>@(*.){INSTITUTION_DOMAIN}</span>{' '}
-            {t('disclaimer_bullet1_post')}
+            <Trans
+              i18nKey="disclaimer_bullet1"
+              values={{ domain: DOMAIN_PATTERN }}
+              components={{ domain: <span style={{ fontWeight: 700 }} /> }}
+            />
           </li>
           <li>
-            {t('disclaimer_bullet2_pre')}{' '}
-            <span style={{ fontWeight: 700 }}>@(*.){INSTITUTION_DOMAIN}</span>{' '}
-            {t('disclaimer_bullet2_post')}
+            <Trans
+              i18nKey="disclaimer_bullet2"
+              values={{ domain: DOMAIN_PATTERN }}
+              components={{ domain: <span style={{ fontWeight: 700 }} /> }}
+            />
           </li>
           <li style={{ fontWeight: 700 }}>{t('disclaimer_bullet3')}</li>
         </ul>

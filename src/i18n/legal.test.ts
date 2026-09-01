@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import i18n from './index';
-import { LEGAL_NS, legalResources } from './legal';
+import { getI18nInstance } from './index';
+import { LEGAL_NS, legalResources, useLegalResources } from './legal';
 import { LANGUAGES } from './translations';
 
 /*
@@ -100,18 +100,34 @@ describe('legal resources', () => {
 });
 
 /*
- * The bundles are registered as a side effect of importing ./legal, so that
- * the two page components get them just by importing the module. These tests
- * pin that down: importing is enough, and every language resolves through
- * i18next rather than only existing in the exported object.
+ * The bundles are attached per i18next instance, because the server builds a
+ * fresh one for every request. These tests pin that down: attaching works on
+ * a real instance, every language resolves through i18next rather than only
+ * existing in the exported object, and the main namespace is untouched.
  */
 describe('legal namespace registration', () => {
-  it.each(LOCALES)('registers the %s bundle on the shared i18next instance', (code) => {
-    expect(i18n.hasResourceBundle(code, LEGAL_NS)).toBe(true);
+  it('attaches every language bundle to an instance', () => {
+    const i18n = getI18nInstance('de');
+    expect(i18n.hasResourceBundle('de', LEGAL_NS)).toBe(false);
+
+    useLegalResources(i18n);
+
+    for (const code of LOCALES) {
+      expect(i18n.hasResourceBundle(code, LEGAL_NS)).toBe(true);
+    }
+  });
+
+  it('is a no-op when called again on the same instance', () => {
+    const i18n = getI18nInstance('en');
+    useLegalResources(i18n);
+    useLegalResources(i18n);
+
+    expect(i18n.t('privacy.title', { ns: LEGAL_NS })).toBe(legalResources.en.privacy.title);
   });
 
   it.each(LOCALES)('resolves a %s key through i18next, not just the export', async (code) => {
-    await i18n.changeLanguage(code);
+    const i18n = getI18nInstance(code);
+    useLegalResources(i18n);
 
     const title = i18n.t('privacy.title', { ns: LEGAL_NS });
     expect(title).toBe(legalResources[code].privacy.title);
@@ -119,8 +135,9 @@ describe('legal namespace registration', () => {
     expect(title).not.toBe('privacy.title');
   });
 
-  it('leaves the main translation namespace untouched', async () => {
-    await i18n.changeLanguage('en');
+  it('leaves the main translation namespace untouched', () => {
+    const i18n = getI18nInstance('en');
+    useLegalResources(i18n);
     expect(i18n.t('logout')).toBe('Log out');
   });
 });

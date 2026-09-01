@@ -92,7 +92,7 @@ export default function LoginForm({
             overflowWrap: 'anywhere',
           }}
         >
-          {t('email_sent_body_pre')}
+          {t('email_sent_intro')}
         </p>
 
         <p
@@ -115,7 +115,7 @@ export default function LoginForm({
             lineHeight: 1.6,
           }}
         >
-          {t('email_sent_body_post')}
+          {t('email_sent_note')}
         </p>
       </div>
     );

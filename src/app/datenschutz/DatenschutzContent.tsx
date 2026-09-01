@@ -2,7 +2,7 @@
 
 import { useTranslation } from 'react-i18next';
 
-import { LEGAL_NS } from '@/i18n/legal';
+import { LEGAL_NS, useLegalResources } from '@/i18n/legal';
 import {
   LegalHeading,
   LegalLink,
@@ -14,7 +14,7 @@ import {
 
 /*
  * Art. 13 GDPR information duties. The [ ] placeholders have to be filled in
- * before the platform goes live — in src/i18n/legal.ts, in every language,
+ * before the platform goes live — in src/i18n/legalResources.ts, in every language,
  * since the same disclosure is owed to every reader.
  *
  * The document structure lives here and the wording lives in the `legal`
@@ -30,7 +30,12 @@ const PROCESSORS = ['vercel', 'neon', 'brevo'] as const;
 const RETENTION_ROWS = ['token', 'session', 'ip', 'listings'] as const;
 
 export default function DatenschutzContent() {
-  const { t } = useTranslation(LEGAL_NS);
+  const { t, i18n } = useTranslation(LEGAL_NS);
+
+  // Attaches the legal wording to this render's i18next instance before
+  // the first t() below reads from it. Kept out of the instance's initial
+  // resources so it does not ship with every route.
+  useLegalResources(i18n);
 
   return (
     <>
