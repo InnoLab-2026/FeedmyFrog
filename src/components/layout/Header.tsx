@@ -259,7 +259,7 @@ export default function Header({
           }}
         >
           <div className="flex-shrink-0" style={{ width: '168px' }}>
-            <Link href="/" aria-label="Zurück zur Übersicht">
+            <Link href="/" aria-label={t('back_to_overview')}>
               <img
                 src="/feedmyfrog.jpg"
                 alt="feedmyfrog"

@@ -63,10 +63,16 @@ export async function createListing(
     ...coordinatesFor(parsed.data.location),
   });
 
-    revalidatePath('/');
+  revalidatePath('/');
   revalidatePath('/meine');
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  redirect('/');
+
+  /*
+   * Returns instead of redirecting, so the caller knows the insert actually
+   * happened. The form shows its confirmation on this result and navigates
+   * itself once it has been seen — pacing that belongs in the browser, not
+   * in a server action holding a connection open while nothing happens.
+   */
+  return { ok: true };
 }
 
 export async function updateListing(

@@ -1,14 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import LanguageButton from '@/components/layout/LanguageButton';
-import { CARD_SHADOW } from '@/constants';
+import { APP_NAME, CARD_SHADOW } from '@/constants';
 
 export default function VerifyPromptCard({ token }: { token: string | null }) {
   const { t } = useTranslation();
   const [sending, setSending] = useState(false);
+
+  /*
+   * The button is disabled on submit so the token cannot be spent twice. That
+   * has to be undone when the page comes back out of the back/forward cache:
+   * a browser restores this page exactly as it was left, disabled button and
+   * all, and anyone who came back from a failed verification would find the
+   * only control on the page dead with no way to retry.
+   */
+  useEffect(() => {
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) setSending(false);
+    };
+
+    window.addEventListener('pageshow', onPageShow);
+    return () => window.removeEventListener('pageshow', onPageShow);
+  }, []);
 
   return (
     <main
@@ -29,7 +45,7 @@ export default function VerifyPromptCard({ token }: { token: string | null }) {
       >
         <img
           src="/feedmyfrog.jpg"
-          alt="feedmyfrog"
+          alt=""
           style={{
             width: '140px',
             height: 'auto',
@@ -84,7 +100,7 @@ export default function VerifyPromptCard({ token }: { token: string | null }) {
                 textAlign: 'center',
               }}
             >
-              feedmyfrog
+              {APP_NAME}
             </h1>
             <p
               className="mt-2"
@@ -121,7 +137,7 @@ export default function VerifyPromptCard({ token }: { token: string | null }) {
                   opacity: sending ? 0.65 : 1,
                 }}
               >
-                {sending ? t('sending_link') : t('verify_now')}
+                {sending ? t('verifying') : t('verify_now')}
               </button>
             </form>
           </>
