@@ -86,7 +86,23 @@ export default async function HomePage({
     place ? withinRadius(place, radiusKm) : undefined,
   );
 
-  const [[{ count }], tagRows] = await Promise.all([
+  /*
+   * One HTTP request, not three.
+   *
+   * neon-http opens a fresh HTTPS request per query, so each `await db...`
+   * is a full round trip to Postgres. Fetching the page of rows after the
+   * count -- which is what the clamp below needs -- made that a two-wave
+   * waterfall: the rows could not even be asked for until the count came
+   * back. `db.batch` sends all three as one non-interactive transaction, so
+   * the wire cost is a single round trip and the rows arrive with the count
+   * rather than after it.
+   *
+   * The rows are fetched at the *requested* page, because the clamp is not
+   * known yet. That is the right guess for every in-range page, which is
+   * every normal navigation; only an out-of-range `?page=` needs the second
+   * query below.
+   */
+  const [[{ count }], tagRows, requestedRows] = await db.batch([
     db
       .select({
         count: sql<number>`count(*)::int`,
@@ -103,6 +119,14 @@ export default async function HomePage({
       .where(eq(listings.type, mode))
       .groupBy(sql`1`)
       .orderBy(sql`2 DESC`),
+
+    db
+      .select()
+      .from(listings)
+      .where(where)
+      .orderBy(desc(listings.createdAt))
+      .limit(perPage)
+      .offset((requestedPage - 1) * perPage),
   ]);
 
   const totalPages = Math.max(
@@ -115,13 +139,17 @@ export default async function HomePage({
     totalPages,
   );
 
-  const rows = await db
-    .select()
-    .from(listings)
-    .where(where)
-    .orderBy(desc(listings.createdAt))
-    .limit(perPage)
-    .offset((page - 1) * perPage);
+  // Only when `?page=` pointed past the end: re-fetch at the clamped page.
+  const rows =
+    page === requestedPage
+      ? requestedRows
+      : await db
+          .select()
+          .from(listings)
+          .where(where)
+          .orderBy(desc(listings.createdAt))
+          .limit(perPage)
+          .offset((page - 1) * perPage);
 
   const items: Listing[] = rows.map((r) => ({
     id: r.id,

@@ -1,20 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-let mockCount = 0;
-const insertValues = vi.fn().mockResolvedValue(undefined);
+// What the check-and-consume statement reports back: how many hits were
+// already inside the window, and whether this call's row was actually added.
+// The INSERT is guarded by the statement's own WHERE, so `inserted` is the
+// database's answer rather than a decision taken in TypeScript.
+let mockRow = { used: 0, inserted: 1 };
+const execute = vi.fn(async () => ({ rows: [mockRow] }));
 const deleteWhere = vi.fn().mockResolvedValue(undefined);
 
 // Only the db client is mocked — src/db/schema.ts has no DB connection or
-// server-only import, so the real table metadata (and the real eq/gte/lt
-// condition builders from drizzle-orm) can be exercised as-is.
+// server-only import, so the real table metadata (and the real lt condition
+// builder from drizzle-orm) can be exercised as-is.
 vi.mock('@/db/client', () => ({
   db: {
-    select: () => ({
-      from: () => ({
-        where: async () => [{ count: mockCount }],
-      }),
-    }),
-    insert: () => ({ values: insertValues }),
+    execute,
     delete: () => ({ where: deleteWhere }),
   },
 }));
@@ -23,41 +22,50 @@ const { checkAndConsume, cleanupRateLimits } = await import('./rate-limit');
 
 describe('checkAndConsume', () => {
   beforeEach(() => {
-    mockCount = 0;
-    insertValues.mockClear();
+    mockRow = { used: 0, inserted: 1 };
+    execute.mockClear();
   });
 
   it('allows the request and records it when under the limit', async () => {
-    mockCount = 2;
+    mockRow = { used: 2, inserted: 1 };
     const result = await checkAndConsume('send-link:ip:1.2.3.4', 5, 60_000);
     expect(result).toEqual({ ok: true, remaining: 2 });
-    expect(insertValues).toHaveBeenCalledWith({ key: 'send-link:ip:1.2.3.4' });
   });
 
-  it('blocks the request and does not record it once at the limit', async () => {
-    mockCount = 5;
+  it('blocks the request once the statement declined to insert', async () => {
+    mockRow = { used: 5, inserted: 0 };
     const result = await checkAndConsume('send-link:ip:1.2.3.4', 5, 60_000);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.retryAfterSeconds).toBe(60);
-    expect(insertValues).not.toHaveBeenCalled();
   });
 
   it('blocks the request when already over the limit', async () => {
-    mockCount = 9;
+    mockRow = { used: 9, inserted: 0 };
     const result = await checkAndConsume('send-link:ip:1.2.3.4', 5, 60_000);
     expect(result.ok).toBe(false);
   });
 
   it('reports retryAfterSeconds derived from the window size', async () => {
-    mockCount = 10;
+    mockRow = { used: 10, inserted: 0 };
     const result = await checkAndConsume('key', 10, 3_600_000);
     expect(result).toEqual({ ok: false, retryAfterSeconds: 3600 });
   });
 
   it('never reports a negative remaining count', async () => {
-    mockCount = 4;
+    mockRow = { used: 4, inserted: 1 };
     const result = await checkAndConsume('key', 5, 60_000);
     expect(result).toEqual({ ok: true, remaining: 0 });
+  });
+
+  it('spends a single round trip, counting and consuming together', async () => {
+    await checkAndConsume('key', 5, 60_000);
+    expect(execute).toHaveBeenCalledTimes(1);
+  });
+
+  it('treats a missing row as not consumed rather than as an allowance', async () => {
+    execute.mockResolvedValueOnce({ rows: [] } as never);
+    const result = await checkAndConsume('key', 5, 60_000);
+    expect(result.ok).toBe(false);
   });
 });
 
