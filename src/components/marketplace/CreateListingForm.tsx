@@ -68,7 +68,7 @@ export default function CreateListingForm({
     .map((tag) => tag.trim())
     .filter(Boolean);
 
-  const allTags = [...selectedTags, ...customTagList];
+  const allTags = [...new Set([...selectedTags, ...customTagList])];
 
   const categoryLimitReached = selectedTags.length >= MAX_CATEGORIES;
 
@@ -567,6 +567,61 @@ export default function CreateListingForm({
           </div>
         </div>
       )}
+            {pending && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 200,
+            background: 'rgba(255,255,255,0.82)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '12px',
+            overflow: 'hidden',
+          }}
+        >
+                    {[
+            [ -30, -220 ], [ 30, -240 ], [ -70, -180 ], [ 80, -200 ],
+            [ -10, -260 ], [ 50, -170 ], [ -90, -210 ], [ 100, -230 ],
+            [ -50, -160 ], [ 20, -280 ], [ -110, -190 ], [ 120, -250 ],
+            [ 0, -300 ],   [ -40, -200 ], [ 60, -270 ], [ -80, -240 ],
+            [ 15, -220 ],  [ -20, -250 ], [ 90, -180 ], [ -60, -270 ],
+            [ 40, -210 ],  [ -100, -160 ], [ 70, -290 ], [ -15, -230 ],
+          ].map(([dx, dy], i) => (
+            <span
+              key={i}
+              style={{
+                position: 'absolute',
+                left: '50%',
+                top: '58%',
+                width: i % 2 === 0 ? '8px' : '6px',
+                height: i % 3 === 0 ? '14px' : '9px',
+                marginLeft: '-3px',
+                borderRadius: '2px',
+                background: ['#FF3B30', '#007AFF', '#FFD60A', '#FF2D55', '#FF9F0A'][i % 5],
+                animation: `confetti-fountain 1.8s ease-out ${i * 0.03}s forwards`,
+                ['--dx' as string]: `${dx}px`,
+                ['--dy' as string]: `${dy}px`,
+              }}
+            />
+          ))}
+          <style>{`
+            @keyframes confetti-fountain {
+              0%   { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+              55%  { opacity: 1; }
+              100% { transform: translate(var(--dx), var(--dy)) rotate(200deg); opacity: 0; }
+            }
+          `}</style>
+          <img src="/happyfrog.png" alt="" width={110} height={110} />
+          <p style={{ fontWeight: 700, fontSize: '20px', color: '#1a3200' }}>
+            Quak — ist im Teich!
+          </p>
+        </div>
+      )}
     </form>
+    
   );
+  
 }

@@ -63,8 +63,9 @@ export async function createListing(
     ...coordinatesFor(parsed.data.location),
   });
 
-  revalidatePath('/');
+    revalidatePath('/');
   revalidatePath('/meine');
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   redirect('/');
 }
 

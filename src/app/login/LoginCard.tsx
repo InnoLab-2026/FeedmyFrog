@@ -80,26 +80,13 @@ function HoppingFrog() {
         transition: 'left 0.12s linear, bottom 0.18s ease',
       }}
     >
-      <svg width="54" height="48" viewBox="0 0 54 48" fill="none">
-        <ellipse cx="27" cy="28" rx="20" ry="16" fill="#7CB342" />
-        <circle cx="16" cy="16" r="8" fill="#7CB342" />
-        <circle cx="38" cy="16" r="8" fill="#7CB342" />
-        <circle cx="16" cy="16" r="4.5" fill="white" />
-        <circle cx="38" cy="16" r="4.5" fill="white" />
-        <circle cx="17" cy="17" r="2.2" fill="#1a1a1a" />
-        <circle cx="39" cy="17" r="2.2" fill="#1a1a1a" />
-        {mouthOpen ? (
-          <ellipse cx="27" cy="34" rx="6" ry="4.5" fill="#1a1a1a" />
-        ) : (
-          <path
-            d="M22 33 Q27 36 32 33"
-            stroke="#1a1a1a"
-            strokeWidth="2"
-            strokeLinecap="round"
-            fill="none"
-          />
-        )}
-      </svg>
+            <img
+        src="/icon.svg"
+        alt=""
+        width={56}
+        height={56}
+        style={{ display: 'block' }}
+      />
     </div>
   );
 }
