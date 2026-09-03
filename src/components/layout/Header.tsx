@@ -259,11 +259,13 @@ export default function Header({
           }}
         >
           <div className="flex-shrink-0" style={{ width: '168px' }}>
-            <img
-              src="/feedmyfrog.jpg"
-              alt="feedmyfrog"
-              style={{ width: '100%', height: 'auto', display: 'block' }}
-            />
+            <Link href="/" aria-label="Zurück zur Übersicht">
+              <img
+                src="/feedmyfrog.jpg"
+                alt="feedmyfrog"
+                style={{ width: '100%', height: 'auto', display: 'block' }}
+              />
+            </Link>
           </div>
 
           <div
