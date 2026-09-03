@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 
 import LoginForm from './LoginForm';
@@ -139,9 +140,15 @@ export default function LoginCard({
             marginBottom: '26px',
           }}
         >
-          <img
+          {/* Same 1024x1024 source as the header, painted at 220px here.
+              `priority` because this logo is the login page's LCP element:
+              it sits at the top of the only card on the page. */}
+          <Image
             src="/feedmyfrog.jpg"
             alt="feedmyfrog"
+            width={220}
+            height={220}
+            priority
             style={{
               width: '220px',
               height: 'auto',
