@@ -96,6 +96,7 @@ export const resources = {
       preview: 'Preview',
       publish: 'Publish',
       saving: 'Saving...',
+      listing_published: 'Croak — it’s in the pond!',
 
       // Disclaimer overlay
       disclaimer_title: 'Disclaimer',
@@ -105,7 +106,6 @@ export const resources = {
       disclaimer_bullet2:
         'All people with a valid <domain>{{domain}}</domain> email address can see all information displayed here and submit their own Need/Offer listings.',
       disclaimer_bullet3: 'No logs are stored.',
-      click_to_close: 'Click outside to close',
 
       // Empty state
       no_results: 'No results found',
@@ -150,6 +150,7 @@ export const resources = {
       request_new_link: 'Request a new link',
       verify_prompt_subtitle: 'Click the button to sign in.',
       verify_now: 'Sign in now',
+      verifying: 'Signing you in …',
 
       // 404 page
       not_found_title: 'Page not found',
@@ -277,6 +278,7 @@ export const resources = {
       preview: 'Vorschau',
       publish: 'Veröffentlichen',
       saving: 'Speichern...',
+      listing_published: 'Quak — ist im Teich!',
 
       // Disclaimer overlay
       disclaimer_title: 'Haftungsausschluss',
@@ -286,7 +288,6 @@ export const resources = {
       disclaimer_bullet2:
         'Alle Personen mit einer gültigen <domain>{{domain}}</domain> E-Mail-Adresse sehen alle hier angezeigten Informationen und können eigene Suche/Biete-Einträge einreichen.',
       disclaimer_bullet3: 'Es werden keine Logs gespeichert.',
-      click_to_close: 'Klicken zum Schließen',
 
       // Empty state
       no_results: 'Keine Ergebnisse gefunden',
@@ -331,6 +332,7 @@ export const resources = {
       verify_prompt_subtitle:
         'Klicken Sie auf die Schaltfläche, um sich anzumelden.',
       verify_now: 'Jetzt anmelden',
+      verifying: 'Anmeldung läuft …',
 
       // 404 page
       not_found_title: 'Seite nicht gefunden',
@@ -450,6 +452,7 @@ export const resources = {
       preview: 'Aperçu',
       publish: 'Publier',
       saving: 'Enregistrement...',
+      listing_published: 'Coa — c’est dans la mare !',
 
       disclaimer_title: 'Avertissement',
       close: 'Fermer',
@@ -458,7 +461,6 @@ export const resources = {
       disclaimer_bullet2:
         'Toutes les personnes disposant d’une adresse e-mail <domain>{{domain}}</domain> valide peuvent voir toutes les informations affichées ici et soumettre leurs propres annonces Cherche/Offre.',
       disclaimer_bullet3: "Aucun journal n'est enregistré.",
-      click_to_close: 'Cliquer pour fermer',
 
       no_results: 'Aucun résultat',
       try_different: "Essayez d'autres critères de recherche",
@@ -498,6 +500,7 @@ export const resources = {
       request_new_link: 'Demander un nouveau lien',
       verify_prompt_subtitle: 'Cliquez sur le bouton pour vous connecter.',
       verify_now: 'Se connecter maintenant',
+      verifying: 'Connexion en cours …',
 
       // 404 page
       not_found_title: 'Page introuvable',
@@ -617,6 +620,7 @@ export const resources = {
       preview: 'Önizleme',
       publish: 'Yayınla',
       saving: 'Kaydediliyor...',
+      listing_published: 'Vırak — havuzda!',
 
       disclaimer_title: 'Sorumluluk Reddi',
       close: 'Kapat',
@@ -625,7 +629,6 @@ export const resources = {
       disclaimer_bullet2:
         'Geçerli bir <domain>{{domain}}</domain> e-posta adresine sahip tüm kişiler buradaki tüm bilgileri görebilir ve kendi İstek/Teklif ilanlarını gönderebilir.',
       disclaimer_bullet3: 'Hiçbir kayıt tutulmaz.',
-      click_to_close: 'Kapatmak için tıklayın',
 
       no_results: 'Sonuç bulunamadı',
       try_different: 'Farklı arama kriterleri deneyin',
@@ -665,6 +668,7 @@ export const resources = {
       request_new_link: 'Yeni bağlantı iste',
       verify_prompt_subtitle: 'Giriş yapmak için düğmeye tıklayın.',
       verify_now: 'Şimdi giriş yap',
+      verifying: 'Giriş yapılıyor …',
 
       // 404 page
       not_found_title: 'Sayfa bulunamadı',
@@ -785,6 +789,7 @@ export const resources = {
       preview: 'Vista previa',
       publish: 'Publicar',
       saving: 'Guardando...',
+      listing_published: 'Croac — ¡ya está en el estanque!',
 
       disclaimer_title: 'Aviso Legal',
       close: 'Cerrar',
@@ -793,7 +798,6 @@ export const resources = {
       disclaimer_bullet2:
         'Todas las personas con una dirección de correo <domain>{{domain}}</domain> válida pueden ver toda la información aquí mostrada y enviar sus propios anuncios de Busco/Ofrezco.',
       disclaimer_bullet3: 'No se almacenan registros.',
-      click_to_close: 'Haga clic para cerrar',
 
       no_results: 'Sin resultados',
       try_different: 'Pruebe con otros criterios de búsqueda',
@@ -833,6 +837,7 @@ export const resources = {
       request_new_link: 'Solicitar un nuevo enlace',
       verify_prompt_subtitle: 'Haz clic en el botón para iniciar sesión.',
       verify_now: 'Iniciar sesión ahora',
+      verifying: 'Iniciando sesión …',
 
       // 404 page
       not_found_title: 'Página no encontrada',

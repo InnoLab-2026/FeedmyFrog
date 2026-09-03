@@ -84,7 +84,7 @@ describe('createListing', () => {
 
   it('parses the comma-separated tags field into an array', async () => {
     getSessionMock.mockResolvedValue(SESSION);
-    await expect(createListing(null, formData(validFields))).rejects.toThrow('NEXT_REDIRECT:/');
+    await expect(createListing(null, formData(validFields))).resolves.toEqual({ ok: true });
 
     expect(insertValues).toHaveBeenCalledWith(
       expect.objectContaining({ tags: ['Bildung', 'Nachhilfe'] }),
@@ -95,7 +95,7 @@ describe('createListing', () => {
     getSessionMock.mockResolvedValue(SESSION);
     await expect(
       createListing(null, formData({ ...validFields, location: '72762 Reutlingen' })),
-    ).rejects.toThrow('NEXT_REDIRECT:/');
+    ).resolves.toEqual({ ok: true });
 
     expect(insertValues).toHaveBeenCalledWith(
       expect.objectContaining({ lat: 48.4914, lng: 9.2042 }),
@@ -106,16 +106,16 @@ describe('createListing', () => {
     getSessionMock.mockResolvedValue(SESSION);
     await expect(
       createListing(null, formData({ ...validFields, location: 'bei mir zu Hause' })),
-    ).rejects.toThrow('NEXT_REDIRECT:/');
+    ).resolves.toEqual({ ok: true });
 
     expect(insertValues).toHaveBeenCalledWith(
       expect.objectContaining({ lat: null, lng: null }),
     );
   });
 
-  it('scopes the insert to the session user and revalidates + redirects on success', async () => {
+  it('scopes the insert to the session user, revalidates, and reports success', async () => {
     getSessionMock.mockResolvedValue(SESSION);
-    await expect(createListing(null, formData(validFields))).rejects.toThrow('NEXT_REDIRECT:/');
+    await expect(createListing(null, formData(validFields))).resolves.toEqual({ ok: true });
 
     expect(insertValues).toHaveBeenCalledWith(
       expect.objectContaining({ userId: SESSION.userId, email: SESSION.email }),
