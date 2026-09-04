@@ -1,8 +1,18 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { jwtVerify } from 'jose';
+import { jwtVerify, type JWTVerifyOptions } from 'jose';
 
 const SECRET = new TextEncoder().encode(process.env.AUTH_SECRET!);
+/*
+ * In production only the `__Host-`prefixed name is read. Accepting a plain
+ * `session` as well would hand back exactly what the prefix buys: a subdomain
+ * cannot set a `__Host-` cookie, but it can set an unprefixed one for the
+ * parent domain, which is enough to fix a reader into an attacker's session.
+ * See the note in src/lib/session.ts.
+ */
 const COOKIE = process.env.NODE_ENV === 'production' ? '__Host-session' : 'session';
+
+/** Pinned so the token header can never choose the verification algorithm. */
+const JWT_OPTIONS: JWTVerifyOptions = { clockTolerance: 30, algorithms: ['HS256'] };
 
 // Routes that require a valid session (the (auth) route group).
 const PROTECTED = [/^\/$/, /^\/new$/, /^\/meine(\/|$)/];
@@ -58,14 +68,14 @@ export async function proxy(req: NextRequest) {
   // It only pre-filters obviously unauthenticated requests; every page and
   // action re-validates the session close to the data.
   if (PROTECTED.some((re) => re.test(req.nextUrl.pathname))) {
-    const jwt = req.cookies.get(COOKIE)?.value ?? req.cookies.get('session')?.value;
+    const jwt = req.cookies.get(COOKIE)?.value;
     if (!jwt) {
       const res = NextResponse.redirect(new URL('/login', req.url));
       res.headers.set('Content-Security-Policy', csp);
       return res;
     }
     try {
-      await jwtVerify(jwt, SECRET, { clockTolerance: 30 });
+      await jwtVerify(jwt, SECRET, JWT_OPTIONS);
     } catch {
       const res = NextResponse.redirect(new URL('/login', req.url));
       res.headers.set('Content-Security-Policy', csp);

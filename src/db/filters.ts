@@ -1,52 +1,38 @@
-import { and, between, isNotNull, sql } from 'drizzle-orm';
+import { inArray } from 'drizzle-orm';
 
 import { listings } from './schema';
-import { CITY_COORDS, boundingBox } from '@/lib/geo';
+import { PLACES, isPlace, placesWithin } from '@/lib/geo';
 
 /**
- * Restricts a listings query to rows within `radiusKm` of a named place.
+ * Restricts a listings query to rows whose location is within `radiusKm` of a
+ * named place.
  *
- * The place arrives as a *name*, looked up here rather than taken as
- * coordinates from the URL: a crafted link cannot ask about an arbitrary
- * point, and the query string stays readable. An unknown name returns
- * undefined, which drizzle's `and()` drops — the filter is simply not applied
- * rather than silently matching nothing.
+ * Because `listings.location` is a closed set of twenty names, "near here" is
+ * a question about *names*: placesWithin() does twenty great-circle distances
+ * in memory, once per request, and the database is asked for a plain
+ * `location IN (…)`. No coordinate is stored per row, no bounding box is
+ * scanned, and no trigonometry runs inside Postgres.
  *
- * Two steps on purpose. The bounding box is a plain range scan the
- * (lat, lng) index can serve, and it is deliberately a little wide; the
- * great-circle distance then trims the corners of that box to a true circle.
- * Doing only the second step would mean computing a trigonometric distance
- * for every row in the table.
- *
- * Rows with no coordinates — a location free text we could not place — are
- * excluded rather than assumed to be nearby.
+ * The place arrives as a name and is validated against the same table rather
+ * than trusted, so a crafted link cannot ask about an arbitrary point. An
+ * unknown name returns undefined, which drizzle's `and()` drops — the filter
+ * is simply not applied rather than silently matching nothing.
  */
 export function withinRadius(place: string, radiusKm: number) {
-  const coords = CITY_COORDS[place];
-  if (!coords) return undefined;
+  const nearby = placesWithin(place, radiusKm);
+  if (nearby.length === 0) return undefined;
 
-  const box = boundingBox(coords.lat, coords.lng, radiusKm);
-
-  return and(
-    isNotNull(listings.lat),
-    isNotNull(listings.lng),
-    between(listings.lat, box.minLat, box.maxLat),
-    between(listings.lng, box.minLng, box.maxLng),
-    sql`6371 * 2 * asin(sqrt(
-      power(sin(radians(${listings.lat} - ${coords.lat}) / 2), 2) +
-      cos(radians(${coords.lat})) * cos(radians(${listings.lat})) *
-      power(sin(radians(${listings.lng} - ${coords.lng}) / 2), 2)
-    )) <= ${radiusKm}`,
-  );
+  return inArray(listings.location, nearby);
 }
 
 /** The place name from a URL parameter, only if it is one we actually know. */
 export function resolvePlaceParam(value: string | undefined): string | null {
   if (!value) return null;
 
-  const match = Object.keys(CITY_COORDS).find(
-    (place) => place.toLowerCase() === value.trim().toLowerCase(),
-  );
+  const needle = value.trim().toLowerCase();
+  const match = PLACES.find((place) => place.toLowerCase() === needle);
 
   return match ?? null;
 }
+
+export { isPlace };

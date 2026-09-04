@@ -22,6 +22,13 @@
       "when": 1788476560260,
       "tag": "0002_romantic_virginia_dare",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788510578836,
+      "tag": "0003_bumpy_big_bertha",
+      "breakpoints": true
     }
   ]
 }

@@ -14,12 +14,9 @@ import {
 import type { Mode } from '@/types';
 import {
   STANDARD_CATEGORY_TAGS,
-  getCategoryTranslationKey,
-  isStandardCategory,
+  categoryLabel,
 } from '@/data/categories';
-import KnownPlacesDatalist, {
-  KNOWN_PLACES_LIST_ID,
-} from '@/components/marketplace/KnownPlacesDatalist';
+import PlaceSelect from '@/components/marketplace/PlaceSelect';
 import { usePrefersReducedMotion } from '@/lib/useReducedMotion';
 
 interface CreateListingFormProps {
@@ -275,7 +272,7 @@ export default function CreateListingForm({
                       boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
                     }}
                   >
-                    {t(getCategoryTranslationKey(tag))}
+                    {categoryLabel(tag, t)}
                   </button>
                 );
               })}
@@ -366,15 +363,12 @@ export default function CreateListingForm({
             >
               {t('location')} *
             </label>
-            <input
-              type="text"
+            <PlaceSelect
+              required
               value={location}
-              maxLength={80}
-              list={KNOWN_PLACES_LIST_ID}
               onChange={(e) => setLocation(e.target.value)}
               style={inputStyle}
             />
-            <KnownPlacesDatalist />
           </div>
 
           <div style={{ marginTop: '20px' }}>
@@ -527,9 +521,7 @@ export default function CreateListingForm({
               style={{ gap: '7px', marginBottom: '12px' }}
             >
               {allTags.map((tag) => {
-                const translatedTag = isStandardCategory(tag)
-                  ? t(getCategoryTranslationKey(tag))
-                  : tag;
+                const translatedTag = categoryLabel(tag, t);
 
                 return (
                   <span
