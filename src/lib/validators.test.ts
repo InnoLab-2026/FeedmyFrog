@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
+// geo.ts is pure and reads no environment, so it can be imported statically
+// even though ./validators has to wait for the env mock below.
+import { PLACES } from './geo';
+
 vi.mock('@/lib/env', () => ({
   env: { ALLOWED_EMAIL_DOMAIN: 'reutlingen-university.de' },
 }));
@@ -112,11 +116,26 @@ describe('ListingInput schema', () => {
     if (!result.success) expect(result.error.flatten().fieldErrors.tags).toEqual(['tags_too_many']);
   });
 
-  it('rejects an empty location with location_required', () => {
-    const result = ListingInput.safeParse({ ...base, location: '' });
+  it.each([
+    ['an empty string', ''],
+    ['free text around a known name', 'Campus Reutlingen'],
+    ['a postcode and a name', '72762 Reutlingen'],
+    ['a place we do not cover', 'Hamburg'],
+    ['the wrong case', 'reutlingen'],
+    ['a street address', 'Musterweg 12'],
+    ['a coordinate pair', '48.49731, 9.20427'],
+    ['a missing value', undefined],
+  ])('rejects %s with location_invalid', (_label, location) => {
+    const result = ListingInput.safeParse({ ...base, location });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.flatten().fieldErrors.location).toEqual(['location_required']);
+      expect(result.error.flatten().fieldErrors.location).toEqual(['location_invalid']);
+    }
+  });
+
+  it('accepts every name in the closed set, and only those', () => {
+    for (const place of PLACES) {
+      expect(ListingInput.safeParse({ ...base, location: place }).success).toBe(true);
     }
   });
 

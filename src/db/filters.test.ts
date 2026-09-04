@@ -1,12 +1,12 @@
 /*
  * The only tests that touch real SQL.
  *
- * The radius filter and the migration that backfills coordinates are the
- * least reviewable part of this feature: a wrong bounding box or a bad
- * regular expression in the backfill fails silently, as listings that quietly
- * stop appearing. So they run here against a real Postgres engine (pglite,
- * in-process — no server, no fixtures to maintain) rather than against a
- * mocked query builder that would happily accept nonsense.
+ * The radius filter and the migration that normalises legacy location text
+ * are the least reviewable part of this feature: a wrong `IN` list or a bad
+ * regular expression in the normalisation fails silently, as listings that
+ * quietly stop appearing. So they run here against a real Postgres engine
+ * (pglite, in-process — no server, no fixtures to maintain) rather than
+ * against a mocked query builder that would happily accept nonsense.
  *
  * The migrations are applied in the order drizzle-kit recorded, so a new one
  * is picked up without touching this file.
@@ -20,7 +20,7 @@ import { and, eq } from 'drizzle-orm';
 
 import { listings } from './schema';
 import { resolvePlaceParam, withinRadius } from './filters';
-import { CITY_COORDS, haversineKm } from '@/lib/geo';
+import { PLACES, placesWithin } from '@/lib/geo';
 
 /*
  * pg_trgm is loaded explicitly: pglite ships contrib extensions but enables
@@ -38,40 +38,73 @@ function migrationFiles(): string[] {
   return journal.entries.map((entry: { tag: string }) => `drizzle/${entry.tag}.sql`);
 }
 
-const BACKFILL_MARKER = 'WITH places';
+/*
+ * Identifies 0003's normalisation specifically. `WITH places` alone would also
+ * match 0001's coordinate backfill, which references columns 0003 drops — so
+ * the marker is the line only the normalisation has.
+ */
+const NORMALISE_MARKER = 'SET location = matched.name';
+const CTE_START = 'WITH places';
+const BREAKPOINT = '--> statement-breakpoint';
+
+/**
+ * 0003's normalisation statement, on its own, to re-run over new rows.
+ *
+ * Bounded at both ends. Slicing only from `WITH places` to the end of the
+ * file would drag in the DROP INDEX and DROP COLUMN statements that follow
+ * it, and re-running those against an already-migrated database fails.
+ */
+function normalisationStatement(): string {
+  const sql = migrationFiles()
+    .map((file) => readFileSync(file, 'utf8'))
+    .find((text) => text.includes(NORMALISE_MARKER));
+
+  if (!sql) throw new Error('no normalisation statement found in the migrations');
+
+  const start = sql.indexOf(CTE_START);
+  const end = sql.indexOf(BREAKPOINT, start);
+
+  return end === -1 ? sql.slice(start) : sql.slice(start, end);
+}
 
 beforeAll(async () => {
   for (const file of migrationFiles()) {
     const sql = readFileSync(file, 'utf8');
-    for (const stmt of sql.split('--> statement-breakpoint')) {
+    for (const stmt of sql.split(BREAKPOINT)) {
       if (stmt.trim()) await client.exec(stmt);
     }
   }
 
-  // Rows written before the coordinate columns existed: location text only.
+  // Rows as they looked while `location` was still free text.
   await client.exec(`
     INSERT INTO listings (user_id, email, type, title, description, location) VALUES
-      ('u', 'a@x.de', 'offer', 'In Reutlingen', 'desc', 'Reutlingen'),
+      ('u', 'a@x.de', 'offer', 'Canonical', 'desc', 'Reutlingen'),
       ('u', 'a@x.de', 'offer', 'With postcode', 'desc', '72762 Reutlingen'),
+      ('u', 'a@x.de', 'offer', 'With prefix', 'desc', 'Campus Reutlingen'),
+      ('u', 'a@x.de', 'offer', 'Two names', 'desc', 'Reutlingen-Betzingen'),
       ('u', 'a@x.de', 'offer', 'In Pfullingen', 'desc', 'Pfullingen'),
       ('u', 'a@x.de', 'offer', 'In Stuttgart', 'desc', 'Stuttgart'),
       ('u', 'a@x.de', 'offer', 'In Goeppingen', 'desc', 'Göppingen'),
+      ('u', 'a@x.de', 'offer', 'Long name', 'desc', 'Kirchentellinsfurt'),
       ('u', 'a@x.de', 'offer', 'Unplaceable', 'desc', 'bei mir zu Hause'),
-      ('u', 'a@x.de', 'offer', 'Long name', 'desc', 'Kirchentellinsfurt');
+      ('u', 'a@x.de', 'offer', 'Street address', 'desc', 'Musterweg 12, 70173');
   `);
 
   /*
    * The rows above were inserted after the migration ran, so re-run just the
-   * backfill statement over them. That is exactly what the migration does to
-   * the rows already in production, which is the thing worth testing.
+   * normalisation over them. That is exactly what the migration does to the
+   * rows already in production, which is the thing worth testing.
    */
-  const backfill = migrationFiles()
-    .map((file) => readFileSync(file, 'utf8'))
-    .find((sql) => sql.includes(BACKFILL_MARKER));
-
-  if (!backfill) throw new Error('no backfill statement found in the migrations');
-  await client.exec(backfill.slice(backfill.indexOf(BACKFILL_MARKER)));
+  await client.exec(normalisationStatement());
 });
+
+async function locationOf(title: string): Promise<string> {
+  const [row] = await db
+    .select({ location: listings.location })
+    .from(listings)
+    .where(eq(listings.title, title));
+  return row.location;
+}
 
 async function titlesNear(place: string, radiusKm: number) {
   const rows = await db
@@ -81,37 +114,71 @@ async function titlesNear(place: string, radiusKm: number) {
   return rows.map((r) => r.title).sort();
 }
 
-describe('migration backfill', () => {
-  it('places every row whose location names somewhere known', async () => {
-    const rows = await db
-      .select({ title: listings.title, lat: listings.lat, lng: listings.lng })
-      .from(listings);
+describe('the coordinate columns are gone', () => {
+  it('listings has no lat or lng column after the migrations', async () => {
+    const result = await client.query<{ column_name: string }>(
+      `SELECT column_name FROM information_schema.columns
+        WHERE table_name = 'listings'`,
+    );
+    const columns = result.rows.map((r) => r.column_name);
 
-    const byTitle = Object.fromEntries(rows.map((r) => [r.title, r]));
+    expect(columns).not.toContain('lat');
+    expect(columns).not.toContain('lng');
+    expect(columns).toContain('location');
+  });
+});
 
-    expect(byTitle['In Reutlingen'].lat).toBeCloseTo(CITY_COORDS.Reutlingen.lat, 4);
-    expect(byTitle['With postcode'].lat).toBeCloseTo(CITY_COORDS.Reutlingen.lat, 4);
-    expect(byTitle['In Stuttgart'].lat).toBeCloseTo(CITY_COORDS.Stuttgart.lat, 4);
-    expect(byTitle['In Goeppingen'].lat).toBeCloseTo(CITY_COORDS['Göppingen'].lat, 4);
-    expect(byTitle['Long name'].lat).toBeCloseTo(CITY_COORDS.Kirchentellinsfurt.lat, 4);
+describe('migration 0003 normalisation', () => {
+  it('leaves a location that is already canonical alone', async () => {
+    expect(await locationOf('Canonical')).toBe('Reutlingen');
+    expect(await locationOf('In Pfullingen')).toBe('Pfullingen');
+    expect(await locationOf('In Goeppingen')).toBe('Göppingen');
   });
 
-  it('leaves an unplaceable location null instead of guessing', async () => {
-    const [row] = await db
-      .select({ lat: listings.lat })
-      .from(listings)
-      .where(eq(listings.title, 'Unplaceable'));
-    expect(row.lat).toBeNull();
+  it('strips the postcode and any other text around a known name', async () => {
+    expect(await locationOf('With postcode')).toBe('Reutlingen');
+    expect(await locationOf('With prefix')).toBe('Reutlingen');
+  });
+
+  it('picks the longest name when the text holds two', async () => {
+    expect(await locationOf('Two names')).toBe('Reutlingen');
+  });
+
+  it('is not fooled by a shorter name inside a longer one', async () => {
+    expect(await locationOf('Long name')).toBe('Kirchentellinsfurt');
+  });
+
+  it('leaves text that names nowhere we know untouched, rather than guessing', async () => {
+    expect(await locationOf('Unplaceable')).toBe('bei mir zu Hause');
+    expect(await locationOf('Street address')).toBe('Musterweg 12, 70173');
+  });
+
+  it('leaves every other row holding a name from the closed set', async () => {
+    const rows = await db
+      .select({ title: listings.title, location: listings.location })
+      .from(listings);
+
+    const unnormalised = rows
+      .filter((r) => !(PLACES as readonly string[]).includes(r.location))
+      .map((r) => r.title)
+      .sort();
+
+    expect(unnormalised).toEqual(['Street address', 'Unplaceable']);
   });
 });
 
 describe('withinRadius (real SQL)', () => {
   it('finds listings in the place itself', async () => {
-    expect(await titlesNear('Reutlingen', 3)).toEqual(['In Reutlingen', 'With postcode']);
+    expect(await titlesNear('Reutlingen', 3)).toEqual([
+      'Canonical',
+      'Two names',
+      'With postcode',
+      'With prefix',
+    ]);
   });
 
   it('widens with the radius', async () => {
-    // Pfullingen is ~3.2 km from Reutlingen.
+    // Pfullingen is ~3.4 km from Reutlingen.
     expect(await titlesNear('Reutlingen', 5)).toContain('In Pfullingen');
     expect(await titlesNear('Reutlingen', 3)).not.toContain('In Pfullingen');
   });
@@ -121,33 +188,40 @@ describe('withinRadius (real SQL)', () => {
     expect(await titlesNear('Reutlingen', 20)).not.toContain('In Stuttgart');
   });
 
-  it('never returns a row with no coordinates', async () => {
+  it('never returns a row whose location is not in the closed set', async () => {
     for (const radius of [3, 5, 10, 20]) {
-      expect(await titlesNear('Reutlingen', radius)).not.toContain('Unplaceable');
+      const titles = await titlesNear('Reutlingen', radius);
+      expect(titles).not.toContain('Unplaceable');
+      expect(titles).not.toContain('Street address');
     }
   });
 
-  it('agrees with the JavaScript distance calculation on every row', async () => {
+  it('agrees with placesWithin on every place and radius', async () => {
     const all = await db
-      .select({ title: listings.title, lat: listings.lat, lng: listings.lng })
+      .select({ title: listings.title, location: listings.location })
       .from(listings);
 
-    for (const place of ['Reutlingen', 'Stuttgart', 'Tübingen']) {
+    for (const place of PLACES) {
       for (const radius of [3, 5, 10, 20]) {
-        const centre = CITY_COORDS[place];
+        const nearby = placesWithin(place, radius) as readonly string[];
         const expected = all
-          .filter((r) => r.lat !== null && r.lng !== null)
-          .filter((r) => haversineKm(centre.lat, centre.lng, r.lat!, r.lng!) <= radius)
+          .filter((r) => nearby.includes(r.location))
           .map((r) => r.title)
           .sort();
 
-        expect(await titlesNear(place, radius), `${place} @ ${radius}km`).toEqual(expected);
+        expect(await titlesNear(place, radius), `${place} @ ${radius}km`).toEqual(
+          expected,
+        );
       }
     }
   });
 
-  it('applies no filter for a place we do not know', async () => {
+  it('applies no filter for a place we do not know', () => {
     expect(withinRadius('Hamburg', 10)).toBeUndefined();
+  });
+
+  it('applies no filter for a coordinate pair smuggled into the URL', () => {
+    expect(withinRadius('48.49731, 9.20427', 10)).toBeUndefined();
   });
 });
 

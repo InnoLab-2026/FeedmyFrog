@@ -17,9 +17,7 @@ import {
   getCategoryTranslationKey,
   isStandardCategory,
 } from '@/data/categories';
-import KnownPlacesDatalist, {
-  KNOWN_PLACES_LIST_ID,
-} from '@/components/marketplace/KnownPlacesDatalist';
+import PlaceSelect from '@/components/marketplace/PlaceSelect';
 import { usePrefersReducedMotion } from '@/lib/useReducedMotion';
 
 interface CreateListingFormProps {
@@ -366,15 +364,12 @@ export default function CreateListingForm({
             >
               {t('location')} *
             </label>
-            <input
-              type="text"
+            <PlaceSelect
+              required
               value={location}
-              maxLength={80}
-              list={KNOWN_PLACES_LIST_ID}
               onChange={(e) => setLocation(e.target.value)}
               style={inputStyle}
             />
-            <KnownPlacesDatalist />
           </div>
 
           <div style={{ marginTop: '20px' }}>
