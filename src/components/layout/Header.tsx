@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Search, Plus, Info, List, LogOut, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -259,10 +260,23 @@ export default function Header({
           }}
         >
           <div className="flex-shrink-0" style={{ width: '168px' }}>
-            <Link href="/" aria-label={t('go_home')}>
-              <img
+            <Link
+              href="/"
+              aria-label={t('go_home')}
+              style={{ display: 'block' }}
+            >
+              {/* The source file is a 1024x1024 JPEG; next/image resizes it to
+                  the 168px this slot actually paints (plus a 2x srcset) and
+                  re-encodes to AVIF/WebP. `priority` opts out of the default
+                  lazy loading -- the logo is above the fold on every page the
+                  header renders on, and is the LCP candidate on the wider
+                  viewports where it sits beside the search row. */}
+              <Image
                 src="/feedmyfrog.jpg"
                 alt="feedmyfrog"
+                width={168}
+                height={168}
+                priority
                 style={{ width: '100%', height: 'auto', display: 'block' }}
               />
             </Link>

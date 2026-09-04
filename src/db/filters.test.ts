@@ -14,6 +14,7 @@
 import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { PGlite } from '@electric-sql/pglite';
+import { pg_trgm } from '@electric-sql/pglite/contrib/pg_trgm';
 import { drizzle } from 'drizzle-orm/pglite';
 import { and, eq } from 'drizzle-orm';
 
@@ -21,7 +22,14 @@ import { listings } from './schema';
 import { resolvePlaceParam, withinRadius } from './filters';
 import { CITY_COORDS, haversineKm } from '@/lib/geo';
 
-const client = new PGlite();
+/*
+ * pg_trgm is loaded explicitly: pglite ships contrib extensions but enables
+ * none of them by default, and drizzle/0002 creates the trigram indexes that
+ * make the search box's leading-wildcard ILIKE indexable. Without it the
+ * migration loop below fails on that file, which is exactly the signal this
+ * suite exists to give -- a migration that will not apply.
+ */
+const client = new PGlite({ extensions: { pg_trgm } });
 const db = drizzle(client, { schema: { listings } });
 
 /** Migration file names in the order drizzle-kit recorded them. */
