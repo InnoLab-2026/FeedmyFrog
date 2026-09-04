@@ -20,7 +20,11 @@ vi.mock('next/cache', () => ({ revalidatePath: revalidatePathMock }));
 const insertValues = vi.fn().mockResolvedValue(undefined);
 const returningMock = vi.fn();
 const updateWhere = vi.fn(() => ({ returning: returningMock }));
-const updateSet = vi.fn(() => ({ where: updateWhere }));
+// The signature is declared rather than inferred, so `updateSet.mock.calls`
+// carries the row under test instead of being typed as an empty tuple.
+const updateSet = vi.fn<(row: Record<string, unknown>) => { where: typeof updateWhere }>(
+  () => ({ where: updateWhere }),
+);
 const deleteWhere = vi.fn().mockResolvedValue(undefined);
 
 vi.mock('@/db/client', () => ({
@@ -77,7 +81,7 @@ describe('createListing', () => {
     if (!result.ok) {
       expect(result.errors.title).toEqual(['title_too_short']);
       expect(result.errors.description).toEqual(['description_too_short']);
-      expect(result.errors.location).toEqual(['location_required']);
+      expect(result.errors.location).toEqual(['location_invalid']);
     }
     expect(insertValues).not.toHaveBeenCalled();
   });
@@ -91,26 +95,49 @@ describe('createListing', () => {
     );
   });
 
-  it('stores coordinates for a location it can place, so the radius filter finds it', async () => {
+  it('writes no coordinate of any kind — the row is the place name and nothing more', async () => {
     getSessionMock.mockResolvedValue(SESSION);
     await expect(
-      createListing(null, formData({ ...validFields, location: '72762 Reutlingen' })),
+      createListing(null, formData(validFields)),
     ).resolves.toEqual({ ok: true });
 
-    expect(insertValues).toHaveBeenCalledWith(
-      expect.objectContaining({ lat: 48.4914, lng: 9.2042 }),
+    const row = insertValues.mock.calls.at(-1)![0];
+
+    expect(Object.keys(row).sort()).toEqual(
+      ['description', 'email', 'location', 'tags', 'title', 'type', 'userId'].sort(),
     );
+    expect(row.location).toBe('Reutlingen');
   });
 
-  it('stores null coordinates rather than guessing at an unknown location', async () => {
+  it.each([
+    'Campus Reutlingen',
+    '72762 Reutlingen',
+    'bei mir zu Hause',
+    'Musterweg 12, 72762 Reutlingen',
+    '48.49731, 9.20427',
+  ])('refuses %s instead of storing it unplaceable', async (location) => {
+    getSessionMock.mockResolvedValue(SESSION);
+
+    const result = await createListing(null, formData({ ...validFields, location }));
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors.location).toEqual(['location_invalid']);
+    expect(insertValues).not.toHaveBeenCalled();
+  });
+
+  it('ignores coordinates a client tries to post alongside the form fields', async () => {
     getSessionMock.mockResolvedValue(SESSION);
     await expect(
-      createListing(null, formData({ ...validFields, location: 'bei mir zu Hause' })),
+      createListing(
+        null,
+        formData({ ...validFields, lat: '48.49731', lng: '9.20427' }),
+      ),
     ).resolves.toEqual({ ok: true });
 
-    expect(insertValues).toHaveBeenCalledWith(
-      expect.objectContaining({ lat: null, lng: null }),
-    );
+    const row = insertValues.mock.calls.at(-1)![0];
+
+    expect(row).not.toHaveProperty('lat');
+    expect(row).not.toHaveProperty('lng');
   });
 
   it('scopes the insert to the session user, revalidates, and reports success', async () => {
@@ -152,7 +179,7 @@ describe('updateListing', () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.errors.title).toEqual(['title_too_short']);
-      expect(result.errors.location).toEqual(['location_required']);
+      expect(result.errors.location).toEqual(['location_invalid']);
     }
   });
 
@@ -166,7 +193,7 @@ describe('updateListing', () => {
     expect(redirectMock).not.toHaveBeenCalled();
   });
 
-  it('re-resolves coordinates on update so a moved listing is filtered correctly', async () => {
+  it('moves a listing by writing the new place name, and nothing else', async () => {
     getSessionMock.mockResolvedValue(SESSION);
     returningMock.mockResolvedValue([{ id: VALID_ID }]);
 
@@ -174,22 +201,26 @@ describe('updateListing', () => {
       updateListing(null, formData({ id: VALID_ID, ...validFields, location: 'Stuttgart' })),
     ).rejects.toThrow('NEXT_REDIRECT:/meine');
 
-    expect(updateSet).toHaveBeenCalledWith(
-      expect.objectContaining({ lat: 48.7758, lng: 9.1829 }),
+    const row = updateSet.mock.calls.at(-1)![0];
+
+    expect(row.location).toBe('Stuttgart');
+    expect(Object.keys(row).sort()).toEqual(
+      ['description', 'location', 'tags', 'title', 'type'].sort(),
     );
   });
 
-  it('clears stale coordinates when the location becomes unplaceable', async () => {
+  it('refuses an edit that puts free text back into the location', async () => {
     getSessionMock.mockResolvedValue(SESSION);
     returningMock.mockResolvedValue([{ id: VALID_ID }]);
 
-    await expect(
-      updateListing(null, formData({ id: VALID_ID, ...validFields, location: 'Hamburg' })),
-    ).rejects.toThrow('NEXT_REDIRECT:/meine');
-
-    expect(updateSet).toHaveBeenCalledWith(
-      expect.objectContaining({ lat: null, lng: null }),
+    const result = await updateListing(
+      null,
+      formData({ id: VALID_ID, ...validFields, location: 'Hamburg' }),
     );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors.location).toEqual(['location_invalid']);
+    expect(updateSet).not.toHaveBeenCalled();
   });
 
   it('redirects to /meine and revalidates on a successful update', async () => {

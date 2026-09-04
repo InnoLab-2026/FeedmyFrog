@@ -7,7 +7,6 @@ import {
   boolean,
   index,
   pgEnum,
-  doublePrecision,
 } from 'drizzle-orm/pg-core';
 
 export const listingType = pgEnum('listing_type', ['need', 'offer']);
@@ -22,24 +21,23 @@ export const listings = pgTable(
     title:       text('title').notNull(),
     description: text('description').notNull(),
     tags:        text('tags').array().notNull().default([]),
-    location:    text('location').notNull(),
-
     /*
-     * Coordinates of the place `location` names, filled in on write by
-     * resolveLocation() in src/lib/geo.ts. Nullable because the field is free
-     * text: a listing may name somewhere we cannot place, and such a row is
-     * simply not returned by a radius filter rather than being guessed at.
+     * One of the names in PLACES (src/lib/geo.ts) — a closed set, enforced by
+     * ListingInput, not free text. It is the only geodata this table holds:
+     * the coordinates of each place are a constant of that table, so a
+     * per-row lat/lng would be a duplicated lookup stored as personal data.
+     * The radius filter derives them at query time instead (src/db/filters.ts).
      */
-    lat:         doublePrecision('lat'),
-    lng:         doublePrecision('lng'),
+    location:    text('location').notNull(),
 
     createdAt:   timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [
     index('idx_listings_type_created').on(t.type, t.createdAt.desc()),
     index('idx_listings_user').on(t.userId),
-    // Narrows the bounding-box scan the radius filter starts with.
-    index('idx_listings_coords').on(t.lat, t.lng),
+    // Serves the radius filter's `location IN (…)`: with a closed place list
+    // the filter is a set of equalities, not a geometric scan.
+    index('idx_listings_location').on(t.location),
 
     /*
      * Serves the category tabs' `tags @> ARRAY[...]`. Without it the planner

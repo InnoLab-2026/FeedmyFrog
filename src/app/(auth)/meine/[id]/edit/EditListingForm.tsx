@@ -1,9 +1,7 @@
 'use client';
 import { useActionState } from 'react';
 import { useTranslation } from 'react-i18next';
-import KnownPlacesDatalist, {
-  KNOWN_PLACES_LIST_ID,
-} from '@/components/marketplace/KnownPlacesDatalist';
+import PlaceSelect from '@/components/marketplace/PlaceSelect';
 import { updateListing, type UpdateState } from '@/actions/listings';
 import type { Listing } from '@/types';
 
@@ -82,16 +80,13 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
 
       <label className="flex flex-col gap-1">
         <span style={{ fontWeight: 500 }}>{t('location')}</span>
-        <input
+        <PlaceSelect
           name="location"
           required
-          maxLength={80}
-          list={KNOWN_PLACES_LIST_ID}
           defaultValue={listing.location}
           className="px-4 py-2 rounded-xl"
           style={{ border: '2px solid black' }}
         />
-        <KnownPlacesDatalist />
       </label>
 
       {state && !state.ok && (

@@ -34,15 +34,30 @@ const TRANSLATION_KEYS: Record<string, string> = {
 };
 
 /**
- * Translation key for a tag. Any tag that is not one of the built-in
- * categories is a free-form hashtag a user typed in, so it falls through to
- * the tag string itself — exactly right, since there is no translation for
- * made-up text.
+ * Translation key for a tag.
+ *
+ * `Object.hasOwn`, never `in` or a bare lookup: tags are user input, and
+ * every plain object inherits from Object.prototype. `'constructor' in
+ * TRANSLATION_KEYS` is true and `TRANSLATION_KEYS['constructor']` is a
+ * function — so a tag named after a prototype member would otherwise be
+ * mistaken for a built-in category and hand a function to the renderer.
  */
 export function getCategoryTranslationKey(tag: string): string {
-  return TRANSLATION_KEYS[tag] ?? tag;
+  return Object.hasOwn(TRANSLATION_KEYS, tag) ? TRANSLATION_KEYS[tag] : tag;
 }
 
 export function isStandardCategory(tag: string): boolean {
-  return tag in TRANSLATION_KEYS;
+  return Object.hasOwn(TRANSLATION_KEYS, tag);
+}
+
+/**
+ * What a tag reads as in the UI.
+ *
+ * A built-in category is translated; anything else is a hashtag somebody
+ * typed and is shown verbatim. Passing a user tag to `t()` would let it
+ * resolve against the whole translation table — a listing tagged `logout`
+ * would render a tab labelled "Log out" — so only known keys are looked up.
+ */
+export function categoryLabel(tag: string, t: (key: string) => string): string {
+  return isStandardCategory(tag) ? t(getCategoryTranslationKey(tag)) : tag;
 }
