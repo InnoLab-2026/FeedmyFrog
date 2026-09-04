@@ -7,83 +7,84 @@ import { useTranslation } from 'react-i18next';
 import LoginForm from './LoginForm';
 import LanguageButton from '@/components/layout/LanguageButton';
 import FrogFace from '@/components/FrogFace';
+import { usePrefersReducedMotion } from '@/lib/useReducedMotion';
 import { APP_NAME, CARD_SHADOW } from '@/constants';
 import { useEffect, useRef, useState } from 'react';
 
 /*
- * A frog that follows the pointer along the bottom of the login page, and
- * pulls a happy face while it is moving.
+ * A frog that hops to wherever you click along the bottom of the login page,
+ * and grins on the way.
  *
- * Mouse movement fires dozens of times a second, so two things are kept out
- * of React. The position is written straight to the node through a ref inside
- * one requestAnimationFrame per frame — a setState per mousemove re-renders
- * the whole card on every pixel. And `hoppingRef` mirrors the hop flag so a
- * continuous gesture schedules one state update at the start instead of one
- * per event; only the two edges, hop start and hop end, reach React at all.
+ * The horizontal travel is a CSS transition on `left`, written straight to
+ * the node — the position never enters React, so a click costs one re-render
+ * for the face and none for the movement.
  *
- * A click holds the hop longer than a nudge does, so the frog reacts to being
- * clicked at rather than merely passed over.
+ * The arc is a separate element so the two do not fight: the outer node owns
+ * `left` and the translateX that centres the frog on the click, the inner one
+ * owns the vertical translateY. It is driven through the Web Animations API
+ * rather than a CSS keyframe because a hop has to be able to interrupt itself
+ * — clicking again mid-flight should start a fresh arc, and re-calling
+ * `animate()` does that natively, where re-triggering a CSS animation needs a
+ * forced reflow or a remount.
  *
- * Purely decorative, so it is aria-hidden, ignores pointer events, and — for
- * anyone who asked for reduced motion — simply never starts following the
- * pointer instead of animating across the screen.
+ * Purely decorative, so it is aria-hidden and ignores pointer events. Under
+ * prefers-reduced-motion the frog still answers the click and still grins, it
+ * just arrives instantly instead of travelling.
  */
 
-/** How long the frog stays up after a nudge, and after a click. */
-const HOP_MS = 180;
-const CLICK_MS = 400;
+/** One hop: how long it takes, and how high it goes at the top of the arc. */
+const HOP_MS = 520;
+const HOP_HEIGHT = 46;
 
 function HoppingFrog() {
   const frogRef = useRef<HTMLDivElement | null>(null);
-  const frameRef = useRef<number | null>(null);
-  const hopTimer = useRef<number | null>(null);
-  const hoppingRef = useRef(false);
+  const arcRef = useRef<HTMLDivElement | null>(null);
+  const restTimer = useRef<number | null>(null);
 
-  const [hop, setHop] = useState(false);
+  const reducedMotion = usePrefersReducedMotion();
+  const [hopping, setHopping] = useState(false);
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const onClick = (event: MouseEvent) => {
+      // Centred on the pointer by the translateX below, so the frog lands on
+      // the click rather than beside it.
+      if (frogRef.current) frogRef.current.style.left = `${event.clientX}px`;
 
-    // Up now, down `ms` from the last nudge — the countdown restarts on every
-    // event, so one continuous movement is one hop rather than a stutter.
-    const startHop = (ms: number) => {
-      if (!hoppingRef.current) {
-        hoppingRef.current = true;
-        setHop(true);
-      }
+      setHopping(true);
+      if (restTimer.current !== null) window.clearTimeout(restTimer.current);
+      restTimer.current = window.setTimeout(
+        () => setHopping(false),
+        reducedMotion ? 260 : HOP_MS,
+      );
 
-      if (hopTimer.current !== null) window.clearTimeout(hopTimer.current);
-      hopTimer.current = window.setTimeout(() => {
-        hoppingRef.current = false;
-        setHop(false);
-      }, ms);
+      if (reducedMotion) return;
+
+      // Easing per keyframe, not across the whole animation: a single
+      // `ease-out` compresses the timeline so the frog peaks a fifth of the
+      // way in and lands while it is still travelling sideways. Decelerating
+      // up and accelerating down puts the apex at the halfway mark and the
+      // landing exactly when the horizontal transition ends.
+      arcRef.current?.animate(
+        [
+          { transform: 'translateY(0)', easing: 'cubic-bezier(0.33, 0, 0.4, 1)' },
+          {
+            transform: `translateY(-${HOP_HEIGHT}px)`,
+            offset: 0.5,
+            easing: 'cubic-bezier(0.6, 0, 0.67, 1)',
+          },
+          { transform: 'translateY(0)' },
+        ],
+        { duration: HOP_MS },
+      );
     };
 
-    const onMove = (event: MouseEvent) => {
-      const x = event.clientX;
-
-      if (frameRef.current === null) {
-        frameRef.current = window.requestAnimationFrame(() => {
-          frameRef.current = null;
-          if (frogRef.current) frogRef.current.style.left = `${x}px`;
-        });
-      }
-
-      startHop(HOP_MS);
-    };
-
-    const onClick = () => startHop(CLICK_MS);
-
-    window.addEventListener('mousemove', onMove);
     window.addEventListener('click', onClick);
 
     return () => {
-      window.removeEventListener('mousemove', onMove);
       window.removeEventListener('click', onClick);
-      if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current);
-      if (hopTimer.current !== null) window.clearTimeout(hopTimer.current);
+      if (restTimer.current !== null) window.clearTimeout(restTimer.current);
     };
-  }, []);
+  }, [reducedMotion]);
 
   return (
     <div
@@ -92,14 +93,16 @@ function HoppingFrog() {
       style={{
         position: 'fixed',
         left: '40px',
-        bottom: hop ? 28 : 8,
+        bottom: 8,
         transform: 'translateX(-50%)',
         zIndex: 9999,
         pointerEvents: 'none',
-        transition: 'left 0.12s linear, bottom 0.18s ease',
+        transition: reducedMotion ? 'none' : `left ${HOP_MS}ms linear`,
       }}
     >
-      <FrogFace happy={hop} size={56} />
+      <div ref={arcRef}>
+        <FrogFace happy={hopping} size={56} />
+      </div>
     </div>
   );
 }
