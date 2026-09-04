@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 
 import { LANGUAGES, type LangCode } from '@/i18n/translations';
@@ -73,12 +74,20 @@ export default function LanguageButton() {
       }}
     >
       {/* Decorative: the button's aria-label already names the current and
-          next language, so an alt text here would only repeat it. */}
-      <img
+          next language, so an alt text here would only repeat it.
+
+          `unoptimized` because the flags are SVG. The image optimizer refuses
+          SVG unless next.config sets dangerouslyAllowSVG, which would let any
+          /_next/image URL serve attacker-controlled markup from our origin --
+          not a trade worth making for five files of 181-549 bytes that no
+          raster pipeline could shrink anyway. The prop routes them straight to
+          /flags/*.svg while still giving us the component's lazy loading. */}
+      <Image
         src={FLAG_FILES[current.code]}
         alt=""
         width={22}
         height={16}
+        unoptimized
         style={{ display: 'block' }}
       />
     </button>

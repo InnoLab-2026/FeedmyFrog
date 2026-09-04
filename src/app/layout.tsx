@@ -3,6 +3,7 @@ import {
   Plus_Jakarta_Sans,
   DM_Sans,
 } from 'next/font/google';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 import I18nProvider from '@/i18n/Provider';
 import { getRequestLanguage, serverT } from '@/i18n/server';
@@ -57,6 +58,26 @@ export default async function RootLayout({
         <I18nProvider language={language}>
           {children}
         </I18nProvider>
+
+        {/*
+          * Real-user Core Web Vitals, reported per route.
+          *
+          * The server spans from instrumentation.ts say what the server spent
+          * its time on; this says what the reader actually experienced, which
+          * is the half that server timings cannot see -- LCP on a phone on
+          * campus wifi is not a number any function duration contains.
+          *
+          * It renders no markup: the component returns null and appends the
+          * script itself, which is also why it survives the strict-dynamic
+          * CSP in src/proxy.ts. A script *tag* in this HTML would need the
+          * per-request nonce and this package has no prop for one; a script
+          * created by the already-trusted bundle inherits its trust. The
+          * beacon it sends is same-origin (/_vercel/speed-insights), so
+          * connect-src 'self' already covers it.
+          *
+          * Off Vercel the endpoint does not exist and it is inert.
+          */}
+        <SpeedInsights />
       </body>
     </html>
   );

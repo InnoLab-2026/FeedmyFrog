@@ -15,6 +15,13 @@
       "when": 1788255286313,
       "tag": "0001_aspiring_mandrill",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788476560260,
+      "tag": "0002_romantic_virginia_dare",
+      "breakpoints": true
     }
   ]
 }
