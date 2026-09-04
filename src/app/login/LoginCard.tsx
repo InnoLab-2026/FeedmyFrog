@@ -6,31 +6,58 @@ import { useTranslation } from 'react-i18next';
 
 import LoginForm from './LoginForm';
 import LanguageButton from '@/components/layout/LanguageButton';
+import FrogFace from '@/components/FrogFace';
 import { APP_NAME, CARD_SHADOW } from '@/constants';
 import { useEffect, useRef, useState } from 'react';
 
 /*
- * A frog that follows the pointer along the bottom of the login page.
+ * A frog that follows the pointer along the bottom of the login page, and
+ * pulls a happy face while it is moving.
  *
- * Mouse movement fires dozens of times a second, so the position is written
- * straight to the node through a ref inside one requestAnimationFrame per
- * frame instead of through React state — a setState per mousemove re-renders
- * the whole card on every pixel. The hop timer is held in a ref and cleared on
- * unmount so a late callback cannot fire against an unmounted component.
+ * Mouse movement fires dozens of times a second, so two things are kept out
+ * of React. The position is written straight to the node through a ref inside
+ * one requestAnimationFrame per frame — a setState per mousemove re-renders
+ * the whole card on every pixel. And `hoppingRef` mirrors the hop flag so a
+ * continuous gesture schedules one state update at the start instead of one
+ * per event; only the two edges, hop start and hop end, reach React at all.
+ *
+ * A click holds the hop longer than a nudge does, so the frog reacts to being
+ * clicked at rather than merely passed over.
  *
  * Purely decorative, so it is aria-hidden, ignores pointer events, and — for
  * anyone who asked for reduced motion — simply never starts following the
  * pointer instead of animating across the screen.
  */
+
+/** How long the frog stays up after a nudge, and after a click. */
+const HOP_MS = 180;
+const CLICK_MS = 400;
+
 function HoppingFrog() {
   const frogRef = useRef<HTMLDivElement | null>(null);
   const frameRef = useRef<number | null>(null);
   const hopTimer = useRef<number | null>(null);
+  const hoppingRef = useRef(false);
 
   const [hop, setHop] = useState(false);
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    // Up now, down `ms` from the last nudge — the countdown restarts on every
+    // event, so one continuous movement is one hop rather than a stutter.
+    const startHop = (ms: number) => {
+      if (!hoppingRef.current) {
+        hoppingRef.current = true;
+        setHop(true);
+      }
+
+      if (hopTimer.current !== null) window.clearTimeout(hopTimer.current);
+      hopTimer.current = window.setTimeout(() => {
+        hoppingRef.current = false;
+        setHop(false);
+      }, ms);
+    };
 
     const onMove = (event: MouseEvent) => {
       const x = event.clientX;
@@ -42,15 +69,17 @@ function HoppingFrog() {
         });
       }
 
-      setHop(true);
-      if (hopTimer.current !== null) window.clearTimeout(hopTimer.current);
-      hopTimer.current = window.setTimeout(() => setHop(false), 180);
+      startHop(HOP_MS);
     };
 
+    const onClick = () => startHop(CLICK_MS);
+
     window.addEventListener('mousemove', onMove);
+    window.addEventListener('click', onClick);
 
     return () => {
       window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('click', onClick);
       if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current);
       if (hopTimer.current !== null) window.clearTimeout(hopTimer.current);
     };
@@ -70,19 +99,7 @@ function HoppingFrog() {
         transition: 'left 0.12s linear, bottom 0.18s ease',
       }}
     >
-      {/* `unoptimized` for the same reason as the flags in LanguageButton: the
-          image optimizer refuses SVG unless next.config sets
-          dangerouslyAllowSVG, which would let any /_next/image URL serve
-          attacker-controlled markup from our origin. This is the same file the
-          browser tab already has cached. */}
-      <Image
-        src="/icon.svg"
-        alt=""
-        width={56}
-        height={56}
-        unoptimized
-        style={{ display: 'block' }}
-      />
+      <FrogFace happy={hop} size={56} />
     </div>
   );
 }
