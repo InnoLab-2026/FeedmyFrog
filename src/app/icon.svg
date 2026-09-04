@@ -12,6 +12,10 @@
 
     The green is #8DC63F, the same accent the buttons and the avatar use, so
     the tab matches the app rather than merely resembling the logo.
+
+    src/components/FrogFace.tsx draws this same frog as markup, so that the
+    hopping frog on the login page can open its eyes and mouth mid-hop. The
+    two are not generated from each other -- restyle one, restyle the other.
   -->
   <circle cx="32" cy="32" r="32" fill="#8DC63F"/>
 
