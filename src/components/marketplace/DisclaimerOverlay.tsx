@@ -64,10 +64,6 @@ export default function DisclaimerOverlay({ onClose }: DisclaimerOverlayProps) {
           </li>
           <li style={{ fontWeight: 700 }}>{t('disclaimer_bullet3')}</li>
         </ul>
-
-        <p className="mt-4" style={{ fontSize: 'var(--fs-2xs)', color: '#666', fontWeight: 500 }}>
-          {t('click_to_close')}
-        </p>
       </div>
     </div>
   );

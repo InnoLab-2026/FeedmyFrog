@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/env', () => ({
-  env: { BREVO_API_KEY: 'xkeysib-test', MAGIC_LINK_TTL_MINUTES: 15 },
+  env: {
+    BREVO_API_KEY: 'xkeysib-test',
+    MAGIC_LINK_TTL_MINUTES: 15,
+    NEXT_PUBLIC_BASE_URL: 'https://feedmyfrog.click',
+  },
 }));
 
 const { sendMagicLink } = await import('./email');
@@ -99,6 +103,37 @@ describe('sendMagicLink', () => {
     const html = payload().htmlContent;
     expect(html).not.toContain('<script>');
     expect(html).toContain('&quot;');
+  });
+
+  it('resolves the logo against the configured base URL, not a literal host', async () => {
+    await sendMagicLink('anna@reutlingen-university.de', URL_TOKEN, 'en');
+
+    const html = payload().htmlContent;
+    // A mail client has no page to resolve a relative src against, and a
+    // hardcoded host makes a preview deployment quietly serve production's.
+    expect(html).toContain('src="https://feedmyfrog.click/feedmyfrog.jpg"');
+    expect(html).not.toMatch(/src="\/[^/]/);
+  });
+
+  it('declares a colour scheme so a dark-mode client does not invert the card', async () => {
+    await sendMagicLink('anna@reutlingen-university.de', URL_TOKEN, 'en');
+
+    // Without this, Apple Mail and Outlook auto-invert: the brand green button
+    // becomes a colour nobody chose, and its label can end up unreadable.
+    const html = payload().htmlContent;
+    expect(html).toContain('name="color-scheme" content="light"');
+    expect(html).toContain('name="supported-color-schemes" content="light"');
+  });
+
+  it('gives every layout table border="0"', async () => {
+    await sendMagicLink('anna@reutlingen-university.de', URL_TOKEN, 'en');
+
+    // Clients that predate CSS layout draw a visible border on a table that
+    // does not say otherwise, framing the whole mail in grey lines.
+    const html = payload().htmlContent;
+    const tables = html.match(/<table[^>]*>/g) ?? [];
+    expect(tables.length).toBeGreaterThan(0);
+    for (const tag of tables) expect(tag).toContain('border="0"');
   });
 
   it('carries no emoji into the inbox', async () => {
