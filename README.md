@@ -659,21 +659,23 @@ Static headers are set in `next.config.ts` for `/:path*`:
 | `X-Content-Type-Options` | `nosniff` |
 | `X-Frame-Options` | `DENY` |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` |
-| `Permissions-Policy` | `camera=(), microphone=(), geolocation=(), payment=()` |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=(self), payment=()` |
 | `X-Robots-Tag` | `noai, noimageai` |
 
 `poweredByHeader` is off.
 
-> **Known conflict.** `geolocation=()` is an *empty* allowlist, which
-> disables the Geolocation API for this document as well as for nested
-> frames — not only for third-party embeds. That is stricter than the
-> "Use GPS location" button in `LocationSearch` needs: where a browser
-> enforces the header, `navigator.geolocation.getCurrentPosition` invokes
-> its error callback and the UI falls back to the `gps_error` message.
-> Typing a place name is unaffected. Relaxing the directive to
-> `geolocation=(self)` is what would re-enable the button; it is tracked
-> in the roadmap rather than changed here, because it is a security
-> header decision, not a documentation one.
+`geolocation` is the one entry that is `(self)` rather than the empty
+`()` the other three carry. An empty allowlist disables a feature for
+*this document* as well as for nested frames, not only for third-party
+embeds — so `geolocation=()` refused the app's own "Use GPS location"
+button in `LocationSearch`, and the UI fell through to its `gps_error`
+message wherever a browser enforced the header. `(self)` keeps every
+embedded frame out while leaving the top-level document able to ask.
+Nothing else changes: the fix is requested only on a click, the
+browser's own permission prompt is still the gate the user sees, and the
+position is reduced to a town name before it leaves the callback (see
+*Location filter and GPS*). `camera`, `microphone` and `payment` stay
+fully disabled — the app never uses them.
 
 The `Content-Security-Policy` is **not** static — it carries a
 per-request nonce and is therefore built in `src/proxy.ts`:
@@ -1232,6 +1234,8 @@ university-operated infrastructure is therefore feasible.
       (Marty Lauterbach)
 - [x] AI-crawler policy: `robots.txt` deny-list plus `X-Robots-Tag`
       (Marty Lauterbach)
+- [x] `Permissions-Policy` corrected to `geolocation=(self)` — the empty
+      allowlist had been disabling the app's own GPS button
 - [ ] Frontend alignment (Busra, Kathrin)
 - [ ] Frontend design (Busra, Kathrin)
 - [ ] Fill in controller/provider placeholders in `src/i18n/legalResources.ts`
@@ -1240,8 +1244,6 @@ university-operated infrastructure is therefore feasible.
       (Art. 30 GDPR)
 - [ ] Cache the category-tab aggregation if the listing count grows — it is
       a full scan per marketplace render (`docs/PERFORMANCE.md`)
-- [ ] Relax `Permissions-Policy` to `geolocation=(self)` so the GPS button in
-      `LocationSearch` is not blocked by the app's own header
 - [ ] Browser/E2E test layer
 - [ ] Internal pilot
 - [ ] Review for migration to university infrastructure
