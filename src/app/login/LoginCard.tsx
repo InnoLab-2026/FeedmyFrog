@@ -70,7 +70,19 @@ function HoppingFrog() {
         transition: 'left 0.12s linear, bottom 0.18s ease',
       }}
     >
-      <img src="/icon.svg" alt="" width={56} height={56} style={{ display: 'block' }} />
+      {/* `unoptimized` for the same reason as the flags in LanguageButton: the
+          image optimizer refuses SVG unless next.config sets
+          dangerouslyAllowSVG, which would let any /_next/image URL serve
+          attacker-controlled markup from our origin. This is the same file the
+          browser tab already has cached. */}
+      <Image
+        src="/icon.svg"
+        alt=""
+        width={56}
+        height={56}
+        unoptimized
+        style={{ display: 'block' }}
+      />
     </div>
   );
 }

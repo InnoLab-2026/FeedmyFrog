@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -659,7 +660,7 @@ export default function CreateListingForm({
               />
             ))}
 
-          <img src="/happyfrog.png" alt="" width={160} height={107} />
+          <Image src="/happyfrog.png" alt="" width={160} height={107} />
           <p style={{ fontWeight: 700, fontSize: 'var(--fs-xl)', color: '#1a3200' }}>
             {t('listing_published')}
           </p>
