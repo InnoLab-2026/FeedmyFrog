@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 
 import LanguageButton from '@/components/layout/LanguageButton';
@@ -43,9 +44,15 @@ export default function VerifyPromptCard({ token }: { token: string | null }) {
           boxShadow: CARD_SHADOW,
         }}
       >
-        <img
+        {/* `priority` because this is the LCP element: it sits at the top of
+            the only card on the page. Decorative rather than described --
+            the <h1> right below it already reads the product name. */}
+        <Image
           src="/feedmyfrog.jpg"
           alt=""
+          width={140}
+          height={140}
+          priority
           style={{
             width: '140px',
             height: 'auto',
