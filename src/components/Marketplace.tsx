@@ -7,10 +7,10 @@ import { useTranslation } from 'react-i18next';
 import ScrollToTop from '@/components/layout/ScrollToTop';
 
 import type { Listing, Mode, Category } from '@/types';
-import { iconMap } from '@/data/icons';
+import { iconFor } from '@/data/icons';
 import {
   STANDARD_CATEGORY_TAGS,
-  getCategoryTranslationKey,
+  categoryLabel,
   isStandardCategory,
 } from '@/data/categories';
 
@@ -190,8 +190,8 @@ export default function Marketplace({
       },
       ...[...STANDARD_CATEGORY_TAGS, ...extraTags].map((tag) => ({
         id: tag,
-        label: t(getCategoryTranslationKey(tag)),
-        icon: iconMap[tag] ?? <Search className="w-4 h-4" />,
+        label: categoryLabel(tag, t),
+        icon: iconFor(tag) ?? <Search className="w-4 h-4" />,
       })),
     ];
   }, [categoryTags, t]);

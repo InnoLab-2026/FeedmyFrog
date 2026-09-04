@@ -14,8 +14,7 @@ import {
 import type { Mode } from '@/types';
 import {
   STANDARD_CATEGORY_TAGS,
-  getCategoryTranslationKey,
-  isStandardCategory,
+  categoryLabel,
 } from '@/data/categories';
 import PlaceSelect from '@/components/marketplace/PlaceSelect';
 import { usePrefersReducedMotion } from '@/lib/useReducedMotion';
@@ -273,7 +272,7 @@ export default function CreateListingForm({
                       boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
                     }}
                   >
-                    {t(getCategoryTranslationKey(tag))}
+                    {categoryLabel(tag, t)}
                   </button>
                 );
               })}
@@ -522,9 +521,7 @@ export default function CreateListingForm({
               style={{ gap: '7px', marginBottom: '12px' }}
             >
               {allTags.map((tag) => {
-                const translatedTag = isStandardCategory(tag)
-                  ? t(getCategoryTranslationKey(tag))
-                  : tag;
+                const translatedTag = categoryLabel(tag, t);
 
                 return (
                   <span

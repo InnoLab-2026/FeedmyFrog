@@ -37,7 +37,22 @@ export async function POST(req: Request) {
 
   const email = parsed.data.email;
   const lang = parsed.data.lang ?? 'en';
-  const ip = ((await headers()).get('x-forwarded-for') ?? '').split(',')[0].trim() || 'unknown';
+  /*
+   * `x-vercel-forwarded-for` first. Vercel overwrites `x-forwarded-for` on the
+   * way in specifically to stop clients spoofing it, so on this deployment
+   * either header is trustworthy -- but that is a property of the host, not of
+   * this code. `x-forwarded-for` is also the one a proxy placed *in front of*
+   * Vercel would rewrite, and off Vercel entirely it is whatever the client
+   * typed. Reading Vercel's own header first means the rate limiter does not
+   * quietly become per-attacker-chosen-string if the deployment changes.
+   *
+   * The leftmost value is the client; `'unknown'` shares one bucket, which
+   * errs towards limiting too much rather than too little.
+   */
+  const headerList = await headers();
+  const forwardedFor =
+    headerList.get('x-vercel-forwarded-for') ?? headerList.get('x-forwarded-for') ?? '';
+  const ip = forwardedFor.split(',')[0].trim() || 'unknown';
 
   /*
    * Both dimensions are always consumed -- the original code awaited each in
