@@ -375,13 +375,15 @@ Validation rules worth knowing:
 |----------|--------|----------|
 | `/api/auth/send-link` | `POST` | JSON `{ email, lang? }`. `415` if the content type is not JSON, `400` on unparsable JSON or an invalid address, `403` `forbidden_domain` for an outside domain, `429` with `Retry-After` when a rate limit is hit, `202` on success. There is no user table, so a valid in-domain address always yields `202` and there is nothing to enumerate. |
 | `/verify` | `GET` | Legacy path for links from older mails. Redirects to `/verify-prompt?token=…` without touching the database, so a link-scanning bot cannot spend the token. Missing token → `/login?error=missing_token`. |
-| `/verify` | `POST` | Accepts `application/x-www-form-urlencoded` or JSON. Consumes the token, creates the session cookie, `303` to `/`. Any failure is `303` to `/login?error=invalid_or_expired`. `runtime = 'nodejs'` because it hashes with `node:crypto`. |
+| `/verify` | `POST` | Accepts `application/x-www-form-urlencoded` or JSON. **`403` unless the request is same-origin** (`isSameOriginRequest`, see *Injection and CSRF posture*) — a form content type is a simple request, so CORS never gets a say. Otherwise consumes the token, creates the session cookie, `303` to `/`. Any failure is `303` to `/login?error=invalid_or_expired`. `runtime = 'nodejs'` because it hashes with `node:crypto`. |
 | `/api/healthz` | `GET` | `{ "status": "ok" }` with `cache-control: no-store`. `runtime = 'edge'`; it deliberately does not touch the database, so it reports process liveness rather than Neon's availability. |
 
 ### Server Actions
 
 Mutations are Server Actions rather than API routes, so Next.js applies
-Origin-based CSRF protection automatically. All four re-validate the
+Origin-based CSRF protection automatically — it compares Origin against the
+forwarded host and aborts a mismatch. Route handlers get none of that, which
+is why `POST /verify` checks the origin itself. All four re-validate the
 session before doing anything.
 
 | Action | File | Returns |
@@ -405,6 +407,7 @@ below.
 | `lib/session.ts` | `createSession`, `getSession`, `requireSession`, `destroySession`, `SESSION_COOKIE`. The JWT payload is re-validated with Zod after `jwtVerify`, so a correctly signed token with an unexpected shape is still rejected |
 | `lib/email.ts` | Brevo client. Renders both an HTML part (table layout, inline styles, preheader, `color-scheme`, `lang`) and a real plain-text part |
 | `lib/validators.ts` | `isAllowedEmail`, `Email`, `ListingType`, `ListingInput`, `Uuid` |
+| `lib/csrf.ts` | `isSameOriginRequest` — the origin check `POST /verify` needs and Server Actions get for free |
 | `lib/rate-limit.ts` | `checkAndConsume` (single-statement count-and-insert), `cleanupRateLimits` (returned unexecuted so it can ride along in a batch) |
 | `lib/geo.ts` | `PLACES`, `Place`, `isPlace`, `PLACES_ALPHABETICAL`, `CITY_COORDS`, `DISTRICT_OF`, `haversineKm`, `findNearestTown`, `placesWithin`, `RADII`, `isRadius` |
 | `lib/initials.ts` | `getInitials`, `displayNameFromEmail` |
@@ -470,8 +473,11 @@ Details that matter:
   consumed in a single statement. That closes the read-then-write window
   in which two concurrent clicks could both succeed.
 - **Cookie.** HTTP-only, `SameSite=Lax`, `Path=/`, `Secure` in
-  production, where it is named `__Host-session`; in development it falls
-  back to `session`. TTL is `SESSION_TTL_DAYS`.
+  production, where it is named `__Host-session` — and in production that
+  is the **only** name read. Development, which has no TLS, uses the plain
+  `session` and reads only that. TTL is `SESSION_TTL_DAYS`.
+- **Algorithm.** `jwtVerify` pins `algorithms: ['HS256']`, so a token's own
+  header can never choose how it is verified.
 - **Clearing.** The proxy clears an expired cookie with an explicit
   `Set-Cookie … maxAge=0` rather than `.delete()`. Browsers silently
   ignore deletion headers that omit the `Secure` and `Path=/` attributes
@@ -696,6 +702,34 @@ bootstrap scripts, and exposes it as `x-nonce` for any future custom
 `<script>`. Styles keep `'unsafe-inline'` because the design system uses
 inline `style` attributes throughout.
 
+### Injection and CSRF posture
+
+An attacker-insertion audit of every path where untrusted input reaches a
+sink. The four findings it produced are fixed; the rest is recorded so the
+next reader does not have to re-derive it.
+
+| Vector | Status |
+|---|---|
+| SQL injection (search, category, radius, rate limiter) | **Safe.** Everything is a bound parameter — payloads never reach the SQL text. User-typed `%` and `_` are escaped, verified against real Postgres: searching `100%` matches only the row literally containing "100%". |
+| XSS | **Safe.** No `dangerouslySetInnerHTML`, `innerHTML`, `eval`, or `sql.raw` anywhere in `src/`. i18next runs with `escapeValue: false` *because* React escapes — a latent trap if any of this ever moves to raw HTML. |
+| Mass assignment | **Safe.** Actions build their input from a fixed field list and `ListingInput` strips the rest, so a posted `lat`/`lng` is never read. |
+| `mailto:` header injection | **Safe.** `listing.email` is interpolated unencoded, but Zod's `.email()` rejects `?`, `&`, quotes, CRLF and spaces — the safety rests entirely on that regex. |
+| Open redirect / magic-link host poisoning | **Safe.** Redirects are `new URL(path, req.url)`, same-origin; the magic link is built from `NEXT_PUBLIC_BASE_URL`, never the `Host` header. |
+| CSRF on `POST /api/auth/send-link` | **Safe.** The JSON content type forces a preflight and no CORS headers are sent, so a browser blocks it. |
+| CSRF on `POST /verify` | **Fixed.** It takes a form content type — a simple request, no preflight — and had no origin check, so a cross-site form could hand a victim a session for the *attacker's* account. Now `403` unless same-origin. |
+| Prototype-chain lookups | **Fixed.** `MESSAGES[?error=]`, `iconMap[tag]` and `tag in TRANSLATION_KEYS` all reached `Object.prototype`. `/login?error=__proto__` rendered an object as a React child and returned **500** — a crafted-link DoS of the one page an unauthenticated visitor needs. All three now use `Object.hasOwn`. |
+| `__Host-` session cookie | **Fixed.** Production also accepted a plain `session` cookie, giving back exactly what the prefix buys: a subdomain cannot set a `__Host-` cookie but can set an unprefixed one, which is enough to fix a reader into an attacker's session. Production now reads only the prefixed name. |
+| JWT algorithm confusion | **Hardened.** `algorithms: ['HS256']` is pinned, per RFC 8725. |
+| Rate-limit IP spoofing | **Hardened.** The limiter keys on the leftmost `x-forwarded-for`, the classic spoofable position. Vercel overwrites that header on the way in specifically to prevent this, so it was not exploitable here — but that is a property of the host, not the code, and `x-forwarded-for` is also what a proxy *in front of* Vercel would rewrite. `x-vercel-forwarded-for` is now preferred. |
+| Tag/translation-key confusion | **Fixed.** User tags were passed to `t()` as keys, so a listing tagged `logout` rendered a tab labelled "Log out". Only known category keys are looked up now; anything else renders verbatim. |
+
+Two of these were only reachable because a *different* bug masked them:
+`isStandardCategory` returned `true` for `constructor` and `__proto__`, which
+filtered those tags out before `iconMap[tag]` could evaluate them. Fixing that
+predicate alone would have turned a listing tagged `__proto__` into a **stored**
+crash for every viewer of that mode — so the pair had to move together, and
+`src/data/categories.test.ts` now holds them together.
+
 ## Frontend
 
 ### Component tree
@@ -918,7 +952,7 @@ package's import chain still resolves.
 
 ## Testing and quality gates
 
-**287 unit tests across 14 files**, run with Vitest in a Node
+**348 unit tests across 17 files**, run with Vitest in a Node
 environment against `src/**/*.test.ts`. Counts below are the expanded
 case counts as Vitest reports them — several suites use `it.each` over
 the five locales.
@@ -932,6 +966,7 @@ npm run test:watch  # vitest
 
 | File | Tests | Covers |
 |------|-------|--------|
+| `src/data/categories.test.ts` | 43 | that no prototype member is mistaken for a category, that `iconFor` never returns a function or object, and that a user tag cannot borrow a UI string |
 | `src/i18n/translations.test.ts` | 38 | key parity, empty strings and placeholder parity across all five languages |
 | `src/i18n/emailResources.test.ts` | 34 | the same parity checks for the mail copy, plus no emoji and no markup |
 | `src/lib/geo.test.ts` | 32 | haversine, GPS town snapping and the district rule, `PLACES` integrity, `isPlace`, `placesWithin` symmetry and monotonicity |
@@ -942,9 +977,11 @@ npm run test:watch  # vitest
 | `src/actions/listings.test.ts` | 21 | create/update/delete: session guard, validation codes, ownership scoping, `revalidatePath`, and that no coordinate is written or accepted from a request |
 | `src/db/filters.test.ts` | 19 | `withinRadius` / `resolvePlaceParam` and migration `0003`'s normalisation against a **real Postgres engine** — `@electric-sql/pglite` with `pg_trgm` loaded; also asserts the `lat`/`lng` columns are gone |
 | `src/lib/initials.test.ts` | 13 | initials and display names from an address |
+| `src/lib/csrf.test.ts` | 12 | the origin check `POST /verify` relies on: cross-site and subdomain refused, look-alike hosts refused, Sec-Fetch-Site trusted over a forgeable Origin |
 | `src/lib/auth.test.ts` | 11 | token generation, hashing, `userIdFromEmail` stability |
 | `src/lib/rate-limit.test.ts` | 8 | allow/deny at the boundary, `Retry-After`, cleanup cutoff |
 | `src/lib/session.test.ts` | 7 | cookie attributes, payload re-validation, expiry |
+| `src/lib/session.production.test.ts` | 6 | that production reads **only** `__Host-session`, and that a token signed with another algorithm is refused |
 | `src/actions/auth.test.ts` | 1 | logout clears both cookie names and redirects |
 
 The `filters.test.ts` choice is deliberate: SQL built by a query builder
@@ -1275,7 +1312,7 @@ university-operated infrastructure is therefore feasible.
       coordinate columns dropped from the database (Marty Lauterbach)
 - [x] Server-resolved i18n in five languages, incl. legal pages and
       transactional email (Marty Lauterbach, Kathrin Neu)
-- [x] Unit test suite (287 tests) and GitHub Actions CI (Marty Lauterbach)
+- [x] Unit test suite (348 tests) and GitHub Actions CI (Marty Lauterbach)
 - [x] Latency work: query batching, GIN and trigram indexes, `fra1` pinning
       (Marty Lauterbach) — see `docs/PERFORMANCE.md`
 - [x] Observability: OpenTelemetry spans, `onRequestError`, Speed Insights
@@ -1284,6 +1321,9 @@ university-operated infrastructure is therefore feasible.
       (Marty Lauterbach)
 - [x] `Permissions-Policy` corrected to `geolocation=(self)` — the empty
       allowlist had been disabling the app's own GPS button
+- [x] Attacker-insertion audit, and the four findings it produced fixed:
+      prototype-chain lookups, the `__Host-` cookie fallback, login CSRF on
+      `POST /verify`, and the spoofable rate-limit IP (Marty Lauterbach)
 - [ ] Frontend alignment (Busra, Kathrin)
 - [ ] Frontend design (Busra, Kathrin)
 - [ ] Fill in controller/provider placeholders in `src/i18n/legalResources.ts`

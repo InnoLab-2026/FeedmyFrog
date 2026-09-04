@@ -21,10 +21,21 @@ export default function LoginForm({
     invalid_or_expired: t('login_error_invalid_or_expired'),
   };
 
+  /*
+   * Never `MESSAGES[code]`. The code arrives in `?error=` and MESSAGES is a
+   * plain object, so `?error=__proto__` returned Object.prototype and
+   * `?error=constructor` a function — and `?? null` does not catch either,
+   * because neither is nullish. React then threw "Objects are not valid as a
+   * React child" while server-rendering, turning a crafted link into a 500 on
+   * the one page an unauthenticated visitor needs.
+   */
+  const messageFor = (code: string | null | undefined): string | null =>
+    code && Object.hasOwn(MESSAGES, code) ? MESSAGES[code] : null;
+
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(
-    initialErrorCode ? (MESSAGES[initialErrorCode] ?? null) : null,
+    messageFor(initialErrorCode),
   );
 
   async function onSubmit(e: React.FormEvent) {
@@ -49,10 +60,7 @@ export default function LoginForm({
 
       const body = await res.json().catch(() => ({}));
 
-      setError(
-        MESSAGES[body?.error as string] ??
-          MESSAGES.unknown,
-      );
+      setError(messageFor(body?.error as string) ?? MESSAGES.unknown);
 
       setStatus('error');
     } catch {

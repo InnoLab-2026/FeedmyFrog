@@ -5,6 +5,7 @@ import { db } from '@/db/client';
 import { magicTokens } from '@/db/schema';
 import { hashToken, userIdFromEmail } from '@/lib/auth';
 import { createSession } from '@/lib/session';
+import { isSameOriginRequest } from '@/lib/csrf';
 
 export const runtime = 'nodejs';
 
@@ -23,6 +24,20 @@ export async function GET(req: Request) {
 // Token consumption only happens on POST (triggered by the "Log me in" button
 // on /verify-prompt). Link scanners issue GET requests and never reach here.
 export async function POST(req: Request) {
+  /*
+   * This is the one state-changing handler a cross-site form can reach: it
+   * takes `application/x-www-form-urlencoded`, which is a simple request, so
+   * no preflight happens and CORS never gets a say. Without this check an
+   * attacker could auto-submit *their own* magic-link token from their page
+   * and have the victim's browser accept a session for the attacker's
+   * account -- login CSRF. The victim's own address is never involved, so
+   * nothing about the page looks wrong to them, and anything they go on to
+   * post lands in an inbox the attacker reads.
+   */
+  if (!isSameOriginRequest(req)) {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+  }
+
   let token: string | null = null;
 
   const ct = req.headers.get('content-type') ?? '';
