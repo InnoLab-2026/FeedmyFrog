@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import LoginForm from './LoginForm';
 import LanguageButton from '@/components/layout/LanguageButton';
-import { CARD_SHADOW } from '@/constants';
+import { APP_NAME, CARD_SHADOW } from '@/constants';
 import { useEffect, useRef, useState } from 'react';
 
 /*
@@ -15,8 +15,8 @@ import { useEffect, useRef, useState } from 'react';
  * Mouse movement fires dozens of times a second, so the position is written
  * straight to the node through a ref inside one requestAnimationFrame per
  * frame instead of through React state — a setState per mousemove re-renders
- * the whole card on every pixel. The two timers are held in refs and cleared
- * on unmount so a late callback cannot fire against an unmounted component.
+ * the whole card on every pixel. The hop timer is held in a ref and cleared on
+ * unmount so a late callback cannot fire against an unmounted component.
  *
  * Purely decorative, so it is aria-hidden, ignores pointer events, and — for
  * anyone who asked for reduced motion — simply never starts following the
@@ -26,10 +26,8 @@ function HoppingFrog() {
   const frogRef = useRef<HTMLDivElement | null>(null);
   const frameRef = useRef<number | null>(null);
   const hopTimer = useRef<number | null>(null);
-  const mouthTimer = useRef<number | null>(null);
 
   const [hop, setHop] = useState(false);
-  const [mouthOpen, setMouthOpen] = useState(false);
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -49,21 +47,12 @@ function HoppingFrog() {
       hopTimer.current = window.setTimeout(() => setHop(false), 180);
     };
 
-    const onClick = () => {
-      setMouthOpen(true);
-      if (mouthTimer.current !== null) window.clearTimeout(mouthTimer.current);
-      mouthTimer.current = window.setTimeout(() => setMouthOpen(false), 350);
-    };
-
     window.addEventListener('mousemove', onMove);
-    window.addEventListener('click', onClick);
 
     return () => {
       window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('click', onClick);
       if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current);
       if (hopTimer.current !== null) window.clearTimeout(hopTimer.current);
-      if (mouthTimer.current !== null) window.clearTimeout(mouthTimer.current);
     };
   }, []);
 
@@ -81,26 +70,19 @@ function HoppingFrog() {
         transition: 'left 0.12s linear, bottom 0.18s ease',
       }}
     >
-      <svg width="54" height="48" viewBox="0 0 54 48" fill="none">
-        <ellipse cx="27" cy="28" rx="20" ry="16" fill="#7CB342" />
-        <circle cx="16" cy="16" r="8" fill="#7CB342" />
-        <circle cx="38" cy="16" r="8" fill="#7CB342" />
-        <circle cx="16" cy="16" r="4.5" fill="white" />
-        <circle cx="38" cy="16" r="4.5" fill="white" />
-        <circle cx="17" cy="17" r="2.2" fill="#1a1a1a" />
-        <circle cx="39" cy="17" r="2.2" fill="#1a1a1a" />
-        {mouthOpen ? (
-          <ellipse cx="27" cy="34" rx="6" ry="4.5" fill="#1a1a1a" />
-        ) : (
-          <path
-            d="M22 33 Q27 36 32 33"
-            stroke="#1a1a1a"
-            strokeWidth="2"
-            strokeLinecap="round"
-            fill="none"
-          />
-        )}
-      </svg>
+      {/* `unoptimized` for the same reason as the flags in LanguageButton: the
+          image optimizer refuses SVG unless next.config sets
+          dangerouslyAllowSVG, which would let any /_next/image URL serve
+          attacker-controlled markup from our origin. This is the same file the
+          browser tab already has cached. */}
+      <Image
+        src="/icon.svg"
+        alt=""
+        width={56}
+        height={56}
+        unoptimized
+        style={{ display: 'block' }}
+      />
     </div>
   );
 }
@@ -177,7 +159,7 @@ export default function LoginCard({
               color: '#2F2F2F',
             }}
           >
-            Reutlingen University Connect
+            {APP_NAME}
           </h1>
 
           <p

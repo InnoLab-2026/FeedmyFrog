@@ -1,6 +1,8 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -18,6 +20,7 @@ import {
 import KnownPlacesDatalist, {
   KNOWN_PLACES_LIST_ID,
 } from '@/components/marketplace/KnownPlacesDatalist';
+import { usePrefersReducedMotion } from '@/lib/useReducedMotion';
 
 interface CreateListingFormProps {
   email: string;
@@ -30,6 +33,31 @@ interface CreateListingFormProps {
  */
 const MAX_CATEGORIES = 2;
 
+/*
+ * The confetti fountain: one [dx, dy] end point per piece, in pixels from the
+ * launch point. Hoisted out of the component because it is a fixed piece of
+ * choreography — rebuilding the array on every render would hand React 24 new
+ * objects each time and change nothing on screen.
+ */
+const CONFETTI_PIECES: ReadonlyArray<readonly [number, number]> = [
+  [-30, -220], [30, -240], [-70, -180], [80, -200],
+  [-10, -260], [50, -170], [-90, -210], [100, -230],
+  [-50, -160], [20, -280], [-110, -190], [120, -250],
+  [0, -300], [-40, -200], [60, -270], [-80, -240],
+  [15, -220], [-20, -250], [90, -180], [-60, -270],
+  [40, -210], [-100, -160], [70, -290], [-15, -230],
+];
+
+const CONFETTI_COLORS = ['#FF3B30', '#007AFF', '#FFD60A', '#FF2D55', '#FF9F0A'];
+
+/*
+ * How long the confirmation stays up before the redirect. Matches the confetti
+ * animation; without motion there is nothing to wait for beyond long enough to
+ * read the line.
+ */
+const CELEBRATION_MS = 1800;
+const CELEBRATION_REDUCED_MS = 700;
+
 export default function CreateListingForm({
   email,
 }: CreateListingFormProps) {
@@ -40,6 +68,28 @@ export default function CreateListingForm({
       createListing,
       null,
     );
+
+  const router = useRouter();
+  const reducedMotion = usePrefersReducedMotion();
+
+  /*
+   * The confirmation is keyed on the action's *result*, not on `pending`.
+   * `pending` is also true while a submission is on its way to being rejected,
+   * so celebrating on it told people their listing was published a moment
+   * before the form showed them why it was not.
+   */
+  const published = state?.ok === true;
+
+  useEffect(() => {
+    if (!published) return;
+
+    const timer = window.setTimeout(
+      () => router.push('/'),
+      reducedMotion ? CELEBRATION_REDUCED_MS : CELEBRATION_MS,
+    );
+
+    return () => window.clearTimeout(timer);
+  }, [published, reducedMotion, router]);
 
   const [step, setStep] = useState(1);
 
@@ -68,7 +118,7 @@ export default function CreateListingForm({
     .map((tag) => tag.trim())
     .filter(Boolean);
 
-  const allTags = [...selectedTags, ...customTagList];
+  const allTags = [...new Set([...selectedTags, ...customTagList])];
 
   const categoryLimitReached = selectedTags.length >= MAX_CATEGORIES;
 
@@ -567,6 +617,56 @@ export default function CreateListingForm({
           </div>
         </div>
       )}
+
+      {published && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 200,
+            background: 'rgba(255,255,255,0.82)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '12px',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Decoration only, and skipped entirely for anyone who asked for
+              reduced motion — two dozen pieces flying up the viewport is
+              exactly the kind of movement that setting is there to stop. The
+              confirmation itself stays either way. */}
+          {!reducedMotion &&
+            CONFETTI_PIECES.map(([dx, dy], i) => (
+              <span
+                key={i}
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: '58%',
+                  width: i % 2 === 0 ? '8px' : '6px',
+                  height: i % 3 === 0 ? '14px' : '9px',
+                  marginLeft: '-3px',
+                  borderRadius: '2px',
+                  background: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+                  animation: `confetti-fountain ${CELEBRATION_MS}ms ease-out ${i * 0.03}s forwards`,
+                  ['--dx' as string]: `${dx}px`,
+                  ['--dy' as string]: `${dy}px`,
+                }}
+              />
+            ))}
+
+          <Image src="/happyfrog.png" alt="" width={160} height={107} />
+          <p style={{ fontWeight: 700, fontSize: 'var(--fs-xl)', color: '#1a3200' }}>
+            {t('listing_published')}
+          </p>
+        </div>
+      )}
     </form>
   );
 }
+

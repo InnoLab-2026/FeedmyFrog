@@ -2,3 +2,23 @@
 
 @import "./fonts.css";
 @import "./theme.css";
+
+/* --- Animations --------------------------------------------------------
+   The confetti fountain on a published listing. Here rather than in a
+   <style> tag inside the component: a keyframe rule is global no matter
+   where it is declared, and one rendered inside a conditional subtree is
+   re-inserted into the document every time that subtree mounts.
+   `--dx`/`--dy` are set per piece as inline custom properties. */
+@keyframes confetti-fountain {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) rotate(200deg);
+    opacity: 0;
+  }
+}
