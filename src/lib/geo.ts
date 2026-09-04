@@ -12,7 +12,67 @@ export interface Coordinates {
   lng: number;
 }
 
-export const CITY_COORDS: Record<string, Coordinates> = {
+/**
+ * Every location this platform knows, and the only values `listings.location`
+ * may hold.
+ *
+ * A closed set, not a suggestion list. The create and edit forms render it as
+ * a <select> and `ListingInput` in src/lib/validators.ts validates against it,
+ * so a location is a *choice from this list* rather than something a user
+ * writes. That is what keeps a street address, a house number, or a raw
+ * coordinate pair from ever reaching the database in the location field.
+ *
+ * Declared `as const` so it is a tuple of string literals: `z.enum(PLACES)`
+ * infers the exact union, and `Place` below is that union rather than
+ * `string`, so a typo anywhere in the codebase is a compile error.
+ */
+export const PLACES = [
+  'Reutlingen',
+  'Betzingen',
+  'Sondelfingen',
+  'Oferdingen',
+  'Gönningen',
+  'Degerschlacht',
+  'Mössingen',
+  'Pfullingen',
+  'Eningen',
+  'Wannweil',
+  'Kirchentellinsfurt',
+  'Stuttgart',
+  'Tübingen',
+  'Esslingen',
+  'Ludwigsburg',
+  'Waiblingen',
+  'Böblingen',
+  'Sindelfingen',
+  'Göppingen',
+  'Fellbach',
+] as const;
+
+export type Place = (typeof PLACES)[number];
+
+export function isPlace(value: unknown): value is Place {
+  return typeof value === 'string' && (PLACES as readonly string[]).includes(value);
+}
+
+/**
+ * The place list in the order a reader scans a dropdown, rather than the
+ * order the table happens to be written in. Sorted with the German collation
+ * so "Böblingen" and "Gönningen" land where a German speaker looks for them
+ * instead of after "Z".
+ */
+export const PLACES_ALPHABETICAL: readonly Place[] = [...PLACES].sort((a, b) =>
+  a.localeCompare(b, 'de'),
+);
+
+/**
+ * Coordinates of each place, used for two things and stored for neither:
+ * snapping a GPS fix to the nearest place, and working out which places lie
+ * within a radius of another. The database holds only the place *name* — the
+ * coordinates are a constant of this table, so storing them per row would be
+ * duplicating a lookup as personal data.
+ */
+export const CITY_COORDS: Record<Place, Coordinates> = {
   Reutlingen: { lat: 48.4914, lng: 9.2042 },
   Betzingen: { lat: 48.5089, lng: 9.1756 },
   Sondelfingen: { lat: 48.508, lng: 9.233 },
@@ -42,7 +102,7 @@ export const CITY_COORDS: Record<string, Coordinates> = {
  * neighbourhood, which says far more about where they are than a
  * "listings near me" filter has any need to know.
  */
-export const DISTRICT_OF: Record<string, string> = {
+export const DISTRICT_OF: Partial<Record<Place, Place>> = {
   Betzingen: 'Reutlingen',
   Sondelfingen: 'Reutlingen',
   Oferdingen: 'Reutlingen',
@@ -101,10 +161,11 @@ export function findNearestTown(
   lat: number,
   lng: number,
   maxDistanceKm: number = GPS_MAX_DISTANCE_KM,
-): { town: string; distanceKm: number } | null {
-  let nearest: { place: string; distanceKm: number } | null = null;
+): { town: Place; distanceKm: number } | null {
+  let nearest: { place: Place; distanceKm: number } | null = null;
 
-  for (const [place, coords] of Object.entries(CITY_COORDS)) {
+  for (const place of PLACES) {
+    const coords = CITY_COORDS[place];
     const distanceKm = haversineKm(lat, lng, coords.lat, coords.lng);
     if (!nearest || distanceKm < nearest.distanceKm) {
       nearest = { place, distanceKm };
@@ -129,86 +190,28 @@ export function isRadius(value: number): boolean {
 }
 
 /**
- * Coordinates for a listing's free-text location, or null when it names
- * nowhere we know.
+ * The places lying within `radiusKm` of `place`, including `place` itself.
  *
- * The create form takes free text on purpose — "Campus Reutlingen" is a
- * perfectly good thing to write — so this has to be forgiving: an exact name
- * first, then a known place appearing as a whole word inside the text, which
- * catches the "72762 Reutlingen" people actually type. Whole words only, so
- * "Reutlingenhausen" is not read as Reutlingen.
+ * This is the whole radius filter. With a closed set of twenty locations the
+ * question "which listings are near here?" is answered by working out which
+ * *names* are near here — twenty great-circle distances in memory, once per
+ * request — and then asking the database for `location IN (…)`.
  *
- * When a text names two places at once ("Reutlingen-Betzingen"), the longest
- * name wins. That is the broader of the two, which is the safe direction:
- * the district lies inside its town, so the answer is right either way, and
- * the rule is at least deterministic.
+ * That replaces a stored coordinate pair per row, a bounding-box range scan
+ * and a trigonometric distance evaluated per row. It is less code, less
+ * work for Postgres, and it means the database never holds a coordinate at
+ * all: the only geodata at rest is a place name from this list.
  *
- * Unlike a GPS fix, a district resolves to itself: the author chose to say
- * where their listing is, and narrowing that to the parent town would only
- * make the filter less accurate.
+ * An unknown place yields an empty array, which the caller turns into "no
+ * filter" rather than "matches nothing".
  */
-export function resolveLocation(text: string): { place: string; coords: Coordinates } | null {
-  const trimmed = text.trim();
-  if (!trimmed) return null;
+export function placesWithin(place: string, radiusKm: number): Place[] {
+  if (!isPlace(place)) return [];
 
-  const normalized = trimmed.toLowerCase();
+  const centre = CITY_COORDS[place];
 
-  for (const place of Object.keys(CITY_COORDS)) {
-    if (place.toLowerCase() === normalized) {
-      return { place, coords: CITY_COORDS[place] };
-    }
-  }
-
-  let best: string | null = null;
-  let bestLength = 0;
-
-  for (const place of Object.keys(CITY_COORDS)) {
-    const name = place.toLowerCase();
-    // Word boundaries by hand: \b does not treat "ö" or "ü" as word
-    // characters, so it would split "Mössingen" in the wrong places.
-    const index = normalized.indexOf(name);
-    if (index === -1) continue;
-
-    const before = normalized[index - 1];
-    const after = normalized[index + name.length];
-    const isBoundary = (char: string | undefined) =>
-      char === undefined || !/[\p{L}\p{N}]/u.test(char);
-
-    if (!isBoundary(before) || !isBoundary(after)) continue;
-
-    if (name.length > bestLength) {
-      best = place;
-      bestLength = name.length;
-    }
-  }
-
-  return best ? { place: best, coords: CITY_COORDS[best] } : null;
-}
-
-/**
- * Latitude/longitude bounds enclosing a circle, so the database can narrow
- * with an index before the exact great-circle distance is computed. The box
- * is deliberately a little generous — it may admit rows the precise check
- * then rejects, which is the safe direction to be wrong in.
- */
-export function boundingBox(
-  lat: number,
-  lng: number,
-  radiusKm: number,
-): { minLat: number; maxLat: number; minLng: number; maxLng: number } {
-  const KM_PER_DEGREE_LAT = 111.32;
-
-  const deltaLat = radiusKm / KM_PER_DEGREE_LAT;
-
-  // A degree of longitude shrinks towards the poles. The floor keeps the
-  // division finite if this is ever called somewhere extreme.
-  const shrink = Math.max(Math.cos((lat * Math.PI) / 180), 0.01);
-  const deltaLng = radiusKm / (KM_PER_DEGREE_LAT * shrink);
-
-  return {
-    minLat: lat - deltaLat,
-    maxLat: lat + deltaLat,
-    minLng: lng - deltaLng,
-    maxLng: lng + deltaLng,
-  };
+  return PLACES.filter((candidate) => {
+    const coords = CITY_COORDS[candidate];
+    return haversineKm(centre.lat, centre.lng, coords.lat, coords.lng) <= radiusKm;
+  });
 }

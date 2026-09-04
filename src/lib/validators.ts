@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { env } from '@/lib/env';
+import { PLACES } from '@/lib/geo';
 
 /**
  * Returns true iff `email`'s domain part is exactly `baseDomain` OR a
@@ -41,7 +42,14 @@ export const ListingInput = z.object({
   title:       z.string().trim().min(3, 'title_too_short').max(120, 'title_too_long'),
   description: z.string().trim().min(10, 'description_too_short').max(2000, 'description_too_long'),
   tags:        z.array(z.string().trim().min(1, 'tag_empty').max(40, 'tag_too_long')).max(8, 'tags_too_many').default([]),
-  location:    z.string().trim().min(1, 'location_required').max(80, 'location_too_long'),
+  /*
+   * A choice from a closed list, not free text. This is the enforcement
+   * boundary: the <select> in the forms is a convenience, but a request that
+   * bypasses the form still cannot put a street address, a house number, or a
+   * coordinate pair into the location field. Anything not in PLACES is
+   * rejected outright rather than stored and left unplaceable.
+   */
+  location:    z.enum(PLACES, { message: 'location_invalid' }),
 });
 
 export const Uuid = z.string().uuid({ message: 'invalid_id' });

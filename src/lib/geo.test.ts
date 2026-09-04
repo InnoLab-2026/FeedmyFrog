@@ -5,13 +5,15 @@ import {
   DEFAULT_RADIUS_KM,
   DISTRICT_OF,
   GPS_MAX_DISTANCE_KM,
+  PLACES,
+  PLACES_ALPHABETICAL,
   RADII,
-  boundingBox,
   findNearestTown,
   haversineKm,
+  isPlace,
   isRadius,
   isTown,
-  resolveLocation,
+  placesWithin,
 } from './geo';
 
 describe('haversineKm', () => {
@@ -113,106 +115,106 @@ describe('findNearestTown', () => {
   });
 });
 
-describe('resolveLocation', () => {
-  it('matches an exact name', () => {
-    expect(resolveLocation('Reutlingen')?.place).toBe('Reutlingen');
+describe('PLACES is a closed set', () => {
+  it('has an entry in CITY_COORDS for every name, and no extras', () => {
+    expect([...PLACES].sort()).toEqual(Object.keys(CITY_COORDS).sort());
   });
 
-  it('ignores case and surrounding whitespace', () => {
-    expect(resolveLocation('  tÜbingen ')?.place).toBe('Tübingen');
+  it('contains no duplicates', () => {
+    expect(new Set(PLACES).size).toBe(PLACES.length);
   });
 
-  it('finds a place inside the free text people actually type', () => {
-    expect(resolveLocation('72762 Reutlingen')?.place).toBe('Reutlingen');
-    expect(resolveLocation('Campus Reutlingen, Gebäude 5')?.place).toBe('Reutlingen');
-  });
-
-  it('resolves a name that contains no other place name', () => {
-    expect(resolveLocation('Kirchentellinsfurt')?.place).toBe('Kirchentellinsfurt');
-  });
-
-  it('takes the broader of two places named at once', () => {
-    // "Reutlingen-Betzingen" names a district and its town. Betzingen lies
-    // inside Reutlingen, so either answer puts the listing in the right
-    // place; picking the longer name just makes it deterministic.
-    expect(resolveLocation('Reutlingen-Betzingen')?.place).toBe('Reutlingen');
-  });
-
-  it('keeps a district as itself rather than widening it to the town', () => {
-    // The opposite of the GPS rule: the author chose to say where the listing
-    // is, so widening it would only make the filter less accurate.
-    expect(resolveLocation('Betzingen')?.place).toBe('Betzingen');
-  });
-
-  it('does not match a name that is only part of a longer word', () => {
-    expect(resolveLocation('Reutlingenhausen')).toBeNull();
-    expect(resolveLocation('XEningen')).toBeNull();
-  });
-
-  it('returns null for somewhere we cannot place', () => {
-    expect(resolveLocation('Hamburg')).toBeNull();
-    expect(resolveLocation('bei mir zu Hause')).toBeNull();
-  });
-
-  it('returns null for empty input rather than guessing', () => {
-    expect(resolveLocation('')).toBeNull();
-    expect(resolveLocation('   ')).toBeNull();
-  });
-
-  it('returns the coordinates the place is listed with', () => {
-    expect(resolveLocation('Stuttgart')?.coords).toEqual(CITY_COORDS.Stuttgart);
-  });
-});
-
-describe('boundingBox', () => {
-  it('encloses the circle it is given', () => {
-    const { lat, lng } = CITY_COORDS.Reutlingen;
-    const box = boundingBox(lat, lng, 10);
-
-    expect(box.minLat).toBeLessThan(lat);
-    expect(box.maxLat).toBeGreaterThan(lat);
-    expect(box.minLng).toBeLessThan(lng);
-    expect(box.maxLng).toBeGreaterThan(lng);
-  });
-
-  it('never excludes a point that is genuinely inside the radius', () => {
-    // The box is the cheap first pass; missing a row here would lose it from
-    // the results entirely, so it has to err wide.
-    const { lat, lng } = CITY_COORDS.Reutlingen;
-    const radiusKm = 20;
-    const box = boundingBox(lat, lng, radiusKm);
-
-    for (let bearing = 0; bearing < 360; bearing += 5) {
-      const rad = (bearing * Math.PI) / 180;
-      // A point just inside the radius, in every direction.
-      const d = (radiusKm * 0.99) / 111.32;
-      const pointLat = lat + d * Math.cos(rad);
-      const pointLng = lng + (d * Math.sin(rad)) / Math.cos((lat * Math.PI) / 180);
-
-      expect(haversineKm(lat, lng, pointLat, pointLng)).toBeLessThanOrEqual(radiusKm);
-      expect(pointLat).toBeGreaterThanOrEqual(box.minLat);
-      expect(pointLat).toBeLessThanOrEqual(box.maxLat);
-      expect(pointLng).toBeGreaterThanOrEqual(box.minLng);
-      expect(pointLng).toBeLessThanOrEqual(box.maxLng);
+  it('every district resolves to a name that is itself in the set', () => {
+    for (const [district, town] of Object.entries(DISTRICT_OF)) {
+      expect(PLACES).toContain(district);
+      expect(PLACES).toContain(town);
     }
   });
 
-  it('widens the longitude span more than the latitude span', () => {
-    // A degree of longitude is shorter than a degree of latitude at 48°N.
-    const box = boundingBox(48.5, 9.2, 10);
-    expect(box.maxLng - box.minLng).toBeGreaterThan(box.maxLat - box.minLat);
+  it('PLACES_ALPHABETICAL is the same set, ordered for German readers', () => {
+    expect([...PLACES_ALPHABETICAL].sort()).toEqual([...PLACES].sort());
+    expect(PLACES_ALPHABETICAL[0]).toBe('Betzingen');
+    // Umlauts sort with their base letter, not after Z.
+    expect(PLACES_ALPHABETICAL.indexOf('Böblingen')).toBeLessThan(
+      PLACES_ALPHABETICAL.indexOf('Degerschlacht'),
+    );
+  });
+});
+
+describe('isPlace', () => {
+  it('accepts every canonical name', () => {
+    for (const place of PLACES) expect(isPlace(place)).toBe(true);
   });
 
-  it('grows with the radius', () => {
-    const small = boundingBox(48.5, 9.2, 5);
-    const large = boundingBox(48.5, 9.2, 20);
-    expect(large.maxLat - large.minLat).toBeGreaterThan(small.maxLat - small.minLat);
+  it('rejects the free text the old location field used to accept', () => {
+    expect(isPlace('Campus Reutlingen')).toBe(false);
+    expect(isPlace('72762 Reutlingen')).toBe(false);
+    expect(isPlace('Reutlingen-Betzingen')).toBe(false);
+    expect(isPlace('reutlingen')).toBe(false);
+    expect(isPlace('')).toBe(false);
   });
 
-  it('stays finite at the pole instead of dividing by zero', () => {
-    const box = boundingBox(90, 0, 10);
-    expect(Number.isFinite(box.minLng)).toBe(true);
-    expect(Number.isFinite(box.maxLng)).toBe(true);
+  it('rejects a coordinate pair, which is the point of the closed set', () => {
+    expect(isPlace('48.49731, 9.20427')).toBe(false);
+    expect(isPlace('48.49731')).toBe(false);
+  });
+
+  it('rejects non-strings without throwing', () => {
+    expect(isPlace(undefined)).toBe(false);
+    expect(isPlace(null)).toBe(false);
+    expect(isPlace(42)).toBe(false);
+    expect(isPlace({ toString: () => 'Reutlingen' })).toBe(false);
+  });
+});
+
+describe('placesWithin', () => {
+  it('always includes the centre itself', () => {
+    for (const place of PLACES) {
+      expect(placesWithin(place, 3)).toContain(place);
+    }
+  });
+
+  it('returns only names that are genuinely within the radius', () => {
+    const centre = CITY_COORDS.Reutlingen;
+
+    for (const place of placesWithin('Reutlingen', 10)) {
+      const coords = CITY_COORDS[place];
+      expect(
+        haversineKm(centre.lat, centre.lng, coords.lat, coords.lng),
+      ).toBeLessThanOrEqual(10);
+    }
+  });
+
+  it('omits every name outside the radius', () => {
+    const near = placesWithin('Reutlingen', 10);
+
+    // Stuttgart is ~32 km from Reutlingen.
+    expect(near).not.toContain('Stuttgart');
+    expect(near).toContain('Betzingen');
+  });
+
+  it('grows monotonically with the radius', () => {
+    let previous = 0;
+
+    for (const radius of RADII) {
+      const count = placesWithin('Reutlingen', radius).length;
+      expect(count).toBeGreaterThanOrEqual(previous);
+      previous = count;
+    }
+  });
+
+  it('is symmetric — if A is near B then B is near A', () => {
+    for (const a of PLACES) {
+      for (const b of placesWithin(a, 20)) {
+        expect(placesWithin(b, 20)).toContain(a);
+      }
+    }
+  });
+
+  it('returns an empty array for anything not in the set', () => {
+    expect(placesWithin('Hamburg', 10)).toEqual([]);
+    expect(placesWithin('48.49731, 9.20427', 10)).toEqual([]);
+    expect(placesWithin('', 10)).toEqual([]);
   });
 });
 

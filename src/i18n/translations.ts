@@ -26,6 +26,7 @@ export const resources = {
 
       // Location search
       location_enter: 'Enter location...',
+      location_select: 'Select a location',
       gps_use: 'Use GPS location',
       gps_loading: 'Determining location...',
       gps_unavailable: 'GPS is not available on this device.',
@@ -174,8 +175,7 @@ export const resources = {
       error_tag_empty: 'Tags cannot be empty.',
       error_tag_too_long: 'Each tag can be at most 40 characters.',
       error_tags_too_many: 'You can add at most 8 tags.',
-      error_location_required: 'Location is required.',
-      error_location_too_long: 'Location must be at most 80 characters.',
+      error_location_invalid: 'Please choose a location from the list.',
       error_invalid_id: 'Invalid listing ID.',
       error_not_found: 'Listing not found.',
     },
@@ -208,6 +208,7 @@ export const resources = {
 
       // Location search
       location_enter: 'Ort eingeben...',
+      location_select: 'Standort auswählen',
       gps_use: 'GPS-Standort verwenden',
       gps_loading: 'Standort wird ermittelt...',
       gps_unavailable: 'GPS ist auf diesem Gerät nicht verfügbar.',
@@ -356,8 +357,7 @@ export const resources = {
       error_tag_empty: 'Schlagwörter dürfen nicht leer sein.',
       error_tag_too_long: 'Jedes Schlagwort darf höchstens 40 Zeichen lang sein.',
       error_tags_too_many: 'Sie können höchstens 8 Schlagwörter hinzufügen.',
-      error_location_required: 'Standort ist erforderlich.',
-      error_location_too_long: 'Der Standort darf höchstens 80 Zeichen lang sein.',
+      error_location_invalid: 'Bitte wählen Sie einen Standort aus der Liste.',
       error_invalid_id: 'Ungültige Anzeigen-ID.',
       error_not_found: 'Anzeige nicht gefunden.',
     },
@@ -388,6 +388,7 @@ export const resources = {
 
 
       location_enter: 'Saisir un lieu...',
+      location_select: 'Choisir un lieu',
       gps_use: 'Utiliser la position GPS',
       gps_loading: 'Localisation en cours...',
       gps_unavailable: "Le GPS n'est pas disponible sur cet appareil.",
@@ -524,8 +525,7 @@ export const resources = {
       error_tag_empty: 'Les mots-clés ne peuvent pas être vides.',
       error_tag_too_long: 'Chaque mot-clé ne doit pas dépasser 40 caractères.',
       error_tags_too_many: 'Vous pouvez ajouter 8 mots-clés au maximum.',
-      error_location_required: 'Le lieu est requis.',
-      error_location_too_long: 'Le lieu ne doit pas dépasser 80 caractères.',
+      error_location_invalid: 'Veuillez choisir un lieu dans la liste.',
       error_invalid_id: "Identifiant d'annonce invalide.",
       error_not_found: 'Annonce introuvable.',
     },
@@ -556,6 +556,7 @@ export const resources = {
 
 
       location_enter: 'Konum girin...',
+      location_select: 'Konum seçin',
       gps_use: 'GPS konumunu kullan',
       gps_loading: 'Konum belirleniyor...',
       gps_unavailable: 'GPS bu cihazda kullanılamıyor.',
@@ -692,8 +693,7 @@ export const resources = {
       error_tag_empty: 'Etiketler boş olamaz.',
       error_tag_too_long: 'Her etiket en fazla 40 karakter olabilir.',
       error_tags_too_many: 'En fazla 8 etiket ekleyebilirsiniz.',
-      error_location_required: 'Konum gereklidir.',
-      error_location_too_long: 'Konum en fazla 80 karakter olabilir.',
+      error_location_invalid: 'Lütfen listeden bir konum seçin.',
       error_invalid_id: 'Geçersiz ilan kimliği.',
       error_not_found: 'İlan bulunamadı.',
     },
@@ -724,6 +724,7 @@ export const resources = {
 
 
       location_enter: 'Introducir ubicación...',
+      location_select: 'Selecciona una ubicación',
       gps_use: 'Usar ubicación GPS',
       gps_loading: 'Determinando ubicación...',
       gps_unavailable:
@@ -861,8 +862,7 @@ export const resources = {
       error_tag_empty: 'Las etiquetas no pueden estar vacías.',
       error_tag_too_long: 'Cada etiqueta puede tener como máximo 40 caracteres.',
       error_tags_too_many: 'Puedes añadir como máximo 8 etiquetas.',
-      error_location_required: 'La ubicación es obligatoria.',
-      error_location_too_long: 'La ubicación no puede superar los 80 caracteres.',
+      error_location_invalid: 'Por favor, elige una ubicación de la lista.',
       error_invalid_id: 'ID de anuncio no válido.',
       error_not_found: 'Anuncio no encontrado.',
     },

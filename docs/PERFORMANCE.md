@@ -67,6 +67,26 @@ generated listings in a local Postgres 16:
   does not emit extension statements — if that migration is ever regenerated,
   the `CREATE EXTENSION` line has to be put back by hand.
 
+### The radius filter
+
+`location` is a closed set of twenty place names (`PLACES` in
+`src/lib/geo.ts`), so "listings near here" is a question about *names*.
+`placesWithin()` computes twenty great-circle distances in memory, once per
+request, and the query is a plain `location IN (…)` served by
+`idx_listings_location`.
+
+That replaced a stored `lat`/`lng` pair per row, a bounding-box range scan on
+`idx_listings_coords`, and a haversine expression evaluated in SQL for every
+row the box admitted. Twenty distances in JavaScript is work that does not
+scale with the table at all, where the old shape grew with it — and the
+columns it needed are gone, so the table is narrower too. Migration
+`drizzle/0003_*.sql` makes the change.
+
+The old shape was the right one for free-text locations, where each row's
+coordinates were genuinely per-row data. Once the location became a choice
+from a fixed list, the coordinates stopped being per-row data and the
+geometry stopped being necessary.
+
 ### Known remaining cost
 
 The category-tab aggregation (`SELECT unnest(tags), count(*) … GROUP BY 1`) is

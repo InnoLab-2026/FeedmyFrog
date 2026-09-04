@@ -258,7 +258,7 @@ src/
                                     MyListingsHeader, LegalPageTopBar, LegalText
     marketplace/                    ModeToggle, CategoryTab(s), ListingCard,
                                     PaginationControls, DisclaimerOverlay,
-                                    LocationSearch, KnownPlacesDatalist,
+                                    LocationSearch, PlaceSelect,
                                     CreateListingForm, CreateListingModal,
                                     MyListingsPageContent
     Marketplace.tsx                 client wrapper; filter/page state lives in the URL
@@ -391,10 +391,10 @@ session before doing anything.
 | `deleteListing(formData)` | `src/actions/listings.ts` | `void`. Scoped by `user_id` the same way. |
 | `logout()` | `src/actions/auth.ts` | Clears both cookie names, `redirect('/login')`. |
 
-`createListing` and `updateListing` both call `coordinatesFor(location)`,
-which runs `resolveLocation()` from `src/lib/geo.ts` on write. Resolving
-once per write rather than once per read is what lets the radius filter be
-a plain indexed range scan.
+Neither write touches coordinates. `location` is validated against
+`PLACES` (`src/lib/geo.ts`) by `ListingInput`, and that name is the whole of
+what is stored about where a listing is — see *Location as a closed set*
+below.
 
 ### Shared library
 
@@ -406,7 +406,7 @@ a plain indexed range scan.
 | `lib/email.ts` | Brevo client. Renders both an HTML part (table layout, inline styles, preheader, `color-scheme`, `lang`) and a real plain-text part |
 | `lib/validators.ts` | `isAllowedEmail`, `Email`, `ListingType`, `ListingInput`, `Uuid` |
 | `lib/rate-limit.ts` | `checkAndConsume` (single-statement count-and-insert), `cleanupRateLimits` (returned unexecuted so it can ride along in a batch) |
-| `lib/geo.ts` | `CITY_COORDS`, `DISTRICT_OF`, `haversineKm`, `findNearestTown`, `resolveLocation`, `boundingBox`, `RADII`, `isRadius` |
+| `lib/geo.ts` | `PLACES`, `Place`, `isPlace`, `PLACES_ALPHABETICAL`, `CITY_COORDS`, `DISTRICT_OF`, `haversineKm`, `findNearestTown`, `placesWithin`, `RADII`, `isRadius` |
 | `lib/initials.ts` | `getInitials`, `displayNameFromEmail` |
 
 Every helper that reads a secret or touches the database begins with
@@ -491,21 +491,18 @@ sequenceDiagram
     participant U as User
     participant F as CreateListingForm / EditListingForm
     participant A as Server Action
-    participant G as resolveLocation
     participant DB as Neon Postgres
     participant M as /  (marketplace RSC)
 
     U->>F: step 1 — need or offer, 1–2 category tags
-    U->>F: step 2 — title, description, location, free hashtags
+    U->>F: step 2 — title, description,<br/>location from the dropdown, free hashtags
     F->>A: FormData via useActionState
     A->>A: getSession, else redirect /login
     A->>A: ListingInput.safeParse — codes, not prose
     alt invalid
         A-->>F: { ok:false, errors } → i18n renders error_<code>
     else valid
-        A->>G: resolveLocation(location)
-        G-->>A: coords or null
-        A->>DB: INSERT, or UPDATE … WHERE id AND user_id
+        A->>DB: INSERT, or UPDATE … WHERE id AND user_id<br/>place name only — no coordinates
         A->>A: revalidatePath('/'), revalidatePath('/meine')
         alt create
             A-->>F: { ok:true } → confetti, then router.push('/')
@@ -524,7 +521,9 @@ Validator messages are short machine-readable codes
 (`title_too_short`, `forbidden_domain`, …), never prose. The server does
 not know the reader's language; the client maps `error_<code>` through
 i18next. Constraints: title 3–120 characters, description 10–2000, at
-most 8 tags of at most 40 characters each, location 1–80.
+most 8 tags of at most 40 characters each, and `location` must be one of
+the twenty names in `PLACES` — there is no length rule because there is no
+free text.
 
 ### Data model
 
@@ -542,9 +541,7 @@ erDiagram
         text        title
         text        description
         text_array  tags     "default {}"
-        text        location "free text"
-        float8      lat      "nullable, resolved on write"
-        float8      lng      "nullable"
+        text        location "one of the 20 names in PLACES"
         timestamptz created_at
     }
     MAGIC_TOKENS {
@@ -568,7 +565,7 @@ is. Indexes, all defined in `src/db/schema.ts`:
 |-------|------|--------|
 | `idx_listings_type_created` | btree `(type, created_at DESC)` | the default mode-filtered, newest-first page |
 | `idx_listings_user` | btree `(user_id)` | `/meine` and the ownership check on update/delete |
-| `idx_listings_coords` | btree `(lat, lng)` | the bounding-box step of the radius filter |
+| `idx_listings_location` | btree `(location)` | the radius filter's `location IN (…)` |
 | `idx_listings_tags` | GIN `(tags)` | category tabs, `tags @> ARRAY[…]` — a btree cannot answer array containment at all |
 | `idx_listings_title_trgm` | GIN `(title gin_trgm_ops)` | `ILIKE '%q%'` search; a leading wildcard makes btree useless |
 | `idx_listings_desc_trgm` | GIN `(description gin_trgm_ops)` | the same, over the description |
@@ -583,8 +580,7 @@ back if that migration is ever regenerated.**
 
 `listings` matches the Figma `Listing` TypeScript interface field for
 field, so designer-owned components consume database rows with no mapping
-layer, plus the `lat`/`lng` pair the location filter needs and the
-`created_at` used for ordering.
+layer, plus the `created_at` used for ordering.
 
 The schema holds no profile picture, age, gender, telephone number, or any
 other personal attribute beyond the address a listing exists to show.
@@ -618,9 +614,10 @@ flowchart TD
   `and()` drops, so the filter is simply not applied rather than silently
   matching nothing. A crafted link cannot ask about an arbitrary point on
   the map.
-- **Radius** is a bounding-box range scan the `(lat, lng)` index serves,
-  narrowed by an exact great-circle distance in SQL. Rows with no
-  coordinates are excluded rather than assumed nearby.
+- **Radius** is a plain `location IN (…)`. `placesWithin()` does twenty
+  great-circle distances in memory, once per request, and hands the database
+  a set of names — no coordinate per row, no bounding box, no trigonometry
+  in SQL.
 - **Category tabs** are aggregated in the database and ranked by
   frequency within the current mode, so every tag actually in use gets a
   tab.
@@ -730,7 +727,7 @@ flowchart TD
 
     AL --> NEWP["new/page.tsx (server)"] --> CLF["CreateListingForm (client)<br/>two-step wizard, confetti"]
     AL --> EDP["meine/[id]/edit (server)"] --> ELF["EditListingForm (client)"]
-    CLF --> KPD["KnownPlacesDatalist"]
+    CLF --> KPD["PlaceSelect<br/>closed dropdown"]
     ELF --> KPD
 
     LOGINP --> LCARD["LoginCard (client)<br/>HoppingFrog, links"] --> LFORM["LoginForm<br/>fetch → /api/auth/send-link"]
@@ -762,9 +759,53 @@ genuinely local state is the search input itself, so typing stays
 responsive between debounce ticks; a reconciliation check adopts a new
 server `query` value unless the user has typed since.
 
-### Location filter and GPS
+### Location as a closed set
 
-`LocationSearch` offers the 20 places in `CITY_COORDS` by substring match
+Everywhere a location appears — the listing itself and the filter alike —
+it is one of the twenty names in `PLACES` (`src/lib/geo.ts`). Nothing about
+a location is free text, and the database holds no coordinate at all.
+
+```mermaid
+flowchart TD
+    subgraph Write["Creating or editing a listing"]
+        SEL["PlaceSelect &lt;select&gt;<br/>21 options: a placeholder + the 20 names"]
+        VAL["ListingInput: z.enum(PLACES)<br/>the enforcement boundary"]
+        ROW[("listings.location = 'Reutlingen'<br/>no lat, no lng")]
+        SEL --> VAL --> ROW
+        BYPASS["A request that skips the form"] -->|"'Musterweg 12'<br/>'48.49, 9.20'"| VAL
+        VAL -.->|"rejected: location_invalid"| NOPE["nothing stored"]
+    end
+
+    subgraph Read["Filtering the marketplace"]
+        GPS["GPS fix<br/>lat/lng in the callback only"]
+        SNAP["findNearestTown<br/>district → parent town"]
+        NAME["a place NAME"]
+        URLP["?loc=Reutlingen&amp;r=10"]
+        PW["placesWithin: 20 haversines in memory"]
+        SQL["WHERE location IN ('Reutlingen','Betzingen',…)"]
+        GPS --> SNAP --> NAME
+        PICK["Typed or picked in LocationSearch"] --> NAME
+        NAME --> URLP --> PW --> SQL
+        SQL --> ROW
+    end
+```
+
+The three places a coordinate could have leaked are each closed:
+
+| Route in | What stops it |
+|---|---|
+| The listing form | `<select>` — a dropdown cannot produce anything else |
+| A request that bypasses the form | `z.enum(PLACES)` rejects it as `location_invalid`; the action also builds its input from a fixed field list, so a posted `lat`/`lng` is never even read |
+| The URL | `?loc=` is a name looked up against `PLACES`; an unknown value applies no filter |
+
+`CITY_COORDS` still exists — the GPS snap and the radius set both need
+distances — but it is a **constant of the code, not a column**. Storing a
+copy per row would have duplicated a lookup as personal data, which is what
+`0003` removed.
+
+### The filter control and GPS
+
+`LocationSearch` offers the 20 places in `PLACES` by substring match
 and four radii (3, 5, 10, 20 km, default 10). The GPS button asks the
 browser for a **coarse** fix — `enableHighAccuracy: false`,
 `maximumAge` 30 minutes, `timeout` 10 s — and then throws the position
@@ -784,13 +825,11 @@ away:
   a navigation. Nothing downstream ever sees a position more precise than
   a town centre.
 
-On the write side, `resolveLocation()` accepts the free text people
-actually type: an exact name first, then a known place appearing as a
-whole word inside the text, so "72762 Reutlingen" resolves and
-"Reutlingenhausen" does not. Word boundaries are checked by hand with
-`\p{L}\p{N}`, because `\b` does not treat `ö` or `ü` as word characters.
-When a text names two places ("Reutlingen-Betzingen") the longest name
-wins.
+Note the asymmetry between the two paths, which is deliberate: a **GPS
+fix** never resolves to a district (returning "Betzingen" would pin the
+reader to a neighbourhood), but a district is a perfectly good thing to
+**choose** from the dropdown for a listing, because that is the author
+saying where their listing is.
 
 ### Categories and tags
 
@@ -879,7 +918,7 @@ package's import chain still resolves.
 
 ## Testing and quality gates
 
-**269 unit tests across 14 files**, run with Vitest in a Node
+**287 unit tests across 14 files**, run with Vitest in a Node
 environment against `src/**/*.test.ts`. Counts below are the expanded
 case counts as Vitest reports them — several suites use `it.each` over
 the five locales.
@@ -895,13 +934,13 @@ npm run test:watch  # vitest
 |------|-------|--------|
 | `src/i18n/translations.test.ts` | 38 | key parity, empty strings and placeholder parity across all five languages |
 | `src/i18n/emailResources.test.ts` | 34 | the same parity checks for the mail copy, plus no emoji and no markup |
-| `src/lib/geo.test.ts` | 33 | haversine, GPS town snapping and the district rule, `resolveLocation` word boundaries, bounding boxes |
+| `src/lib/geo.test.ts` | 32 | haversine, GPS town snapping and the district rule, `PLACES` integrity, `isPlace`, `placesWithin` symmetry and monotonicity |
 | `src/i18n/legal.test.ts` | 31 | legal namespace registration, key parity, permitted inline markup |
+| `src/lib/validators.test.ts` | 28 | the domain rule including look-alike rejection, all `ListingInput` bounds, and that `location` accepts only `PLACES` |
 | `src/i18n/matchLanguage.test.ts` | 22 | `Accept-Language` parsing, q-value ordering, tag normalisation |
 | `src/lib/email.test.ts` | 22 | Brevo payload shape, HTML escaping, both mail parts, per-locale rendering |
-| `src/lib/validators.test.ts` | 20 | the domain rule including look-alike rejection, all `ListingInput` bounds |
-| `src/actions/listings.test.ts` | 16 | create/update/delete: session guard, validation codes, ownership scoping, `revalidatePath` |
-| `src/db/filters.test.ts` | 13 | `withinRadius` / `resolvePlaceParam` against a **real Postgres engine** — `@electric-sql/pglite` with `pg_trgm` loaded |
+| `src/actions/listings.test.ts` | 21 | create/update/delete: session guard, validation codes, ownership scoping, `revalidatePath`, and that no coordinate is written or accepted from a request |
+| `src/db/filters.test.ts` | 19 | `withinRadius` / `resolvePlaceParam` and migration `0003`'s normalisation against a **real Postgres engine** — `@electric-sql/pglite` with `pg_trgm` loaded; also asserts the `lat`/`lng` columns are gone |
 | `src/lib/initials.test.ts` | 13 | initials and display names from an address |
 | `src/lib/auth.test.ts` | 11 | token generation, hashing, `userIdFromEmail` stability |
 | `src/lib/rate-limit.test.ts` | 8 | allow/deny at the boundary, `Retry-After`, cleanup cutoff |
@@ -1039,6 +1078,7 @@ Current migrations:
 | `0000_wise_the_liberteens.sql` | `listing_type` enum, the three tables, five btree indexes |
 | `0001_aspiring_mandrill.sql` | `lat`/`lng` columns, `idx_listings_coords`, and a backfill that places existing rows with the same matching rule as `resolveLocation()` — longest name wins, so `Kirchentellinsfurt` is not matched by a shorter name inside it |
 | `0002_romantic_virginia_dare.sql` | `CREATE EXTENSION pg_trgm` (hand-written), the GIN tag index and the two trigram indexes |
+| `0003_bumpy_big_bertha.sql` | Location becomes a closed set: normalises legacy free text to the canonical name (hand-written, same matching rule as `0001`), then drops `lat`, `lng` and `idx_listings_coords` and adds `idx_listings_location`. Rows naming nowhere we know are deliberately left untouched — the file carries a query to list them |
 
 ### Rollback
 
@@ -1130,9 +1170,16 @@ pilot**.
   and are single-use.
 - No file uploads, no chat, no message history. The schema holds no
   personal attribute beyond the contact address a listing exists to show.
-- A GPS fix is reduced to a town name before it leaves the browser's
-  callback; no coordinate more precise than a town centre is stored,
-  logged, or put in a URL.
+- **No coordinates are stored at all.** `location` is one of twenty place
+  names; the coordinates behind them are a constant of the code. A GPS fix
+  is reduced to a place name inside the browser callback that produced it,
+  and no coordinate is ever written to the database, put in a URL, or
+  logged.
+- **The location field is a closed set, not free text.** A dropdown in the
+  UI and `z.enum(PLACES)` on the server, so a street, a house number or a
+  pasted coordinate pair cannot be entered as a location even deliberately.
+  This closed the one remaining way a precise position could reach the
+  database: the author typing one.
 
 **Storage limitation (Art. 5(1)(e)).** Retention is bounded for every
 stored datum:
@@ -1222,12 +1269,13 @@ university-operated infrastructure is therefore feasible.
 - [x] Server-side pagination and search — URL-driven filters, SQL
       `ILIKE`/`@>`/`LIMIT`/`OFFSET`, DB-aggregated category tabs
       (Marty Lauterbach)
-- [x] Location filter: free-text geocoding on write, radius search via
-      bounding box plus great-circle distance, privacy-preserving GPS
-      snapping (Marty Lauterbach)
+- [x] Location filter: radius search over a closed place set,
+      privacy-preserving GPS snapping (Marty Lauterbach)
+- [x] Location reduced to a closed set — dropdown instead of free text,
+      coordinate columns dropped from the database (Marty Lauterbach)
 - [x] Server-resolved i18n in five languages, incl. legal pages and
       transactional email (Marty Lauterbach, Kathrin Neu)
-- [x] Unit test suite (269 tests) and GitHub Actions CI (Marty Lauterbach)
+- [x] Unit test suite (287 tests) and GitHub Actions CI (Marty Lauterbach)
 - [x] Latency work: query batching, GIN and trigram indexes, `fra1` pinning
       (Marty Lauterbach) — see `docs/PERFORMANCE.md`
 - [x] Observability: OpenTelemetry spans, `onRequestError`, Speed Insights

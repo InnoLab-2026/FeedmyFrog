@@ -7,8 +7,10 @@ import { useTranslation } from 'react-i18next';
 import {
   CITY_COORDS,
   DEFAULT_RADIUS_KM,
+  PLACES,
   RADII,
   findNearestTown,
+  type Place,
 } from '@/lib/geo';
 
 export interface LocationFilter {
@@ -17,7 +19,7 @@ export interface LocationFilter {
    * saying "Near Reutlingen" in English after the reader switches language.
    * The label is built at render time from this plus `approximate`.
    */
-  city: string;
+  city: Place;
   /** True when the place was derived from a GPS fix rather than picked. */
   approximate?: boolean;
   lat: number;
@@ -51,7 +53,7 @@ export default function LocationSearch({
 
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<Place[]>([]);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState('');
   const [pendingRadius, setPendingRadius] = useState(value?.radius ?? DEFAULT_RADIUS_KM);
@@ -85,13 +87,11 @@ export default function LocationSearch({
     }
 
     const q = text.toLowerCase();
-    const matches = Object.keys(CITY_COORDS).filter((city) =>
-      city.toLowerCase().includes(q),
-    );
+    const matches = PLACES.filter((city) => city.toLowerCase().includes(q));
     setSuggestions(matches);
   };
 
-  const selectCity = (city: string) => {
+  const selectCity = (city: Place) => {
     const coords = CITY_COORDS[city];
     onChange({
       city,

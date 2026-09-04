@@ -16,7 +16,7 @@ import {
 
 import Header from '@/components/layout/Header';
 import type { LocationFilter } from '@/components/marketplace/LocationSearch';
-import { CITY_COORDS, DEFAULT_RADIUS_KM } from '@/lib/geo';
+import { CITY_COORDS, DEFAULT_RADIUS_KM, isPlace } from '@/lib/geo';
 import ModeToggle from '@/components/marketplace/ModeToggle';
 import CategoryTabs from '@/components/marketplace/CategoryTabs';
 import PaginationControls from '@/components/marketplace/PaginationControls';
@@ -196,16 +196,18 @@ export default function Marketplace({
     ];
   }, [categoryTags, t]);
 
-  const locationFilter: LocationFilter | null =
-    place && CITY_COORDS[place]
-      ? {
-          city: place,
-          approximate,
-          lat: CITY_COORDS[place].lat,
-          lng: CITY_COORDS[place].lng,
-          radius: radiusKm,
-        }
-      : null;
+  // `isPlace` narrows the string from the URL to a member of PLACES before it
+  // is used as a key, so an unknown `?loc=` yields no filter rather than an
+  // undefined lookup.
+  const locationFilter: LocationFilter | null = isPlace(place)
+    ? {
+        city: place,
+        approximate,
+        lat: CITY_COORDS[place].lat,
+        lng: CITY_COORDS[place].lng,
+        radius: radiusKm,
+      }
+    : null;
 
   function onLocationChange(value: LocationFilter | null) {
     navigate({
