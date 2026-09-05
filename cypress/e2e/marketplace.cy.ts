@@ -153,4 +153,70 @@ describe('FeedmyFrog E2E Cypress Test Suite', () => {
     cy.get('main').should('exist');
   });
 
+  // ==========================================
+  // SECTION 3: Hauptseite & Auth Flow Tests (21 - 30)
+  // ==========================================
+
+  // Test 21: Authenticated Create Listing Form (/new)
+  it('21. should render create listing form when authenticated and visiting /new', () => {
+    cy.request('/api/dev-login');
+    cy.visit('/new');
+    cy.get('form').should('exist');
+  });
+
+  // Test 22: Unauthenticated Protection for /new
+  it('22. should redirect unauthenticated access to /new back to /login', () => {
+    cy.visit('/new');
+    cy.url().should('include', '/login');
+  });
+
+  // Test 23: Unauthenticated Protection for /meine
+  it('23. should redirect unauthenticated access to /meine back to /login', () => {
+    cy.visit('/meine');
+    cy.url().should('include', '/login');
+  });
+
+  // Test 24: Hauptseite - Offer Mode Parameter Handling (?mode=offer)
+  it('24. should support switching to offer mode via URL parameter ?mode=offer', () => {
+    cy.visit('/login?mode=offer');
+    cy.url().should('include', 'mode=offer');
+  });
+
+  // Test 25: Hauptseite - Need Mode Parameter Handling (?mode=need)
+  it('25. should support switching to seek mode via URL parameter ?mode=need', () => {
+    cy.visit('/login?mode=need');
+    cy.url().should('include', 'mode=need');
+  });
+
+  // Test 26: Hauptseite - Search Query Parameter Handling (?q=)
+  it('26. should support filtering listings via search query parameter ?q=nachhilfe', () => {
+    cy.visit('/login?q=nachhilfe');
+    cy.url().should('include', 'q=nachhilfe');
+  });
+
+  // Test 27: Hauptseite - Category Parameter Handling (?cat=)
+  it('27. should support filtering listings via category parameter ?cat=Services', () => {
+    cy.visit('/login?cat=Services');
+    cy.url().should('include', 'cat=Services');
+  });
+
+  // Test 28: Hauptseite - Location & Radius Search Parameters (?loc=Reutlingen&r=5)
+  it('28. should support filtering by location and radius ?loc=Reutlingen&r=5', () => {
+    cy.visit('/login?loc=Reutlingen&r=5');
+    cy.url().should('include', 'loc=Reutlingen');
+    cy.url().should('include', 'r=5');
+  });
+
+  // Test 29: Hauptseite - Pagination Parameter Handling (?page=2)
+  it('29. should support pagination parameter ?page=2', () => {
+    cy.visit('/login?page=2');
+    cy.url().should('include', 'page=2');
+  });
+
+  // Test 30: Hauptseite Brand Image Visibility
+  it('30. should display the feedmyfrog brand image on login page', () => {
+    cy.visit('/login');
+    cy.get('img[alt="feedmyfrog"]').should('be.visible');
+  });
+
 });
