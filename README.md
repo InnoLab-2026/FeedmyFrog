@@ -70,7 +70,7 @@ reconstructs the project from an empty directory.
 | Styling | Tailwind CSS 4 plus a CSS custom-property type scale | 4.x |
 | Icons | `lucide-react` | 1.x |
 | i18n | `i18next` / `react-i18next`, five languages | 26 / 17 |
-| Tests | Vitest, with `@electric-sql/pglite` for real-SQL tests | 4.x / 0.5.x |
+| Tests | Vitest (unit/integration with `@electric-sql/pglite`), Cypress (E2E) | 4.x / 16.x |
 | Tracing | `@vercel/otel` + `@opentelemetry/api`, `@vercel/speed-insights` | 2.x |
 | Hosting | Vercel, functions pinned to `fra1` | — |
 
@@ -989,7 +989,14 @@ can be syntactically valid and semantically wrong, and mocking the
 database would make exactly that class of bug invisible. It runs against
 a real engine instead.
 
-There is no browser/E2E layer yet.
+### End-to-End (E2E) Testing with Cypress
+
+Browser E2E testing architecture established by **Meinhard Holzknecht**. E2E specifications reside in `cypress/e2e/`.
+
+```bash
+npm run test:e2e      # Run Cypress E2E tests headless (cypress run)
+npm run cypress:open  # Open interactive Cypress Test Runner UI
+```
 
 ## DevOps
 
@@ -1366,6 +1373,8 @@ Liability* in the [LICENSE](LICENSE).
 ## Author
 
 Martin Lauterbach, Reutlingen University, May 2026.
+
+E2E Testing Framework & Cypress Setup: **Meinhard Holzknecht**.
 
 Frontend contributions: Kathrin Neu, Busra Sunanur Arpa. Team WayMakr —
 Lauterbach, Holzknecht, Neu, Arpa.
