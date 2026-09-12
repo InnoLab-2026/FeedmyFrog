@@ -45,8 +45,10 @@ export default function VerifyPromptCard({ token }: { token: string | null }) {
         }}
       >
         {/* `priority` because this is the LCP element: it sits at the top of
-            the only card on the page. Decorative rather than described --
-            the <h1> right below it already reads the product name. */}
+            the only card on the page. Decorative rather than described: the
+            card always has an <h1> right below it, naming either the product
+            or the failure, so describing the logo would only add a second
+            reading of something already said. */}
         <Image
           src="/feedmyfrog.png"
           alt=""
