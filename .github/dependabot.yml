@@ -33,12 +33,28 @@ updates:
         patterns:
           - i18next
           - react-i18next
+      # Unlike the groups above, this one is a bucket of unrelated tools that
+      # do not have to move together, so it takes minor and patch only. A
+      # grouped major here traps the safe updates behind the one that cannot
+      # merge: the first run bundled eslint 9 to 10, typescript 5 to 7 and
+      # vitest 4 to 5, and the whole pull request failed lint on the
+      # typescript bump alone. Majors now arrive one per pull request.
       dev-tooling:
         dependency-type: development
+        update-types:
+          - minor
+          - patch
     ignore:
       # Node 24 is pinned by .nvmrc and by engines in package.json, so the
       # types package must not run ahead of the runtime CI installs.
       - dependency-name: '@types/node'
+        update-types:
+          - 'version-update:semver-major'
+      # eslint-config-next bundles typescript-eslint, which refuses to load
+      # against TypeScript 7 and fails `npm run lint` outright. Drop this
+      # entry once typescript-eslint ships TS >= 7.1 support, tracked at
+      # https://github.com/typescript-eslint/typescript-eslint/issues/10940
+      - dependency-name: 'typescript'
         update-types:
           - 'version-update:semver-major'
 
