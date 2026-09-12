@@ -1489,6 +1489,15 @@ purely presentational props.
 
 ### Step 31. New-listing page
 
+> **Where this ended up.** The shipped app has no `/new` route. The create
+> form is reached through `CreateListingModal`, opened from the header on
+> the marketplace and from `/meine`, and the dedicated page was deleted
+> once nothing linked to it. Build it as a page here anyway — it is the
+> shorter way to get a working form in front of you, and the component is
+> the same one the modal renders. The modal came after this guide was
+> written, so no later step builds it; see
+> `src/components/marketplace/CreateListingModal.tsx`.
+
 Create `src/app/(auth)/new/page.tsx`:
 
 ```tsx

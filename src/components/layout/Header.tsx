@@ -267,17 +267,23 @@ export default function Header({
               aria-label={t('go_home')}
               style={{ display: 'block' }}
             >
-              {/* The source file is a 1024x1024 JPEG; next/image resizes it to
-                  the 168px this slot actually paints (plus a 2x srcset) and
-                  re-encodes to AVIF/WebP. `priority` opts out of the default
-                  lazy loading -- the logo is above the fold on every page the
+              {/* width/height are the file's real 480x373, which is what
+                  reserves the right box before it loads; `sizes` is what this
+                  slot actually paints, so next/image resizes to 168px (plus a
+                  2x srcset) and re-encodes to AVIF/WebP rather than shipping
+                  the full width. `priority` opts out of the default lazy
+                  loading -- the logo is above the fold on every page the
                   header renders on, and is the LCP candidate on the wider
-                  viewports where it sits beside the search row. */}
+                  viewports where it sits beside the search row.
+
+                  alt="" because the enclosing link is already named by its
+                  aria-label: a link labelled twice is read out twice. */}
               <Image
-                src="/feedmyfrog.jpg"
-                alt="feedmyfrog"
-                width={168}
-                height={168}
+                src="/feedmyfrog.png"
+                alt=""
+                width={480}
+                height={373}
+                sizes="168px"
                 priority
                 style={{ width: '100%', height: 'auto', display: 'block' }}
               />
