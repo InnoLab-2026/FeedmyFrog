@@ -280,7 +280,7 @@ flowchart TD
 
     subgraph API["Route handlers"]
         SEND["POST /api/auth/send-link"]
-        HZ["GET /api/healthz<br/>edge runtime"]
+        HZ["GET /api/healthz<br/>nodejs, force-dynamic"]
     end
 
     LOGIN -->|"submit email"| SEND
@@ -316,7 +316,7 @@ flowchart TD
 | `/datenschutz` | page | `force-dynamic` | none |
 | `not-found` | page | dynamic — `await headers()` keeps the nonce valid | none |
 | `/api/auth/send-link` | route handler | dynamic | none |
-| `/api/healthz` | route handler | `runtime = 'edge'` | none |
+| `/api/healthz` | route handler | `runtime = 'nodejs'`, `force-dynamic` | none |
 | `/robots.txt` | metadata route | static, built by `src/app/robots.ts` | none |
 
 Everything that emits HTML is dynamic by necessity. The CSP nonce differs
@@ -336,7 +336,7 @@ src/
       meine/[id]/edit/EditListingForm.tsx
       meine/[id]/edit/EditListingPageHeader.tsx
     api/auth/send-link/route.ts     POST — issue a magic link
-    api/healthz/route.ts            GET — liveness probe, edge runtime
+    api/healthz/route.ts            GET — liveness probe, always dynamic
     verify/route.ts                 GET legacy redirect, POST consumes token
     verify-prompt/                  confirmation page + VerifyPromptCard
     login/                          page + LoginCard + LoginForm
@@ -416,7 +416,7 @@ contracts are in *Component architecture* in [`BUILD.MD`](BUILD.MD).
 | `/api/auth/send-link` | `POST` | JSON `{ email, lang? }`. `415` if the content type is not JSON, `400` on unparsable JSON or an invalid address, `403` `forbidden_domain` for an outside domain, `429` with `Retry-After` when a rate limit is hit, `202` on success. There is no user table, so a valid in-domain address always yields `202` and there is nothing to enumerate. |
 | `/verify` | `GET` | Legacy path for links from older mails. Redirects to `/verify-prompt?token=…` without touching the database, so a link-scanning bot cannot spend the token. Missing token → `/login?error=missing_token`. |
 | `/verify` | `POST` | Accepts `application/x-www-form-urlencoded` or JSON. Returns `403` unless the request is same-origin (`isSameOriginRequest`, see [Injection and CSRF posture](#injection-and-csrf-posture)); a form content type is a simple request, so CORS never gets a say. Otherwise consumes the token, creates the session cookie, `303` to `/`. Any failure is `303` to `/login?error=invalid_or_expired`. `runtime = 'nodejs'`, because it hashes with `node:crypto`. |
-| `/api/healthz` | `GET` | `{ "status": "ok" }` with `cache-control: no-store`. `runtime = 'edge'`, and it does not touch the database, so it reports process liveness rather than Neon's availability. |
+| `/api/healthz` | `GET` | `{ "status": "ok" }` with `cache-control: no-store`. It does not touch the database, so it reports process liveness rather than Neon's availability. `force-dynamic` is what makes that true: see [Health checks and crawler policy](#health-checks-and-crawler-policy). |
 
 ### Server Actions
 
@@ -1208,9 +1208,18 @@ Two first-party instruments, both inert off Vercel:
 
 ### Health checks and crawler policy
 
-`GET /api/healthz` returns `{"status":"ok"}` with `cache-control: no-store`
-on the edge runtime. It does not query the database, so it answers "is the
-process serving?" rather than "is Neon up?".
+`GET /api/healthz` returns `{"status":"ok"}` with `cache-control: no-store`.
+It does not query the database, so it answers "is the process serving?"
+rather than "is Neon up?".
+
+The route runs on the `nodejs` runtime and declares
+`dynamic = 'force-dynamic'`. It used the `edge` runtime until Next.js 16.3
+deprecated that, and the deprecation removed something the route was
+relying on: the edge runtime had opted it out of static generation
+implicitly. A handler that reads no request and performs no I/O is
+prerenderable, and a probe answered from a prerendered asset reports `ok`
+whether or not the function is serving. Rendering per request is the whole
+signal, so the opt-out is now explicit.
 
 `src/app/robots.ts` is a Next.js metadata route, turned into a static
 `/robots.txt` at build time and served from Vercel's edge. It disallows the
@@ -1406,8 +1415,6 @@ Open:
 - [ ] Cache the category-tab aggregation if the listing count grows; it is
       a full scan per marketplace render, see
       [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md)
-- [ ] Replace the `edge` runtime on `/api/healthz`. Next.js 16.3 deprecates
-      it and the build now warns on every deploy
 - [ ] Browser / end-to-end test layer
 - [ ] Internal pilot
 - [ ] Review for migration to university infrastructure
