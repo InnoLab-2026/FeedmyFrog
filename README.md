@@ -1247,13 +1247,27 @@ first run proved it: eslint 9 to 10, typescript 5 to 7 and vitest 4 to 5
 arrived as one pull request, and the whole thing failed lint on the
 typescript bump alone.
 
-Two ignores are deliberate. `@types/node` majors are held because Node 24
-is pinned by `.nvmrc` and by `engines`, so the types must not run ahead of
-the runtime. `typescript` majors are held because `eslint-config-next`
-bundles typescript-eslint, which refuses to load against TypeScript 7 and
-fails `npm run lint` outright; drop that entry once typescript-eslint ships
-support for TS 7.1 or later
-([issue 10940](https://github.com/typescript-eslint/typescript-eslint/issues/10940)).
+Three ignores are deliberate, each with the condition for removing it in
+the config comment.
+
+- **`@types/node` majors** are held because Node 24 is pinned by `.nvmrc`
+  and by `engines`, so the types must not run ahead of the runtime.
+- **`typescript` majors** are held because `eslint-config-next` bundles
+  typescript-eslint, which refuses to load against TypeScript 7 and fails
+  `npm run lint` outright. Drop the entry once typescript-eslint supports
+  TS 7.1 or later
+  ([issue 10940](https://github.com/typescript-eslint/typescript-eslint/issues/10940)).
+- **`eslint` majors** are held by the same package one layer deeper. The
+  `eslint-plugin-react` inside `eslint-config-next` still calls the
+  ESLint 9 context API that 10 removed, so every rule load throws
+  `contextOrFilename.getFilename is not a function`. Nothing here can fix
+  that; it needs a new `eslint-config-next`.
+
+The ESLint pin and the `brace-expansion` override are coupled, so move them
+together. ESLint 10 pulls minimatch 10, which requires `brace-expansion` 5
+and its named `expand` export, while the override forces 1.1.18 under
+`eslint` because ESLint 9's minimatch wants the 1.x default export. Bumping
+either alone breaks lint.
 
 `package.json` also carries an `overrides` block pinning transitive
 dependencies that had open advisories: `postcss`, `sharp`,
