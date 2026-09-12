@@ -526,7 +526,7 @@ sequenceDiagram
 Validator messages are short machine-readable codes
 (`title_too_short`, `forbidden_domain`, …), never prose. The server does
 not know the reader's language; the client maps `error_<code>` through
-i18next. Constraints: title 3–120 characters, description 10–2000, at
+i18next. Constraints: title 3–120 characters, description 10–400, at
 most 8 tags of at most 40 characters each, and `location` must be one of
 the twenty names in `PLACES` — there is no length rule because there is no
 free text.
@@ -575,6 +575,7 @@ is. Indexes, all defined in `src/db/schema.ts`:
 | `idx_listings_tags` | GIN `(tags)` | category tabs, `tags @> ARRAY[…]` — a btree cannot answer array containment at all |
 | `idx_listings_title_trgm` | GIN `(title gin_trgm_ops)` | `ILIKE '%q%'` search; a leading wildcard makes btree useless |
 | `idx_listings_desc_trgm` | GIN `(description gin_trgm_ops)` | the same, over the description |
+| `idx_listings_tags_trgm` | GIN `(listing_tags_text(tags) gin_trgm_ops)` | the same, over the tags, so a search that includes hashtags is still answered from an index |
 | `idx_magic_tokens_email` | btree | invalidating an address's outstanding tokens |
 | `idx_magic_tokens_expires` | btree | the expiry sweep |
 | `idx_rate_limits_key_created` | btree `(key, created_at)` | the windowed count in `checkAndConsume` |
@@ -582,7 +583,11 @@ is. Indexes, all defined in `src/db/schema.ts`:
 The trigram indexes require `pg_trgm`. `drizzle-kit generate` does not
 emit extension statements, so `CREATE EXTENSION IF NOT EXISTS pg_trgm;`
 is written by hand at the top of `drizzle/0002_*.sql` — **it must be put
-back if that migration is ever regenerated.**
+back if that migration is ever regenerated.** The same applies to
+`listing_tags_text()` in `drizzle/0004_*.sql`: `array_to_string` is only
+`STABLE` in the catalogue and so cannot appear in an index expression, and
+the `IMMUTABLE` wrapper that gets around that is a hand-written
+`CREATE FUNCTION` drizzle-kit will not re-emit either.
 
 `listings` matches the Figma `Listing` TypeScript interface field for
 field, so designer-owned components consume database rows with no mapping
@@ -600,21 +605,28 @@ it into SQL. Nothing is filtered in JavaScript.
 flowchart TD
     URL["/?mode=&cat=&q=&page=&per=&loc=&r=&near="] --> PARSE["Parse and clamp<br/>mode ∈ {need, offer}<br/>per ∈ {15,30,50}<br/>cat ≤ 40 chars, q ≤ 200 chars<br/>r ∈ {3,5,10,20} km"]
     PARSE --> PLACE["resolvePlaceParam(loc)<br/>name looked up server-side,<br/>never coordinates from the URL"]
-    PLACE --> WHERE["Build WHERE<br/>type = mode<br/>AND tags @> ARRAY[cat]<br/>AND (title ILIKE q OR description ILIKE q)<br/>AND withinRadius(place, r)"]
+    PLACE --> WHERE["Build WHERE<br/>type = mode<br/>AND tags @> ARRAY[cat]<br/>AND matchesQuery(q) — title, description or any tag<br/>AND withinRadius(place, r)"]
     WHERE --> BATCH["db.batch — one HTTPS round trip"]
     BATCH --> C1["COUNT(*) for page clamping"]
-    BATCH --> C2["unnest(tags), count(*) GROUP BY 1<br/>ORDER BY 2 DESC — category tabs"]
     BATCH --> C3["SELECT … ORDER BY created_at DESC<br/>LIMIT per OFFSET (requestedPage-1)*per"]
     C1 --> CLAMP{"requestedPage > totalPages?"}
     C3 --> CLAMP
     CLAMP -->|"no"| RENDER["Render Marketplace"]
     CLAMP -->|"yes"| REFETCH["One extra query at the clamped page"] --> RENDER
-    C2 --> RENDER
 ```
 
-- **Search** is a parameterized `ILIKE` over title and description, with
-  `\`, `%` and `_` escaped in the user's input so a typed wildcard is
-  matched literally.
+- **Search** is a parameterized `ILIKE` over title, description and the
+  tags, with `\`, `%` and `_` escaped in the user's input so a typed
+  wildcard is matched literally. The tag arm is two conjuncts
+  (`matchesQuery` in `src/db/filters.ts`): the joined-string form that
+  `idx_listings_tags_trgm` can serve, ANDed with an `EXISTS` over
+  `unnest(tags)`. The first is a strict superset of the second — a
+  substring of one tag is necessarily a substring of the tags joined, but
+  `['musik','mathe']` joins to `musik mathe`, which contains `ik ma` while
+  neither tag does — so the pair means exactly what the `EXISTS` means
+  while still starting from an index. On its own the `EXISTS` is a
+  correlated subquery no index can serve, and one unindexable arm turns
+  the whole `OR` into a sequential scan.
 - **Location** travels as a place *name*. The server looks it up in
   `CITY_COORDS`; an unknown name yields `undefined`, which drizzle's
   `and()` drops, so the filter is simply not applied rather than silently
@@ -773,7 +785,7 @@ flowchart TD
 
 `Marketplace.tsx` holds no filter state of its own. It receives
 `listings`, `totalCount`, `page`, `perPage`, `mode`, `category`, `query`,
-`categoryTags`, `place`, `radiusKm`, `approximate` and `email` as props,
+`place`, `radiusKm`, `approximate` and `email` as props,
 and every designer-owned child keeps the prop contract it had in Figma.
 Their callbacks are translated into router navigations:
 
@@ -875,10 +887,15 @@ are stored as plain German tag strings, because that is what ends up in
 `t(getCategoryTranslationKey(tag))`. The create form offers exactly these
 as quick-picks (at most 2 per listing, leaving room under the server's cap
 of 8 for free-form hashtags), and the marketplace renders exactly these as
-the always-present tabs, followed by every other tag actually in use,
-ranked by frequency. A free-form hashtag therefore always has a tab that
-filters to it. `src/data/icons.tsx` maps tags to icons, falling back to a
-search glyph.
+its tabs — nothing else. The tab strip is a closed, translated set, so it
+looks the same on every visit whatever anybody has tagged their listing
+with.
+
+A free-form hashtag therefore has no tab of its own. It is not unreachable:
+step 1 of the create form will not advance without at least one built-in
+category, so every listing sits under a tab, and the search box matches
+hashtags as well as titles and descriptions. `src/data/icons.tsx` maps tags
+to icons, falling back to a search glyph.
 
 ### Internationalisation
 
@@ -1116,6 +1133,7 @@ Current migrations:
 | `0001_aspiring_mandrill.sql` | `lat`/`lng` columns, `idx_listings_coords`, and a backfill that places existing rows with the same matching rule as `resolveLocation()` — longest name wins, so `Kirchentellinsfurt` is not matched by a shorter name inside it |
 | `0002_romantic_virginia_dare.sql` | `CREATE EXTENSION pg_trgm` (hand-written), the GIN tag index and the two trigram indexes |
 | `0003_bumpy_big_bertha.sql` | Location becomes a closed set: normalises legacy free text to the canonical name (hand-written, same matching rule as `0001`), then drops `lat`, `lng` and `idx_listings_coords` and adds `idx_listings_location`. Rows naming nowhere we know are deliberately left untouched — the file carries a query to list them |
+| `0004_tag_search_trgm.sql` | `listing_tags_text()`, an `IMMUTABLE` wrapper around `array_to_string` (hand-written — the plain function is only `STABLE` and cannot appear in an index expression), and the trigram index over it that keeps the tag arm of the search indexable |
 
 ### Rollback
 
@@ -1304,7 +1322,7 @@ university-operated infrastructure is therefore feasible.
 - [x] Art. 28 DPAs / terms accepted with Vercel, Neon, and Brevo
       (Marty Lauterbach)
 - [x] Server-side pagination and search — URL-driven filters, SQL
-      `ILIKE`/`@>`/`LIMIT`/`OFFSET`, DB-aggregated category tabs
+      `ILIKE`/`@>`/`LIMIT`/`OFFSET` over title, description and tags
       (Marty Lauterbach)
 - [x] Location filter: radius search over a closed place set,
       privacy-preserving GPS snapping (Marty Lauterbach)

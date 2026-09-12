@@ -1,6 +1,14 @@
 import { z } from 'zod';
 import { env } from '@/lib/env';
 import { PLACES } from '@/lib/geo';
+import {
+  DESCRIPTION_MAX_LENGTH,
+  DESCRIPTION_MIN_LENGTH,
+  TAG_MAX_LENGTH,
+  TAGS_MAX_COUNT,
+  TITLE_MAX_LENGTH,
+  TITLE_MIN_LENGTH,
+} from '@/lib/listingLimits';
 
 /**
  * Returns true iff `email`'s domain part is exactly `baseDomain` OR a
@@ -39,9 +47,9 @@ export const ListingType = z.enum(['need', 'offer'], { message: 'type_invalid' }
  */
 export const ListingInput = z.object({
   type:        ListingType,
-  title:       z.string().trim().min(3, 'title_too_short').max(120, 'title_too_long'),
-  description: z.string().trim().min(10, 'description_too_short').max(2000, 'description_too_long'),
-  tags:        z.array(z.string().trim().min(1, 'tag_empty').max(40, 'tag_too_long')).max(8, 'tags_too_many').default([]),
+  title:       z.string().trim().min(TITLE_MIN_LENGTH, 'title_too_short').max(TITLE_MAX_LENGTH, 'title_too_long'),
+  description: z.string().trim().min(DESCRIPTION_MIN_LENGTH, 'description_too_short').max(DESCRIPTION_MAX_LENGTH, 'description_too_long'),
+  tags:        z.array(z.string().trim().min(1, 'tag_empty').max(TAG_MAX_LENGTH, 'tag_too_long')).max(TAGS_MAX_COUNT, 'tags_too_many').default([]),
   /*
    * A choice from a closed list, not free text. This is the enforcement
    * boundary: the <select> in the forms is a convenience, but a request that

@@ -83,12 +83,15 @@ export const resources = {
       custom_tags_placeholder:
         'e.g. plants, urgent (comma-separated)',
       custom_tags_hint:
-        'Extra hashtags show on your card and become a category tab while a listing uses them.',
+        'Hashtags show on your card and are matched by the search box. They do not add category tabs.',
       next: 'Next',
       back: 'Back',
       details: 'Details',
       title: 'Title',
       description: 'Description',
+      // `used`, not `count`: i18next reserves `count` for plural selection and
+      // would look for chars_used_one / chars_used_other instead of this key.
+      chars_used: '{{used}} of {{max}} characters used.',
       location: 'Location',
       contact_and_preview: 'Contact & preview',
       email: 'Email',
@@ -168,13 +171,13 @@ export const resources = {
 
       // Listing validation error codes returned by server actions
       error_type_invalid: 'Please choose a valid type.',
-      error_title_too_short: 'Title must be at least 3 characters.',
-      error_title_too_long: 'Title must be at most 120 characters.',
-      error_description_too_short: 'Description must be at least 10 characters.',
-      error_description_too_long: 'Description must be at most 2000 characters.',
+      error_title_too_short: 'Title must be at least {{titleMin}} characters.',
+      error_title_too_long: 'Title must be at most {{titleMax}} characters.',
+      error_description_too_short: 'Description must be at least {{descriptionMin}} characters.',
+      error_description_too_long: 'Description must be at most {{descriptionMax}} characters.',
       error_tag_empty: 'Tags cannot be empty.',
-      error_tag_too_long: 'Each tag can be at most 40 characters.',
-      error_tags_too_many: 'You can add at most 8 tags.',
+      error_tag_too_long: 'Each tag can be at most {{tagMax}} characters.',
+      error_tags_too_many: 'You can add at most {{tagsMax}} tags.',
       error_location_invalid: 'Please choose a location from the list.',
       error_invalid_id: 'Invalid listing ID.',
       error_not_found: 'Listing not found.',
@@ -189,7 +192,7 @@ export const resources = {
       disclaimer_btn: 'Haftungsausschluss',
       account_menu: 'Kontomenü',
       manage_listings: 'Neue Anzeige aufgeben',
-      my_entries: 'Meine Einträge',
+      my_entries: 'Meine Anzeigen',
       logout: 'Abmelden',
 
       // App metadata
@@ -236,7 +239,7 @@ export const resources = {
       more_categories: 'Weitere Kategorien',
 
       // Pagination
-      items_per_page: 'Einträge pro Seite:',
+      items_per_page: 'Anzeigen pro Seite:',
       page_of: 'Seite {{current}} von {{total}}',
 
       // Listing card
@@ -265,12 +268,13 @@ export const resources = {
       custom_tags_placeholder:
         'z. B. Pflanzen, dringend (kommagetrennt)',
       custom_tags_hint:
-        'Zusätzliche Hashtags erscheinen auf Ihrer Karte und werden zum Kategorie-Tab, solange eine Anzeige sie verwendet.',
+        'Hashtags erscheinen auf der Karte und werden von der Suche gefunden. Sie werden nicht zu neuen Kategorien.',
       next: 'Weiter',
       back: 'Zurück',
       details: 'Details',
       title: 'Titel',
       description: 'Beschreibung',
+      chars_used: '{{used}} von {{max}} Zeichen verwendet.',
       location: 'Standort',
       contact_and_preview: 'Kontakt & Vorschau',
       email: 'E-Mail',
@@ -287,7 +291,7 @@ export const resources = {
       disclaimer_bullet1:
         'Nur Personen mit einer gültigen <domain>{{domain}}</domain> E-Mail-Adresse haben Zugang zu dieser Seite.',
       disclaimer_bullet2:
-        'Alle Personen mit einer gültigen <domain>{{domain}}</domain> E-Mail-Adresse sehen alle hier angezeigten Informationen und können eigene Suche/Biete-Einträge einreichen.',
+        'Alle Personen mit einer gültigen <domain>{{domain}}</domain> E-Mail-Adresse sehen alle hier angezeigten Informationen und können eigene Suche/Biete-Anzeigen einreichen.',
       disclaimer_bullet3: 'Es werden keine Logs gespeichert.',
 
       // Empty state
@@ -344,19 +348,19 @@ export const resources = {
       scroll_to_top: 'Nach oben',
 
       // Edit listing page
-      edit_listing_title: 'Eintrag bearbeiten',
+      edit_listing_title: 'Anzeige bearbeiten',
       tags_label: 'Tags (kommagetrennt)',
       save_changes: 'Änderungen speichern',
 
       // Listing validation error codes returned by server actions
       error_type_invalid: 'Bitte wählen Sie einen gültigen Typ.',
-      error_title_too_short: 'Der Titel muss mindestens 3 Zeichen lang sein.',
-      error_title_too_long: 'Der Titel darf höchstens 120 Zeichen lang sein.',
-      error_description_too_short: 'Die Beschreibung muss mindestens 10 Zeichen lang sein.',
-      error_description_too_long: 'Die Beschreibung darf höchstens 2000 Zeichen lang sein.',
+      error_title_too_short: 'Der Titel muss mindestens {{titleMin}} Zeichen lang sein.',
+      error_title_too_long: 'Der Titel darf höchstens {{titleMax}} Zeichen lang sein.',
+      error_description_too_short: 'Die Beschreibung muss mindestens {{descriptionMin}} Zeichen lang sein.',
+      error_description_too_long: 'Die Beschreibung darf höchstens {{descriptionMax}} Zeichen lang sein.',
       error_tag_empty: 'Schlagwörter dürfen nicht leer sein.',
-      error_tag_too_long: 'Jedes Schlagwort darf höchstens 40 Zeichen lang sein.',
-      error_tags_too_many: 'Sie können höchstens 8 Schlagwörter hinzufügen.',
+      error_tag_too_long: 'Jedes Schlagwort darf höchstens {{tagMax}} Zeichen lang sein.',
+      error_tags_too_many: 'Sie können höchstens {{tagsMax}} Schlagwörter hinzufügen.',
       error_location_invalid: 'Bitte wählen Sie einen Standort aus der Liste.',
       error_invalid_id: 'Ungültige Anzeigen-ID.',
       error_not_found: 'Anzeige nicht gefunden.',
@@ -439,12 +443,13 @@ export const resources = {
       custom_tags_placeholder:
         'p. ex. plantes, urgent (séparés par des virgules)',
       custom_tags_hint:
-        'Les hashtags supplémentaires apparaissent sur votre annonce et deviennent un onglet de catégorie tant qu’une annonce les utilise.',
+        'Les hashtags apparaissent sur votre annonce et sont pris en compte par la recherche. Ils ne créent pas d’onglet de catégorie.',
       next: 'Suivant',
       back: 'Retour',
       details: 'Détails',
       title: 'Titre',
       description: 'Description',
+      chars_used: '{{used}} caractères sur {{max}} utilisés.',
       location: 'Lieu',
       contact_and_preview: 'Contact et aperçu',
       email: 'E-mail',
@@ -518,13 +523,13 @@ export const resources = {
 
       // Listing validation error codes returned by server actions
       error_type_invalid: 'Veuillez choisir un type valide.',
-      error_title_too_short: 'Le titre doit comporter au moins 3 caractères.',
-      error_title_too_long: 'Le titre ne doit pas dépasser 120 caractères.',
-      error_description_too_short: 'La description doit comporter au moins 10 caractères.',
-      error_description_too_long: 'La description ne doit pas dépasser 2000 caractères.',
+      error_title_too_short: 'Le titre doit comporter au moins {{titleMin}} caractères.',
+      error_title_too_long: 'Le titre ne doit pas dépasser {{titleMax}} caractères.',
+      error_description_too_short: 'La description doit comporter au moins {{descriptionMin}} caractères.',
+      error_description_too_long: 'La description ne doit pas dépasser {{descriptionMax}} caractères.',
       error_tag_empty: 'Les mots-clés ne peuvent pas être vides.',
-      error_tag_too_long: 'Chaque mot-clé ne doit pas dépasser 40 caractères.',
-      error_tags_too_many: 'Vous pouvez ajouter 8 mots-clés au maximum.',
+      error_tag_too_long: 'Chaque mot-clé ne doit pas dépasser {{tagMax}} caractères.',
+      error_tags_too_many: 'Vous pouvez ajouter {{tagsMax}} mots-clés au maximum.',
       error_location_invalid: 'Veuillez choisir un lieu dans la liste.',
       error_invalid_id: "Identifiant d'annonce invalide.",
       error_not_found: 'Annonce introuvable.',
@@ -607,12 +612,13 @@ export const resources = {
       custom_tags_placeholder:
         'örn. bitkiler, acil (virgülle ayrılmış)',
       custom_tags_hint:
-        'Ek hashtag’ler kartınızda görünür ve bir ilan onları kullandığı sürece kategori sekmesi olur.',
+        'Hashtag’ler kartınızda görünür ve arama tarafından bulunur. Yeni kategori sekmesi oluşturmazlar.',
       next: 'İleri',
       back: 'Geri',
       details: 'Detaylar',
       title: 'Başlık',
       description: 'Açıklama',
+      chars_used: '{{max}} karakterden {{used}} karakter kullanıldı.',
       location: 'Konum',
       contact_and_preview: 'İletişim ve önizleme',
       email: 'E-posta',
@@ -686,13 +692,13 @@ export const resources = {
 
       // Listing validation error codes returned by server actions
       error_type_invalid: 'Lütfen geçerli bir tür seçin.',
-      error_title_too_short: 'Başlık en az 3 karakter olmalıdır.',
-      error_title_too_long: 'Başlık en fazla 120 karakter olabilir.',
-      error_description_too_short: 'Açıklama en az 10 karakter olmalıdır.',
-      error_description_too_long: 'Açıklama en fazla 2000 karakter olabilir.',
+      error_title_too_short: 'Başlık en az {{titleMin}} karakter olmalıdır.',
+      error_title_too_long: 'Başlık en fazla {{titleMax}} karakter olabilir.',
+      error_description_too_short: 'Açıklama en az {{descriptionMin}} karakter olmalıdır.',
+      error_description_too_long: 'Açıklama en fazla {{descriptionMax}} karakter olabilir.',
       error_tag_empty: 'Etiketler boş olamaz.',
-      error_tag_too_long: 'Her etiket en fazla 40 karakter olabilir.',
-      error_tags_too_many: 'En fazla 8 etiket ekleyebilirsiniz.',
+      error_tag_too_long: 'Her etiket en fazla {{tagMax}} karakter olabilir.',
+      error_tags_too_many: 'En fazla {{tagsMax}} etiket ekleyebilirsiniz.',
       error_location_invalid: 'Lütfen listeden bir konum seçin.',
       error_invalid_id: 'Geçersiz ilan kimliği.',
       error_not_found: 'İlan bulunamadı.',
@@ -776,12 +782,13 @@ export const resources = {
       custom_tags_placeholder:
         'p. ej. plantas, urgente (separadas por comas)',
       custom_tags_hint:
-        'Los hashtags adicionales aparecen en tu anuncio y se convierten en una pestaña de categoría mientras algún anuncio los use.',
+        'Los hashtags aparecen en tu anuncio y la búsqueda los tiene en cuenta. No crean pestañas de categoría.',
       next: 'Siguiente',
       back: 'Atrás',
       details: 'Detalles',
       title: 'Título',
       description: 'Descripción',
+      chars_used: '{{used}} de {{max}} caracteres utilizados.',
       location: 'Ubicación',
       contact_and_preview: 'Contacto y vista previa',
       email: 'Correo electrónico',
@@ -855,13 +862,13 @@ export const resources = {
 
       // Listing validation error codes returned by server actions
       error_type_invalid: 'Selecciona un tipo válido.',
-      error_title_too_short: 'El título debe tener al menos 3 caracteres.',
-      error_title_too_long: 'El título no puede superar los 120 caracteres.',
-      error_description_too_short: 'La descripción debe tener al menos 10 caracteres.',
-      error_description_too_long: 'La descripción no puede superar los 2000 caracteres.',
+      error_title_too_short: 'El título debe tener al menos {{titleMin}} caracteres.',
+      error_title_too_long: 'El título no puede superar los {{titleMax}} caracteres.',
+      error_description_too_short: 'La descripción debe tener al menos {{descriptionMin}} caracteres.',
+      error_description_too_long: 'La descripción no puede superar los {{descriptionMax}} caracteres.',
       error_tag_empty: 'Las etiquetas no pueden estar vacías.',
-      error_tag_too_long: 'Cada etiqueta puede tener como máximo 40 caracteres.',
-      error_tags_too_many: 'Puedes añadir como máximo 8 etiquetas.',
+      error_tag_too_long: 'Cada etiqueta puede tener como máximo {{tagMax}} caracteres.',
+      error_tags_too_many: 'Puedes añadir como máximo {{tagsMax}} etiquetas.',
       error_location_invalid: 'Por favor, elige una ubicación de la lista.',
       error_invalid_id: 'ID de anuncio no válido.',
       error_not_found: 'Anuncio no encontrado.',

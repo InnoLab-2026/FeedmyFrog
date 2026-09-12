@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { LANGUAGES, resources, type LangCode } from './translations';
+import { LISTING_LIMIT_VALUES } from '@/lib/listingLimits';
 
 /*
  * The guard rails the UI translations never had.
@@ -128,5 +129,46 @@ describe('translations', () => {
     const identical = Object.keys(table).filter((key) => table[key] === reference[key]);
 
     expect(identical.length).toBeLessThan(Object.keys(table).length / 2);
+  });
+});
+
+/*
+ * The error sentences quote the limits, and the numbers come from
+ * listingLimits via LISTING_LIMIT_VALUES rather than being typed into each
+ * language. That only holds while the names agree: a locale that writes
+ * `{{maxChars}}` renders the braces verbatim, and a key that names a value the
+ * forms do not pass renders them too. The placeholder test above compares the
+ * locales against each other; this one compares them against the code.
+ */
+describe('limit placeholders', () => {
+  const supplied = Object.keys(LISTING_LIMIT_VALUES);
+
+  it.each(LOCALES)('%s only names limit values the forms pass in', (code) => {
+    const unknown: string[] = [];
+
+    for (const [key, text] of Object.entries(entries(code))) {
+      if (!key.startsWith('error_')) continue;
+
+      for (const name of placeholders(text)) {
+        if (!supplied.includes(name)) unknown.push(`${key}: {{${name}}}`);
+      }
+    }
+
+    expect(unknown).toEqual([]);
+  });
+
+  it('states a limit in every error code that has one to state', () => {
+    const reference = entries(REFERENCE);
+
+    for (const key of [
+      'error_title_too_short',
+      'error_title_too_long',
+      'error_description_too_short',
+      'error_description_too_long',
+      'error_tag_too_long',
+      'error_tags_too_many',
+    ]) {
+      expect(placeholders(reference[key])).not.toEqual([]);
+    }
   });
 });
