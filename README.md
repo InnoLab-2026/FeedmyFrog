@@ -1235,9 +1235,25 @@ all, with the fact that all real content sits behind a session cookie.
 `npm audit` reports zero vulnerabilities, and
 [`.github/dependabot.yml`](.github/dependabot.yml) keeps it that way by
 opening weekly grouped pull requests for npm and monthly ones for the
-workflow actions. The groups exist because some packages have to move
-together: bumping `next` alone leaves `eslint-config-next` behind, and the
-lint step then resolves against a different Next.js than the build.
+workflow actions. The `next`, `react`, `drizzle` and `i18n` groups exist
+because those packages have to move together: bumping `next` alone leaves
+`eslint-config-next` behind, and the lint step then resolves against a
+different Next.js than the build.
+
+`dev-tooling` is the exception and takes minor and patch only. It is a
+bucket of unrelated tools rather than a set that moves together, so a
+grouped major traps the safe updates behind the one that cannot merge. The
+first run proved it: eslint 9 to 10, typescript 5 to 7 and vitest 4 to 5
+arrived as one pull request, and the whole thing failed lint on the
+typescript bump alone.
+
+Two ignores are deliberate. `@types/node` majors are held because Node 24
+is pinned by `.nvmrc` and by `engines`, so the types must not run ahead of
+the runtime. `typescript` majors are held because `eslint-config-next`
+bundles typescript-eslint, which refuses to load against TypeScript 7 and
+fails `npm run lint` outright; drop that entry once typescript-eslint ships
+support for TS 7.1 or later
+([issue 10940](https://github.com/typescript-eslint/typescript-eslint/issues/10940)).
 
 `package.json` also carries an `overrides` block pinning transitive
 dependencies that had open advisories: `postcss`, `sharp`,
