@@ -23,19 +23,8 @@ interface CreateListingFormProps {
   email: string;
 }
 
-/*
- * How many of the built-in categories one listing may carry. Kept well under
- * the server's overall cap of 8 tags (ListingInput in src/lib/validators.ts)
- * so there is room left for the free-form hashtags added in step 2.
- */
 const MAX_CATEGORIES = 2;
 
-/*
- * The confetti fountain: one [dx, dy] end point per piece, in pixels from the
- * launch point. Hoisted out of the component because it is a fixed piece of
- * choreography — rebuilding the array on every render would hand React 24 new
- * objects each time and change nothing on screen.
- */
 const CONFETTI_PIECES: ReadonlyArray<readonly [number, number]> = [
   [-30, -220], [30, -240], [-70, -180], [80, -200],
   [-10, -260], [50, -170], [-90, -210], [100, -230],
@@ -47,11 +36,6 @@ const CONFETTI_PIECES: ReadonlyArray<readonly [number, number]> = [
 
 const CONFETTI_COLORS = ['#FF3B30', '#007AFF', '#FFD60A', '#FF2D55', '#FF9F0A'];
 
-/*
- * How long the confirmation stays up before the redirect. Matches the confetti
- * animation; without motion there is nothing to wait for beyond long enough to
- * read the line.
- */
 const CELEBRATION_MS = 1800;
 const CELEBRATION_REDUCED_MS = 700;
 
@@ -69,12 +53,6 @@ export default function CreateListingForm({
   const router = useRouter();
   const reducedMotion = usePrefersReducedMotion();
 
-  /*
-   * The confirmation is keyed on the action's *result*, not on `pending`.
-   * `pending` is also true while a submission is on its way to being rejected,
-   * so celebrating on it told people their listing was published a moment
-   * before the form showed them why it was not.
-   */
   const published = state?.ok === true;
 
   useEffect(() => {
@@ -230,9 +208,6 @@ export default function CreateListingForm({
               {t('choose_tags')} *
             </label>
 
-            {/* The picker caps the selection at MAX_CATEGORIES. Say so, and
-                disable the unpicked buttons once the cap is reached — a
-                click that silently does nothing reads as a broken button. */}
             <p
               style={{
                 margin: '-6px 0 12px',
@@ -332,6 +307,16 @@ export default function CreateListingForm({
               onChange={(e) => setTitle(e.target.value)}
               style={inputStyle}
             />
+            <p
+              style={{
+                margin: '6px 0 0',
+                textAlign: 'right',
+                color: '#9a9a9a',
+                fontSize: '12px',
+              }}
+            >
+              {title.length}/120
+            </p>
           </div>
 
           <div style={{ marginBottom: '20px' }}>
@@ -345,12 +330,23 @@ export default function CreateListingForm({
               {t('description')} *
             </label>
             <textarea
+              className="listing-textarea"
               value={description}
-              maxLength={2000}
+              maxLength={400}
               rows={6}
               onChange={(e) => setDescription(e.target.value)}
               style={{ ...inputStyle, resize: 'vertical' }}
             />
+            <p
+              style={{
+                margin: '6px 0 0',
+                textAlign: 'right',
+                color: '#9a9a9a',
+                fontSize: '12px',
+              }}
+            >
+              {description.length}/400
+            </p>
           </div>
 
           <div>
@@ -627,10 +623,6 @@ export default function CreateListingForm({
             overflow: 'hidden',
           }}
         >
-          {/* Decoration only, and skipped entirely for anyone who asked for
-              reduced motion — two dozen pieces flying up the viewport is
-              exactly the kind of movement that setting is there to stop. The
-              confirmation itself stays either way. */}
           {!reducedMotion &&
             CONFETTI_PIECES.map(([dx, dy], i) => (
               <span
@@ -661,4 +653,3 @@ export default function CreateListingForm({
     </form>
   );
 }
-

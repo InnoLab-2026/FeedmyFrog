@@ -15,6 +15,8 @@ import LocationSearch, {
   type LocationFilter,
 } from '@/components/marketplace/LocationSearch';
 
+import CreateListingModal from '@/components/marketplace/CreateListingModal';
+
 interface HeaderProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
@@ -321,26 +323,10 @@ export default function Header({
 
             {showMyListingsButton && (
               <div>
-                <Link
-                  href="/new"
-                  className="inline-flex items-center justify-center"
-                  style={{
-                    gap: '8px',
-                    height: '44px',
-                    minHeight: '44px',
-                    padding: '0 18px',
-                    background: '#8DC63F',
-                    color: '#1a3200',
-                    border: '1px solid #8DC63F',
-                    borderRadius: '9px',
-                    fontSize: 'var(--fs-control-button)',
-                    fontWeight: 600,
-                    textDecoration: 'none',
-                  }}
-                >
-                  <Plus style={{ width: '18px', height: '18px' }} />
-                  {t('manage_listings')}
-                </Link>
+                <CreateListingModal
+                  email={email}
+                  label={t('manage_listings')}
+                />
               </div>
             )}
           </div>

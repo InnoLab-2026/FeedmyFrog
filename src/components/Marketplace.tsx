@@ -180,21 +180,19 @@ export default function Marketplace({
    * rest under "more categories".
    */
   const categories = useMemo<Category[]>(() => {
-    const extraTags = categoryTags.filter((tag) => !isStandardCategory(tag));
-
     return [
       {
         id: 'All',
         label: t('category_all'),
         icon: <Search className="w-4 h-4" />,
       },
-      ...[...STANDARD_CATEGORY_TAGS, ...extraTags].map((tag) => ({
+      ...STANDARD_CATEGORY_TAGS.map((tag) => ({
         id: tag,
         label: categoryLabel(tag, t),
         icon: iconFor(tag) ?? <Search className="w-4 h-4" />,
       })),
     ];
-  }, [categoryTags, t]);
+  }, [t]);
 
   // `isPlace` narrows the string from the URL to a member of PLACES before it
   // is used as a key, so an unknown `?loc=` yields no filter rather than an

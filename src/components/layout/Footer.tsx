@@ -20,7 +20,7 @@ export default function Footer() {
             className="hover:underline"
             style={{ fontWeight: 700, color: 'black' }}
           >
-            WayMakr
+            FeedmyFrog
           </a>{' '}
           2026
         </div>
