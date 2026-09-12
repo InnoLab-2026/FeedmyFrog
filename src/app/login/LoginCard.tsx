@@ -187,6 +187,7 @@ export default function LoginCard({
               this is the card's first visible line and the padding is
               already the gap. */}
           <p
+            data-testid="login-subtitle"
             style={{
               marginTop: 0,
               marginBottom: 0,

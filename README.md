@@ -1009,14 +1009,121 @@ can be syntactically valid and semantically wrong, and mocking the
 database would make exactly that class of bug invisible. It runs against
 a real engine instead.
 
-### End-to-End (E2E) Testing with Cypress
+### End-to-end, against a simulated production
 
-Browser E2E testing architecture established by **Meinhard Holzknecht**. E2E specifications reside in `cypress/e2e/`.
+Framework by **Meinhard Holzknecht**; specs in `cypress/e2e/`.
+
+The whole run is one script, so a CI failure reproduces with one command:
 
 ```bash
-npm run test:e2e      # Run Cypress E2E tests headless (cypress run)
-npm run cypress:open  # Open interactive Cypress Test Runner UI
+./scripts/local-postgres.sh start   # a throwaway cluster (CI uses a service container)
+./scripts/e2e.sh                    # migrate, seed, proxy, build, start, cypress
+./scripts/local-postgres.sh stop    # delete it again
 ```
+
+It runs against `next build` output served by `next start` — the artefact
+that deploys, not the dev server — with a real PostgreSQL behind it and
+the real migrations applied to it. Nothing is mocked.
+
+**The database.** `@neondatabase/serverless` does not speak the PostgreSQL
+wire protocol: it POSTs SQL to an HTTP endpoint Neon operates. So pointing
+`DATABASE_URL` at a local Postgres is not enough, and swapping in
+`node-postgres` for tests would mean testing a data layer production never
+runs — and would not work anyway, because `src/app/(auth)/page.tsx` uses
+`db.batch()`, which that driver has no equivalent for.
+
+`scripts/neon-http-proxy.mjs` closes the gap from the other side: it
+answers the Neon HTTP protocol and executes against a plain Postgres. The
+app under test keeps its own driver, its own batching and its own query
+paths, and only the far end of the HTTP call is local. `NEON_HTTP_ENDPOINT`
+is what points the driver at it — read once at module load in
+`src/db/client.ts`, absent in every deployed environment, and opt-in so no
+misconfiguration can redirect a deployed app's queries.
+
+One detail that is quiet when wrong: the suite runs as `NODE_ENV=production`,
+so the session cookie is `__Host-session`, not `session`. `next build` bakes
+`NODE_ENV` into the edge middleware while the Node-side session module reads
+it at runtime, so forcing development leaves the two looking for different
+cookies and every authenticated test redirects to `/login` with nothing in
+the logs to explain it.
+
+**Signing in.** There is no endpoint that hands out a session, and there
+must not be: one that mints a valid cookie for an unauthenticated `GET` is
+an authentication bypass in every environment where the guard on it happens
+not to hold, and it is reachable by cross-site `GET` besides. The Cypress
+config signs the JWT itself in `setupNodeEvents`, where `AUTH_SECRET`
+already lives, and plants it as a cookie. The payload satisfies the same
+`Payload` schema `src/lib/session.ts` verifies, and the user id is derived
+from the email exactly as `/verify` derives it — so the session names the
+user the seed inserted rows for.
+
+**What the suite covers.** The auth redirects, the security headers, the
+magic-link hand-off, the static assets, and one full journey: open the
+create dialog, fill the three-step wizard, publish, and find the listing on
+the marketplace and again on `/meine`. Plus the rejection path, because the
+confirmation overlay was once keyed on the form being in flight rather than
+on the result, and celebrated listings that were about to be refused.
+
+Tests that asserted a browser preserves a query string, or that a page has
+a `<body>`, were removed rather than kept: a test that cannot fail reads as
+coverage the repository does not have. The filtering they claimed to cover
+is held down by `src/db/filters.test.ts`.
+
+#### Why this cannot reach production
+
+The suite runs a real build against a real database, so it is worth being
+precise about what stops it running against *the* database, and what an
+attacker who opens a pull request can do with it.
+
+**The job holds no production credential.** The `e2e` job in
+`.github/workflows/test.yml` reads no repository secret at all, and that is
+checkable rather than asserted: `grep -n 'secrets\.' .github/workflows/test.yml`
+comes back empty. Every value it needs is a literal in the file: a throwaway `AUTH_SECRET`
+of sixty-four zeros, and a `POSTGRES_URL` pointing at its own service
+container. There is no Neon URL and no Brevo key anywhere in the job, so
+there is nothing to leak and nothing to misfire against. A `AUTH_SECRET`
+that were a real secret would be the bug, not the safeguard.
+
+**Forks cannot reach secrets anyway.** The workflow triggers on
+`pull_request`, never `pull_request_target`. `pull_request` runs a fork's
+code with a read-only token and no secrets; `pull_request_target` would run
+it with this repository's permissions and secrets, which is the standard
+way CI gets hijacked. `permissions: contents: read` is set explicitly
+rather than inherited.
+
+**Actions are pinned to commits.** A tag is a pointer its owner can move,
+so an action referenced by tag is a promise to run whatever that tag names
+on the morning the job happens to run. Each `uses:` names a SHA, with the
+version in a comment beside it.
+
+**The database is local, checked three times.** `POSTGRES_URL` is the one
+overridable setting, and it is asserted to be a loopback host in
+`scripts/e2e.sh` before the first migration, in `scripts/seed-e2e.ts`
+before it truncates, and in `scripts/neon-http-proxy.mjs` before it accepts
+a connection. Three checks because all three can be run on their own. The
+proxy also binds `127.0.0.1` rather than `0.0.0.0` — it executes SQL with
+no authentication, which is only tolerable because nothing off the machine
+can reach it — and it ignores the connection string in the request headers,
+so a request cannot point it at a different server.
+
+**There is no real data to expose.** The CI database is created empty by
+the service container on every run and destroyed with the runner. The only
+rows in it are the fixtures in `cypress/fixtures/e2e-user.ts`. Failure
+screenshots are uploaded, and they are screenshots of that.
+
+**The one production-code hook is fail-closed.** `NEON_HTTP_ENDPOINT` is
+what points the driver at the proxy, and redirecting a database driver is
+the ability to read every query and forge every answer — so
+`src/db/httpEndpoint.ts` treats it as a capability rather than a setting.
+Absent means normal, which is what production is. Present on Vercel throws
+and the process refuses to boot, whatever the value says, because a
+deployment has no business redirecting its own database traffic. Present
+anywhere else, it must resolve to a loopback host, so it can never be a
+route for data to leave the machine. Anything rejected throws at module
+load rather than being ignored, because an override that silently does
+nothing is how an operator ends up wrong about where their queries go.
+`src/db/httpEndpoint.test.ts` holds each of those rules down, including the
+near-misses (`localhost.evil.example.com`, `169.254.169.254`).
 
 ## DevOps
 
@@ -1026,22 +1133,34 @@ npm run cypress:open  # Open interactive Cypress Test Runner UI
 pull request:
 
 ```mermaid
-flowchart LR
-    PR["Push to main / pull request"] --> CO["actions/checkout@v4"]
-    CO --> NODE["actions/setup-node@v4<br/>node-version-file: .nvmrc, npm cache"]
-    NODE --> CI["npm ci"]
-    CI --> TC["npm run typecheck"]
-    TC --> LT["npm run lint"]
-    LT --> UT["npm test"]
+flowchart TD
+    PR["Push to main / pull request"] --> U["job: unit"]
+    PR --> E["job: e2e"]
+
+    U --> UCI["npm ci<br/>CYPRESS_INSTALL_BINARY=0"]
+    UCI --> TC["npm run typecheck"] --> LT["npm run lint"] --> UT["npm test"]
+
+    E --> PG[("service: postgres:16-alpine<br/>health-gated")]
+    PG --> ECI["npm ci + cached Cypress binary"]
+    ECI --> SH["scripts/e2e.sh"]
+    SH --> MIG["drizzle-kit migrate"] --> SEED["seed one user, two listings"]
+    SEED --> PROXY["neon-http proxy :5433"]
+    PROXY --> BUILD["next build && next start"]
+    BUILD --> CY["cypress run"]
+
     UT --> OK["Green — mergeable"]
-    TC -.->|"fail"| RED["Red"]
-    LT -.->|"fail"| RED
-    UT -.->|"fail"| RED
+    CY --> OK
+    CY -.->|"fail"| ART["screenshots uploaded"]
 ```
 
-The job is named *Typecheck, lint & unit tests* and runs on
-`ubuntu-latest`. All three steps must pass before a pull request is
-merged. Node comes from `.nvmrc`, so CI and local development cannot
+Two jobs, in parallel. **unit** is typecheck, lint and Vitest; it skips the
+Cypress binary download, which is ~300 MB it has no use for. **e2e** brings
+up a PostgreSQL service container and hands the whole run to
+`scripts/e2e.sh` — the same script a developer runs locally, so a red run
+reproduces with one command rather than by reading this workflow and doing
+it by hand. Screenshots are uploaded only when it fails; videos are off.
+
+Node comes from `.nvmrc` in both, so CI and local development cannot
 drift.
 
 ### Deployment pipeline

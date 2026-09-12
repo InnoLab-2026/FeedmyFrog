@@ -51,3 +51,6 @@ Waymakrdesignfigma-main.zip
 # Python bytecode (scripts/)
 __pycache__/
 *.py[cod]
+
+# Local e2e database cluster (scripts/local-postgres.sh)
+/.e2e-postgres
