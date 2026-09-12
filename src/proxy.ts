@@ -14,8 +14,10 @@ const COOKIE = process.env.NODE_ENV === 'production' ? '__Host-session' : 'sessi
 /** Pinned so the token header can never choose the verification algorithm. */
 const JWT_OPTIONS: JWTVerifyOptions = { clockTolerance: 30, algorithms: ['HS256'] };
 
-// Routes that require a valid session (the (auth) route group).
-const PROTECTED = [/^\/$/, /^\/new$/, /^\/meine(\/|$)/];
+// Routes that require a valid session — one entry per path in the (auth)
+// route group. Kept in step with it: an entry for a route that no longer
+// exists reads as coverage this list is not actually providing.
+const PROTECTED = [/^\/$/, /^\/meine(\/|$)/];
 
 // Per-request nonce CSP. `'strict-dynamic'` lets Next.js's nonce-carrying
 // bootstrap scripts load the scripts they inject; `'self'` remains as a

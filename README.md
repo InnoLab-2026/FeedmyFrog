@@ -1,4 +1,4 @@
-# FeedmyFrog — Reutlingen University Connect
+# FeedmyFrog
 
 Internal university platform for students and staff of Reutlingen
 University. Members post *Suche* (need) and *Biete* (offer) listings for
@@ -8,13 +8,20 @@ off-platform by mail. Every page that renders listing data is behind
 authentication, so the address is only ever visible to a closed
 community of verified university members.
 
-Three names appear in this repository and all three are correct:
+The product is called **FeedmyFrog** everywhere a reader can see it: the
+page titles, the login and verify headings, the footer, and the display
+name on the magic-link mail all read `APP_NAME` in `src/constants.ts`.
+It matches the domain the mail is sent from, which is the point — a
+display name unrelated to its sending domain is the shape of a phishing
+mail, and the magic-link mail is the one that asks somebody to click a
+link and be signed in.
 
-| Name | Where it is used |
-|------|------------------|
-| `FeedmyFrog` | GitHub repository, production domain `feedmyfrog.click`, OTel service name |
-| `Reutlingen University Connect` | product name shown to users — `APP_NAME` in `src/constants.ts` |
-| `dienstleistungs-exchange` | npm package name in `package.json` |
+One internal name has not followed: `dienstleistungs-exchange`, the npm
+package name in `package.json`. It is never shown to a user.
+
+Hochschule Reutlingen is named as the responsible body in the Impressum
+and the Datenschutzerklärung, which is where it belongs; `app_description`
+says what the platform is.
 
 Production: <https://feedmyfrog.click>
 
@@ -130,7 +137,7 @@ flowchart TD
     REQ["Incoming request"] --> MATCH{"Matches the proxy matcher?<br/>excludes /api, /_next/static, /_next/image,<br/>favicon, svg/png/ico/jpg/jpeg/webp/txt/xml,<br/>and router prefetches"}
     MATCH -->|"no"| PASS["Served without proxy<br/>no nonce needed"]
     MATCH -->|"yes"| NONCE["Generate nonce<br/>build CSP string"]
-    NONCE --> PROT{"Protected path?<br/>/ , /new , /meine/*"}
+    NONCE --> PROT{"Protected path?<br/>/ , /meine/*"}
 
     PROT -->|"no"| FWD
     PROT -->|"yes"| COOKIE{"Session cookie present?"}
@@ -171,7 +178,6 @@ flowchart TD
 
     subgraph Auth["(auth) route group — session required"]
         HOME["/<br/>Marketplace<br/>mode, categories, search,<br/>location radius, pagination"]
-        NEW["/new<br/>CreateListingForm<br/>two-step wizard"]
         MINE["/meine<br/>MyListingsPageContent<br/>own listings + modal create"]
         EDIT["/meine/[id]/edit<br/>EditListingForm"]
     end
@@ -186,13 +192,13 @@ flowchart TD
     VERIFY -->|"GET legacy link"| VP
     VP -->|"POST /verify → 303"| HOME
 
-    HOME -->|"Post a new listing"| NEW
+    HOME -->|"Post a new listing"| MODAL["CreateListingModal<br/>CreateListingForm<br/>three-step wizard"]
     HOME -->|"account menu"| MINE
-    NEW -->|"published, after confetti"| HOME
+    MINE -->|"Create listing"| MODAL
+    MODAL -->|"published, after confetti"| HOME
     MINE -->|"Edit"| EDIT
     EDIT -->|"saved"| MINE
     MINE -->|"back to overview"| HOME
-    MINE -->|"Create listing modal"| MINE
 
     HOME -->|"footer"| IMP
     HOME -->|"footer"| DS
@@ -207,7 +213,6 @@ Route inventory, with how each one renders:
 | Route | Kind | Rendering | Session |
 |-------|------|-----------|---------|
 | `/` | page | `force-dynamic` | required |
-| `/new` | page | dynamic — `requireSession()` reads cookies | required |
 | `/meine` | page | `force-dynamic` | required |
 | `/meine/[id]/edit` | page | `force-dynamic` | required |
 | `/login` | page | dynamic — reads `searchParams` and the language cookie | none |
@@ -232,8 +237,6 @@ src/
     (auth)/                         auth-gated route group
       layout.tsx                    session backstop + Footer
       page.tsx                      marketplace, SQL filter/pagination
-      new/page.tsx                  create listing
-      new/NewListingPageHeader.tsx
       meine/page.tsx                own listings
       meine/[id]/edit/page.tsx      edit own listing
       meine/[id]/edit/EditListingForm.tsx
@@ -768,12 +771,12 @@ flowchart TD
 
     AL --> MLP["MyListingsPageContent (client)"]
     MLP --> MLH["MyListingsHeader"]
-    MLP --> CLM["CreateListingModal → CreateListingForm"]
+    MLP --> CLM
     MLP --> LCO["ListingCard with ownerActions:<br/>Edit link + delete form"]
 
-    AL --> NEWP["new/page.tsx (server)"] --> CLF["CreateListingForm (client)<br/>two-step wizard, confetti"]
+    HDR --> CLM["CreateListingModal (client)<br/>dialog: focus trap, Escape<br/>→ CreateListingForm<br/>three-step wizard, confetti"]
     AL --> EDP["meine/[id]/edit (server)"] --> ELF["EditListingForm (client)"]
-    CLF --> KPD["PlaceSelect<br/>closed dropdown"]
+    CLM --> KPD["PlaceSelect<br/>closed dropdown"]
     ELF --> KPD
 
     LOGINP --> LCARD["LoginCard (client)<br/>HoppingFrog, links"] --> LFORM["LoginForm<br/>fetch → /api/auth/send-link"]
@@ -1187,7 +1190,7 @@ up?".
 `/robots.txt` at build time and served from Vercel's edge. It disallows
 the 46 named AI/LLM/agent crawler user-agents in `AI_CRAWLERS` site-wide, and gives the wildcard
 rule access only to `/login`, `/impressum` and `/datenschutz` while
-disallowing `/`, `/meine/`, `/new`, `/verify`, `/verify-prompt` and
+disallowing `/`, `/meine/`, `/verify`, `/verify-prompt` and
 `/api/`. Because `robots.txt` is only advisory, it is paired with the
 `X-Robots-Tag: noai, noimageai` response header and, above all, with the
 fact that all real content sits behind a session cookie.
