@@ -40,7 +40,7 @@ export const ListingType = z.enum(['need', 'offer'], { message: 'type_invalid' }
 export const ListingInput = z.object({
   type:        ListingType,
   title:       z.string().trim().min(3, 'title_too_short').max(120, 'title_too_long'),
-  description: z.string().trim().min(10, 'description_too_short').max(2000, 'description_too_long'),
+  description: z.string().trim().min(10, 'description_too_short').max(400, 'description_too_long'),
   tags:        z.array(z.string().trim().min(1, 'tag_empty').max(40, 'tag_too_long')).max(8, 'tags_too_many').default([]),
   /*
    * A choice from a closed list, not free text. This is the enforcement

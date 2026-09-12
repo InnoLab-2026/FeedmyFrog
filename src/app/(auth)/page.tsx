@@ -80,6 +80,10 @@ export default async function HomePage({
       ? or(
           ilike(listings.title, likePattern(query)),
           ilike(listings.description, likePattern(query)),
+          sql`exists (
+            select 1 from unnest(${listings.tags}) as tag
+            where tag ilike ${likePattern(query)}
+          )`,
         )
       : undefined,
 

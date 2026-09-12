@@ -8,17 +8,18 @@ import CreateListingForm from '@/components/marketplace/CreateListingForm';
 
 interface CreateListingModalProps {
   email: string;
+  label?: string;
 }
 
 export default function CreateListingModal({
   email,
+  label,
 }: CreateListingModalProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      {/* Button auf Meine Anzeigen */}
       <button
         type="button"
         onClick={() => setOpen(true)}
@@ -37,7 +38,7 @@ export default function CreateListingModal({
         }}
       >
         <Plus style={{ width: '16px', height: '16px' }} />
-        {t('create_listing')}
+        {label ?? t('create_listing')}
       </button>
 
       {/* Popup */}
@@ -62,6 +63,7 @@ export default function CreateListingModal({
               maxWidth: '760px',
               maxHeight: '90vh',
               overflowY: 'auto',
+              scrollbarWidth: 'none',
               background: 'white',
               border: '1px solid rgba(47,47,47,0.18)',
               borderRadius: '18px',
@@ -85,7 +87,7 @@ export default function CreateListingModal({
                   fontWeight: 700,
                 }}
               >
-                {t('create_listing_title')}
+                {t('create_listing')}
               </h1>
 
               <button

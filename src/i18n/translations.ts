@@ -171,7 +171,7 @@ export const resources = {
       error_title_too_short: 'Title must be at least 3 characters.',
       error_title_too_long: 'Title must be at most 120 characters.',
       error_description_too_short: 'Description must be at least 10 characters.',
-      error_description_too_long: 'Description must be at most 2000 characters.',
+      error_description_too_long: 'Description must be at most 400 characters.',
       error_tag_empty: 'Tags cannot be empty.',
       error_tag_too_long: 'Each tag can be at most 40 characters.',
       error_tags_too_many: 'You can add at most 8 tags.',
@@ -236,7 +236,7 @@ export const resources = {
       more_categories: 'Weitere Kategorien',
 
       // Pagination
-      items_per_page: 'Einträge pro Seite:',
+      items_per_page: 'Anzeigen pro Seite:',
       page_of: 'Seite {{current}} von {{total}}',
 
       // Listing card
@@ -265,7 +265,7 @@ export const resources = {
       custom_tags_placeholder:
         'z. B. Pflanzen, dringend (kommagetrennt)',
       custom_tags_hint:
-        'Zusätzliche Hashtags erscheinen auf Ihrer Karte und werden zum Kategorie-Tab, solange eine Anzeige sie verwendet.',
+      'Hashtags erscheinen auf der Karte und in der Suche. Sie werden keine neuen Kategorien.',   
       next: 'Weiter',
       back: 'Zurück',
       details: 'Details',
@@ -353,7 +353,7 @@ export const resources = {
       error_title_too_short: 'Der Titel muss mindestens 3 Zeichen lang sein.',
       error_title_too_long: 'Der Titel darf höchstens 120 Zeichen lang sein.',
       error_description_too_short: 'Die Beschreibung muss mindestens 10 Zeichen lang sein.',
-      error_description_too_long: 'Die Beschreibung darf höchstens 2000 Zeichen lang sein.',
+      error_description_too_long: 'Die Beschreibung darf höchstens 400 Zeichen lang sein.',
       error_tag_empty: 'Schlagwörter dürfen nicht leer sein.',
       error_tag_too_long: 'Jedes Schlagwort darf höchstens 40 Zeichen lang sein.',
       error_tags_too_many: 'Sie können höchstens 8 Schlagwörter hinzufügen.',
@@ -521,7 +521,7 @@ export const resources = {
       error_title_too_short: 'Le titre doit comporter au moins 3 caractères.',
       error_title_too_long: 'Le titre ne doit pas dépasser 120 caractères.',
       error_description_too_short: 'La description doit comporter au moins 10 caractères.',
-      error_description_too_long: 'La description ne doit pas dépasser 2000 caractères.',
+      error_description_too_long: 'La description ne doit pas dépasser 400 caractères.',
       error_tag_empty: 'Les mots-clés ne peuvent pas être vides.',
       error_tag_too_long: 'Chaque mot-clé ne doit pas dépasser 40 caractères.',
       error_tags_too_many: 'Vous pouvez ajouter 8 mots-clés au maximum.',
@@ -689,7 +689,7 @@ export const resources = {
       error_title_too_short: 'Başlık en az 3 karakter olmalıdır.',
       error_title_too_long: 'Başlık en fazla 120 karakter olabilir.',
       error_description_too_short: 'Açıklama en az 10 karakter olmalıdır.',
-      error_description_too_long: 'Açıklama en fazla 2000 karakter olabilir.',
+      error_description_too_long: 'Açıklama en fazla 400 karakter olabilir.',
       error_tag_empty: 'Etiketler boş olamaz.',
       error_tag_too_long: 'Her etiket en fazla 40 karakter olabilir.',
       error_tags_too_many: 'En fazla 8 etiket ekleyebilirsiniz.',
@@ -858,7 +858,7 @@ export const resources = {
       error_title_too_short: 'El título debe tener al menos 3 caracteres.',
       error_title_too_long: 'El título no puede superar los 120 caracteres.',
       error_description_too_short: 'La descripción debe tener al menos 10 caracteres.',
-      error_description_too_long: 'La descripción no puede superar los 2000 caracteres.',
+      error_description_too_long: 'La descripción no puede superar los 400 caracteres.',
       error_tag_empty: 'Las etiquetas no pueden estar vacías.',
       error_tag_too_long: 'Cada etiqueta puede tener como máximo 40 caracteres.',
       error_tags_too_many: 'Puedes añadir como máximo 8 etiquetas.',
