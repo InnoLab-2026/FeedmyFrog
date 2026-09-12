@@ -12,7 +12,7 @@ interface CreateListingModalProps {
   /**
    * Text on the trigger. Defaults to `create_listing` ("Create listing"); the
    * header passes `manage_listings` ("Post a new listing") so the homepage CTA
-   * keeps the wording it had when it was a link to /new.
+   * keeps the wording it had as a link.
    */
   label?: string;
 }
@@ -116,14 +116,15 @@ export default function CreateListingModal({
   }
 
   /*
-   * On a dedicated page the form navigated to '/' when the listing was
-   * published, and the page went away with it. In a modal nothing goes away:
-   * `open` is this component's state and the celebration overlay is keyed on
-   * the action's result, so both would still be there after the navigation --
-   * a full-screen "Quak" with no dismiss control on top of a modal that never
-   * closed. So the form reports the publish instead and the modal closes,
-   * which unmounts the form and clears its fields with it; `router.refresh()`
-   * is what brings the new listing into the list behind.
+   * What the form does when a listing is published: nothing on its own, it
+   * calls this. Closing unmounts the form, which is also what clears its
+   * fields for next time, and `router.refresh()` is what brings the new
+   * listing into the list behind.
+   *
+   * The form used to navigate to '/' itself. In a modal nothing goes away on
+   * a navigation -- `open` is this component's state and the celebration is
+   * keyed on the action's result -- so that left a full-screen overlay with
+   * no dismiss control on top of a modal that never closed.
    */
   /*
    * `useCallback`, because the form holds this in a `useEffect` dependency

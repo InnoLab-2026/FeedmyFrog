@@ -52,10 +52,12 @@ OUT = Path("public/feedmyfrog.png")
 # the surrounding pixels a shade or two below that, so the cut is not at 255.
 WHITE = 238
 
-# Twice the 140 CSS px the mail asks for, so it still resolves on a 2x
-# display. Larger than that is bytes nobody sees, and this one is fetched
-# again every time somebody opens the mail.
-TARGET_WIDTH = 280
+# Twice the largest size anything paints this at: the login card, at 220 CSS
+# px. next/image resizes it down for the header (168) and the verify page
+# (140) and re-encodes to AVIF/WebP, so only the mail fetches this file as it
+# is, and 480 gives the mail's 140 px slot more than it needs. Larger than
+# this is bytes nobody sees.
+TARGET_WIDTH = 480
 
 
 def background_mask(image: Image.Image) -> bytearray:
