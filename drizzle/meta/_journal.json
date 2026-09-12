@@ -29,6 +29,13 @@
       "when": 1788510578836,
       "tag": "0003_bumpy_big_bertha",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789514400000,
+      "tag": "0004_tag_search_trgm",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useEffect, useId, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
@@ -18,13 +18,36 @@ import {
 } from '@/data/categories';
 import PlaceSelect from '@/components/marketplace/PlaceSelect';
 import { usePrefersReducedMotion } from '@/lib/useReducedMotion';
+import {
+  DESCRIPTION_MAX_LENGTH,
+  LISTING_LIMIT_VALUES,
+  TITLE_MAX_LENGTH,
+} from '@/lib/listingLimits';
 
 interface CreateListingFormProps {
   email: string;
+  /**
+   * Called instead of navigating to '/' once the listing is published and the
+   * confirmation has been shown. The dedicated /new page wants the navigation;
+   * the modal wants to close itself, because nothing unmounts it otherwise.
+   */
+  onPublished?: () => void;
 }
 
+/*
+ * How many of the built-in categories one listing may carry. Kept well under
+ * the server's overall cap of TAGS_MAX_COUNT tags (ListingInput in
+ * src/lib/validators.ts) so there is room left for the free-form hashtags
+ * added in step 2.
+ */
 const MAX_CATEGORIES = 2;
 
+/*
+ * The confetti fountain: one [dx, dy] end point per piece, in pixels from the
+ * launch point. Hoisted out of the component because it is a fixed piece of
+ * choreography — rebuilding the array on every render would hand React 24 new
+ * objects each time and change nothing on screen.
+ */
 const CONFETTI_PIECES: ReadonlyArray<readonly [number, number]> = [
   [-30, -220], [30, -240], [-70, -180], [80, -200],
   [-10, -260], [50, -170], [-90, -210], [100, -230],
@@ -36,11 +59,17 @@ const CONFETTI_PIECES: ReadonlyArray<readonly [number, number]> = [
 
 const CONFETTI_COLORS = ['#FF3B30', '#007AFF', '#FFD60A', '#FF2D55', '#FF9F0A'];
 
+/*
+ * How long the confirmation stays up before the form hands back. Matches the
+ * confetti animation; without motion there is nothing to wait for beyond long
+ * enough to read the line.
+ */
 const CELEBRATION_MS = 1800;
 const CELEBRATION_REDUCED_MS = 700;
 
 export default function CreateListingForm({
   email,
+  onPublished,
 }: CreateListingFormProps) {
   const { t } = useTranslation();
 
@@ -53,18 +82,31 @@ export default function CreateListingForm({
   const router = useRouter();
   const reducedMotion = usePrefersReducedMotion();
 
+  /*
+   * The confirmation is keyed on the action's *result*, not on `pending`.
+   * `pending` is also true while a submission is on its way to being rejected,
+   * so celebrating on it told people their listing was published a moment
+   * before the form showed them why it was not.
+   */
   const published = state?.ok === true;
 
   useEffect(() => {
     if (!published) return;
 
+    /*
+     * Whoever renders the form decides what "done" means. On /new the form is
+     * the page, so the page navigates away and takes the celebration with it.
+     * Inside the modal it must not navigate at all: pushing '/' while already
+     * on '/' leaves the modal open with the overlay still on top of it, since
+     * neither is state this component owns.
+     */
     const timer = window.setTimeout(
-      () => router.push('/'),
+      () => (onPublished ? onPublished() : router.push('/')),
       reducedMotion ? CELEBRATION_REDUCED_MS : CELEBRATION_MS,
     );
 
     return () => window.clearTimeout(timer);
-  }, [published, reducedMotion, router]);
+  }, [published, reducedMotion, router, onPublished]);
 
   const [step, setStep] = useState(1);
 
@@ -103,6 +145,25 @@ export default function CreateListingForm({
     title.trim().length > 0 &&
     description.trim().length > 0 &&
     location.trim().length > 0;
+
+  /*
+   * Ids for the two counted fields, so the labels are actually attached to
+   * their controls and the counters can be named as their descriptions.
+   *
+   * `useId` rather than a literal: /meine mounts two CreateListingModal
+   * instances (MyListingsPageContent renders the trigger above the list and
+   * again in the empty state), and a hardcoded id would point both labels at
+   * whichever copy the document happened to hold first.
+   */
+  const titleFieldId = useId();
+  const descriptionFieldId = useId();
+
+  const counterStyle: React.CSSProperties = {
+    margin: '6px 0 0',
+    textAlign: 'right',
+    color: '#9a9a9a',
+    fontSize: 'var(--fs-2xs)',
+  };
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
@@ -208,6 +269,9 @@ export default function CreateListingForm({
               {t('choose_tags')} *
             </label>
 
+            {/* The picker caps the selection at MAX_CATEGORIES. Say so, and
+                disable the unpicked buttons once the cap is reached — a
+                click that silently does nothing reads as a broken button. */}
             <p
               style={{
                 margin: '-6px 0 12px',
@@ -292,6 +356,7 @@ export default function CreateListingForm({
 
           <div style={{ marginBottom: '20px' }}>
             <label
+              htmlFor={titleFieldId}
               style={{
                 display: 'block',
                 marginBottom: '9px',
@@ -301,26 +366,38 @@ export default function CreateListingForm({
               {t('title')} *
             </label>
             <input
+              id={titleFieldId}
               type="text"
               value={title}
-              maxLength={120}
+              maxLength={TITLE_MAX_LENGTH}
+              aria-describedby={`${titleFieldId}-count`}
               onChange={(e) => setTitle(e.target.value)}
               style={inputStyle}
             />
-            <p
-              style={{
-                margin: '6px 0 0',
-                textAlign: 'right',
-                color: '#9a9a9a',
-                fontSize: '12px',
-              }}
-            >
-              {title.length}/120
+            {/* Two renderings of one number. The compact "12/120" is for the
+                eye and is hidden from assistive tech, because "twelve slash a
+                hundred and twenty" is not what it means; the sentence beside
+                it is the same figure said in words, and `aria-describedby`
+                below is what has it read out when focus reaches the field.
+
+                Deliberately not a live region: it would re-announce on every
+                keystroke, over the reader's own typing echo. */}
+            <p id={`${titleFieldId}-count`} style={counterStyle}>
+              <span aria-hidden="true">
+                {title.length}/{TITLE_MAX_LENGTH}
+              </span>
+              <span className="sr-only">
+                {t('chars_used', {
+                  used: title.length,
+                  max: TITLE_MAX_LENGTH,
+                })}
+              </span>
             </p>
           </div>
 
           <div style={{ marginBottom: '20px' }}>
             <label
+              htmlFor={descriptionFieldId}
               style={{
                 display: 'block',
                 marginBottom: '9px',
@@ -330,22 +407,25 @@ export default function CreateListingForm({
               {t('description')} *
             </label>
             <textarea
-              className="listing-textarea"
+              id={descriptionFieldId}
+              className="slim-scrollbar"
               value={description}
-              maxLength={400}
+              maxLength={DESCRIPTION_MAX_LENGTH}
               rows={6}
+              aria-describedby={`${descriptionFieldId}-count`}
               onChange={(e) => setDescription(e.target.value)}
               style={{ ...inputStyle, resize: 'vertical' }}
             />
-            <p
-              style={{
-                margin: '6px 0 0',
-                textAlign: 'right',
-                color: '#9a9a9a',
-                fontSize: '12px',
-              }}
-            >
-              {description.length}/400
+            <p id={`${descriptionFieldId}-count`} style={counterStyle}>
+              <span aria-hidden="true">
+                {description.length}/{DESCRIPTION_MAX_LENGTH}
+              </span>
+              <span className="sr-only">
+                {t('chars_used', {
+                  used: description.length,
+                  max: DESCRIPTION_MAX_LENGTH,
+                })}
+              </span>
             </p>
           </div>
 
@@ -559,7 +639,15 @@ export default function CreateListingForm({
             >
               {Object.entries(state.errors).flatMap(([key, codes]) =>
                 codes.map((code, index) => (
-                  <li key={`${key}-${index}`}>{t(`error_${code}`)}</li>
+                  /*
+                   * One bag of values for every code: the message decides
+                   * which of them it names, and i18next drops the rest. That
+                   * is what keeps the number in the sentence the same number
+                   * the validator enforced, in all five languages.
+                   */
+                  <li key={`${key}-${index}`}>
+                    {t(`error_${code}`, LISTING_LIMIT_VALUES)}
+                  </li>
                 )),
               )}
             </ul>
@@ -623,6 +711,10 @@ export default function CreateListingForm({
             overflow: 'hidden',
           }}
         >
+          {/* Decoration only, and skipped entirely for anyone who asked for
+              reduced motion — two dozen pieces flying up the viewport is
+              exactly the kind of movement that setting is there to stop. The
+              confirmation itself stays either way. */}
           {!reducedMotion &&
             CONFETTI_PIECES.map(([dx, dy], i) => (
               <span

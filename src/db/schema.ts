@@ -57,6 +57,23 @@ export const listings = pgTable(
      */
     index('idx_listings_title_trgm').using('gin', sql`${t.title} gin_trgm_ops`),
     index('idx_listings_desc_trgm').using('gin', sql`${t.description} gin_trgm_ops`),
+
+    /*
+     * Serves the tag arm of the same search box. The tags are matched as one
+     * joined string rather than element by element, because `EXISTS (SELECT 1
+     * FROM unnest(tags) ...)` -- the form that says exactly the right thing --
+     * is a correlated subquery no index can serve, and one unindexable arm
+     * makes the whole OR a sequential scan. src/db/filters.ts keeps the EXISTS
+     * as the exact test and uses this index to narrow the rows it runs on.
+     *
+     * `listing_tags_text` is an IMMUTABLE wrapper around `array_to_string`,
+     * created by migration 0004 -- the plain function is only STABLE and so
+     * cannot appear in an index expression.
+     */
+    index('idx_listings_tags_trgm').using(
+      'gin',
+      sql`listing_tags_text(${t.tags}) gin_trgm_ops`,
+    ),
   ],
 );
 

@@ -612,7 +612,7 @@ export const ListingType = z.enum(['need', 'offer']);
 export const ListingInput = z.object({
   type:        ListingType,
   title:       z.string().trim().min(3).max(120),
-  description: z.string().trim().min(10).max(2000),
+  description: z.string().trim().min(10).max(400),
   tags:        z.array(z.string().trim().min(1).max(40)).max(8).default([]),
   location:    z.string().trim().min(1).max(80),
 });
@@ -1526,7 +1526,7 @@ export default function NewListingPage() {
 
         <label>
           <span style={{ fontWeight: 500 }}>Beschreibung</span>
-          <textarea name="description" required maxLength={2000} rows={5}
+          <textarea name="description" required maxLength={400} rows={5}
             className="w-full px-4 py-2 rounded-xl mt-1"
             style={{ border: '2px solid black' }} />
         </label>
@@ -1817,7 +1817,7 @@ Next.js's Origin check on Server Actions.
 | Aspect       | Value                                                      |
 |--------------|------------------------------------------------------------|
 | Auth         | Required; redirects to `/login` if absent                  |
-| Validation   | `type` ∈ {need, offer}; `title` 3–120; `description` 10–2000; `tags` ≤ 8 strings (1–40 each); `location` 1–80 |
+| Validation   | `type` ∈ {need, offer}; `title` 3–120; `description` 10–400; `tags` ≤ 8 strings (1–40 each); `location` 1–80 |
 | Returns      | `{ ok: true }` then redirects to `/`; `{ ok: false, errors }` on validation failure |
 
 ### Server Action: `deleteListing`

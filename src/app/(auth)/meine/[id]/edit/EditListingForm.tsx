@@ -4,6 +4,11 @@ import { useTranslation } from 'react-i18next';
 import PlaceSelect from '@/components/marketplace/PlaceSelect';
 import { updateListing, type UpdateState } from '@/actions/listings';
 import type { Listing } from '@/types';
+import {
+  DESCRIPTION_MAX_LENGTH,
+  LISTING_LIMIT_VALUES,
+  TITLE_MAX_LENGTH,
+} from '@/lib/listingLimits';
 
 export default function EditListingForm({ listing }: { listing: Listing }) {
   const { t } = useTranslation();
@@ -47,7 +52,7 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
         <input
           name="title"
           required
-          maxLength={120}
+          maxLength={TITLE_MAX_LENGTH}
           defaultValue={listing.title}
           className="px-4 py-2 rounded-xl"
           style={{ border: '2px solid black' }}
@@ -59,7 +64,7 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
         <textarea
           name="description"
           required
-          maxLength={2000}
+          maxLength={DESCRIPTION_MAX_LENGTH}
           rows={5}
           defaultValue={listing.description}
           className="px-4 py-2 rounded-xl"
@@ -93,7 +98,9 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
         <ul role="alert" style={{ color: 'red', fontSize: 'var(--fs-sm)' }}>
           {Object.entries(state.errors).flatMap(([field, codes]) =>
             codes.map((code, i) => (
-              <li key={`${field}-${i}`}>{t(`error_${code}`)}</li>
+              <li key={`${field}-${i}`}>
+                {t(`error_${code}`, LISTING_LIMIT_VALUES)}
+              </li>
             )),
           )}
         </ul>

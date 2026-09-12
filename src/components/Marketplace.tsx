@@ -11,7 +11,6 @@ import { iconFor } from '@/data/icons';
 import {
   STANDARD_CATEGORY_TAGS,
   categoryLabel,
-  isStandardCategory,
 } from '@/data/categories';
 
 import Header from '@/components/layout/Header';
@@ -33,9 +32,6 @@ interface MarketplaceProps {
   query: string;
   email: string;
 
-  /** Tags of the current mode, ordered by frequency (server-aggregated). */
-  categoryTags: string[];
-
   /** Place the radius filter is centred on, or null when it is off. */
   place: string | null;
   radiusKm: number;
@@ -54,7 +50,6 @@ export default function Marketplace({
   category,
   query,
   email,
-  categoryTags,
   place,
   radiusKm,
   approximate,
@@ -171,13 +166,16 @@ export default function Marketplace({
   }
 
   /*
-   * "All" first, then the built-in categories in their fixed order so the
-   * tab strip looks the same on every visit (and stays translated), then
-   * every other tag actually in use — categoryTags comes from the server
-   * already ranked by how many current listings carry each tag. Without
-   * that tail, a free-form hashtag would render on the card but have no tab
-   * that filters to it. CategoryTabs shows the ones that fit and folds the
-   * rest under "more categories".
+   * "All" first, then the built-in categories in their fixed order, and
+   * nothing else: the tab strip is a closed, translated set, so it looks the
+   * same on every visit whatever anybody has tagged their listing with.
+   *
+   * A free-form hashtag therefore has no tab of its own. It is not lost --
+   * every listing must carry at least one built-in category (step 1 of the
+   * form will not advance without one), so its tab reaches the listing, and
+   * the search box matches hashtags as well as titles and descriptions
+   * (matchesQuery in src/db/filters.ts). CategoryTabs shows the tabs that
+   * fit and folds the rest under "more categories".
    */
   const categories = useMemo<Category[]>(() => {
     return [

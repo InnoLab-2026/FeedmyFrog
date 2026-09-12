@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, Plus, Info, List, LogOut, Mail } from 'lucide-react';
+import { Search, Info, List, LogOut, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { logout } from '@/actions/auth';

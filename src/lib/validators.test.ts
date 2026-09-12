@@ -3,6 +3,14 @@ import { describe, expect, it, vi } from 'vitest';
 // geo.ts is pure and reads no environment, so it can be imported statically
 // even though ./validators has to wait for the env mock below.
 import { PLACES } from './geo';
+import {
+  DESCRIPTION_MAX_LENGTH,
+  DESCRIPTION_MIN_LENGTH,
+  TAG_MAX_LENGTH,
+  TAGS_MAX_COUNT,
+  TITLE_MAX_LENGTH,
+  TITLE_MIN_LENGTH,
+} from './listingLimits';
 
 vi.mock('@/lib/env', () => ({
   env: { ALLOWED_EMAIL_DOMAIN: 'reutlingen-university.de' },
@@ -61,15 +69,16 @@ describe('Email schema', () => {
   });
 });
 
-describe('ListingInput schema', () => {
-  const base = {
-    type: 'need' as const,
-    title: 'Suche Nachhilfe',
-    description: 'Eine ausreichend lange Beschreibung fuer den Eintrag.',
-    tags: ['Bildung'],
-    location: 'Reutlingen',
-  };
+/** A listing that passes every rule, for tests that break one at a time. */
+const base = {
+  type: 'need' as const,
+  title: 'Suche Nachhilfe',
+  description: 'Eine ausreichend lange Beschreibung fuer die Anzeige.',
+  tags: ['Bildung'],
+  location: 'Reutlingen',
+};
 
+describe('ListingInput schema', () => {
   it('accepts a valid listing', () => {
     expect(ListingInput.safeParse(base).success).toBe(true);
   });
@@ -155,5 +164,66 @@ describe('Uuid schema', () => {
     const result = Uuid.safeParse('not-a-uuid');
     expect(result.success).toBe(false);
     if (!result.success) expect(result.error.issues[0]?.message).toBe('invalid_id');
+  });
+});
+
+/*
+ * The limits, pinned against the module every other consumer reads.
+ *
+ * `maxLength` on two forms, two character counters and five translated error
+ * sentences all claim to state the same numbers as the schema. Nothing else
+ * compares them, so the description limit changed from 2000 to 400 in the
+ * schema and the create form while the edit form kept letting people type
+ * 2000 characters into a field the server would then reject.
+ */
+describe('listing length limits', () => {
+  it('enforces exactly the lengths listingLimits declares', () => {
+    const long = (n: number) => 'a'.repeat(n);
+
+    expect(
+      ListingInput.safeParse({ ...base, title: long(TITLE_MAX_LENGTH) }).success,
+    ).toBe(true);
+    expect(
+      ListingInput.safeParse({ ...base, title: long(TITLE_MAX_LENGTH + 1) }).success,
+    ).toBe(false);
+
+    expect(
+      ListingInput.safeParse({
+        ...base,
+        description: long(DESCRIPTION_MAX_LENGTH),
+      }).success,
+    ).toBe(true);
+    expect(
+      ListingInput.safeParse({
+        ...base,
+        description: long(DESCRIPTION_MAX_LENGTH + 1),
+      }).success,
+    ).toBe(false);
+
+    expect(
+      ListingInput.safeParse({ ...base, title: long(TITLE_MIN_LENGTH - 1) }).success,
+    ).toBe(false);
+    expect(
+      ListingInput.safeParse({
+        ...base,
+        description: long(DESCRIPTION_MIN_LENGTH - 1),
+      }).success,
+    ).toBe(false);
+  });
+
+  it('enforces exactly the tag limits listingLimits declares', () => {
+    expect(
+      ListingInput.safeParse({ ...base, tags: ['a'.repeat(TAG_MAX_LENGTH)] }).success,
+    ).toBe(true);
+    expect(
+      ListingInput.safeParse({ ...base, tags: ['a'.repeat(TAG_MAX_LENGTH + 1)] }).success,
+    ).toBe(false);
+
+    const tags = (n: number) => Array.from({ length: n }, (_, i) => `tag${i}`);
+
+    expect(ListingInput.safeParse({ ...base, tags: tags(TAGS_MAX_COUNT) }).success).toBe(true);
+    expect(
+      ListingInput.safeParse({ ...base, tags: tags(TAGS_MAX_COUNT + 1) }).success,
+    ).toBe(false);
   });
 });
