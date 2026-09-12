@@ -25,7 +25,7 @@
     "i18next": "^26.0.10",
     "jose": "^6.2.3",
     "lucide-react": "^1.14.0",
-    "next": "16.2.12",
+    "next": "16.3.5",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-i18next": "^17.0.7",
@@ -35,11 +35,11 @@
   "overrides": {
     "next": {
       "postcss": "8.5.26",
-      "sharp": "0.35.3"
+      "sharp": "0.35.4"
     },
     "eslint": {
       "@eslint/eslintrc": {
-        "js-yaml": "4.3.1"
+        "js-yaml": "4.3.2"
       },
       "minimatch": {
         "brace-expansion": "1.1.18"
@@ -65,10 +65,10 @@
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9",
-    "eslint-config-next": "16.2.12",
+    "eslint-config-next": "16.3.5",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   }
 }
