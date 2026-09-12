@@ -10,6 +10,9 @@
 
 # Testing
 /coverage
+/cypress/videos
+/cypress/screenshots
+/cypress/downloads
 
 # Build output
 /.next/
