@@ -48,10 +48,11 @@ export default function VerifyPromptCard({ token }: { token: string | null }) {
             the only card on the page. Decorative rather than described --
             the <h1> right below it already reads the product name. */}
         <Image
-          src="/feedmyfrog.jpg"
+          src="/feedmyfrog.png"
           alt=""
-          width={140}
-          height={140}
+          width={480}
+          height={373}
+          sizes="140px"
           priority
           style={{
             width: '140px',
@@ -98,19 +99,11 @@ export default function VerifyPromptCard({ token }: { token: string | null }) {
           </>
         ) : (
           <>
-            <h1
-              style={{
-                fontFamily: 'var(--font-family-display)',
-                fontWeight: 700,
-                fontSize: 'var(--fs-2xl)',
-                color: 'black',
-                textAlign: 'center',
-              }}
-            >
-              {APP_NAME}
-            </h1>
+            {/* Hidden for the same reason as on the login card: the logo
+                above is the wordmark, so a visible heading would print the
+                name a second time. The page still needs its h1. */}
+            <h1 className="sr-only">{APP_NAME}</h1>
             <p
-              className="mt-2"
               style={{
                 fontSize: 'var(--fs-sm)',
                 fontWeight: 500,

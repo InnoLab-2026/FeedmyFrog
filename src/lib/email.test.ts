@@ -45,9 +45,24 @@ describe('sendMagicLink', () => {
     await sendMagicLink('anna@reutlingen-university.de', URL_TOKEN, 'en');
 
     expect(payload().sender).toEqual({
-      name: 'Reutlingen University Connect',
+      name: 'FeedmyFrog',
       email: 'noreply@feedmyfrog.click',
     });
+  });
+
+  it('sends under a display name that matches the domain it sends from', async () => {
+    await sendMagicLink('anna@reutlingen-university.de', URL_TOKEN, 'en');
+
+    /*
+     * A display name unrelated to the sending domain is the shape of a
+     * phishing mail, and this is the one mail that asks somebody to click a
+     * link and be signed in. Whatever APP_NAME becomes, it has to stay
+     * recognisable as the sender of feedmyfrog.click mail.
+     */
+    const { name, email } = payload().sender;
+    const domain = email.split('@')[1].split('.')[0];
+
+    expect(name.toLowerCase().replace(/[^a-z]/g, '')).toContain(domain);
   });
 
   it.each(['en', 'de', 'fr', 'tr', 'es'] as const)(
@@ -120,10 +135,10 @@ describe('sendMagicLink', () => {
     await sendMagicLink('anna@reutlingen-university.de', URL_TOKEN, 'en');
 
     /*
-     * JPEG has no alpha channel. The site's feedmyfrog.jpg has the white
-     * background baked into it, and every client rendered it as a white
-     * rectangle sitting on whatever was behind it. Switching this back to
-     * the .jpg brings the box back.
+     * JPEG has no alpha channel. The logo used to be one, with the white
+     * background baked in, and every client drew it as a white rectangle on
+     * whatever was behind it. Pointing this at a .jpg again brings the box
+     * back — including by "helpfully" re-exporting the asset.
      */
     const html = payload().htmlContent;
     expect(html).not.toContain('.jpg');
