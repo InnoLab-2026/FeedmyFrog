@@ -44,3 +44,7 @@ yarn-error.log*
 # Design reference packages (track in design repo, not application repo)
 Waymakrdesignfigma-main.zip
 *.zip
+
+# Python bytecode (scripts/)
+__pycache__/
+*.py[cod]
