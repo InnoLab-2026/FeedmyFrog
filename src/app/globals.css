@@ -23,18 +23,33 @@
   }
 }
 
-.listing-textarea {
-  scrollbar-width: none;
-  overflow-y: auto;
+/* --- Scrollbars --------------------------------------------------------
+   A thin, low-contrast scrollbar for the two containers that scroll inside a
+   rounded card: the description textarea and the create-listing dialog. The
+   platform default is a wide opaque bar that reads as a seam across the
+   rounded corner, which is what this is here to avoid.
+
+   Thin rather than hidden, and in both engines rather than one. Hiding it
+   removes the only signal that there is more content: a textarea at six rows
+   holding four hundred characters, and a dialog capped at 90vh holding a
+   two-step form whose publish button is below the fold, both depend on it.
+   `scrollbar-width` is Firefox-only and `::-webkit-scrollbar` is Blink and
+   WebKit only, so both spellings are needed for one appearance. */
+.slim-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(47, 47, 47, 0.28) transparent;
 }
 
-.listing-textarea::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+.slim-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-.listing-textarea::-webkit-scrollbar-button {
-  display: none;
-  width: 0;
-  height: 0;
+.slim-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.slim-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(47, 47, 47, 0.28);
+  border-radius: 3px;
 }

@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { APP_NAME } from '@/constants';
+
 export default function Footer() {
   return (
     <footer
@@ -20,7 +22,7 @@ export default function Footer() {
             className="hover:underline"
             style={{ fontWeight: 700, color: 'black' }}
           >
-            FeedmyFrog
+            {APP_NAME}
           </a>{' '}
           2026
         </div>

@@ -19,7 +19,7 @@ import { drizzle } from 'drizzle-orm/pglite';
 import { and, eq } from 'drizzle-orm';
 
 import { listings } from './schema';
-import { resolvePlaceParam, withinRadius } from './filters';
+import { matchesQuery, resolvePlaceParam, withinRadius } from './filters';
 import { PLACES, placesWithin } from '@/lib/geo';
 
 /*
@@ -248,5 +248,118 @@ describe('resolvePlaceParam', () => {
     // The URL is untrusted input; only an exact known place gets through.
     expect(resolvePlaceParam('Reut')).toBeNull();
     expect(resolvePlaceParam('Reutlingen ')).toBe('Reutlingen');
+  });
+});
+
+/*
+ * The search predicate, against real SQL.
+ *
+ * Two things need holding down and neither shows up in a type check. The first
+ * is meaning: the tag arm is written as an indexable superset ANDed with an
+ * exact test, and if the superset were ever used alone it would quietly start
+ * matching across the boundary between two tags. The second is the index: the
+ * whole reason the arm is written that way is so a search does not degrade to a
+ * sequential scan, and that is a property of the plan, not of the result.
+ */
+describe('matchesQuery (real SQL)', () => {
+  beforeAll(async () => {
+    /*
+     * `need`, and in a place from the closed set, so these rows are invisible
+     * to the `offer`-only assertions above and to the normalisation check.
+     */
+    await client.exec(`
+      INSERT INTO listings (user_id, email, type, title, description, location, tags) VALUES
+        ('u', 'a@x.de', 'need', 'Piano lessons',  'plain body',      'Reutlingen', ARRAY['Bildung']),
+        ('u', 'a@x.de', 'need', 'Plain title',    'mentions piano',  'Reutlingen', ARRAY['Bildung']),
+        ('u', 'a@x.de', 'need', 'Tagged only',    'plain body',      'Reutlingen', ARRAY['Bildung','Klavier']),
+        ('u', 'a@x.de', 'need', 'Two tags',       'plain body',      'Reutlingen', ARRAY['musik','mathe']),
+        ('u', 'a@x.de', 'need', 'Untagged',       'plain body',      'Reutlingen', ARRAY[]::text[]),
+        ('u', 'a@x.de', 'need', 'Percent',        'plain body',      'Reutlingen', ARRAY['100% Wolle']);
+    `);
+  });
+
+  async function titlesMatching(query: string) {
+    const rows = await db
+      .select({ title: listings.title })
+      .from(listings)
+      .where(and(eq(listings.type, 'need'), matchesQuery(query)));
+
+    return rows.map((r) => r.title).sort();
+  }
+
+  it('matches the title', async () => {
+    expect(await titlesMatching('Piano lessons')).toEqual(['Piano lessons']);
+  });
+
+  it('matches the description', async () => {
+    expect(await titlesMatching('mentions')).toEqual(['Plain title']);
+  });
+
+  it('matches a tag no other column contains', async () => {
+    expect(await titlesMatching('Klavier')).toEqual(['Tagged only']);
+  });
+
+  it('matches a tag case-insensitively and on a substring', async () => {
+    expect(await titlesMatching('klav')).toEqual(['Tagged only']);
+  });
+
+  it('matches every row a term appears in, whichever column holds it', async () => {
+    expect(await titlesMatching('piano')).toEqual(['Piano lessons', 'Plain title']);
+  });
+
+  it('does not match across the boundary between two tags', async () => {
+    /*
+     * This is what the EXISTS is for. ['musik','mathe'] joins to `musik mathe`,
+     * which contains `ik ma` — so the indexable arm alone would return this row
+     * for a term neither tag holds.
+     */
+    expect(await titlesMatching('ik ma')).toEqual([]);
+    expect(await titlesMatching('musik')).toEqual(['Two tags']);
+  });
+
+  it('treats ILIKE wildcards in a tag search as literal characters', async () => {
+    // `%` would otherwise match every row, and `_` any single character.
+    expect(await titlesMatching('%')).toEqual(['Percent']);
+    expect(await titlesMatching('100% W')).toEqual(['Percent']);
+    expect(await titlesMatching('10_%')).toEqual([]);
+  });
+
+  it('returns nothing rather than everything for a term nobody used', async () => {
+    expect(await titlesMatching('kayak')).toEqual([]);
+  });
+
+  it('can be answered from the indexes rather than by scanning the table', async () => {
+    /*
+     * On six rows a sequential scan is genuinely the cheaper plan, so the
+     * planner is asked to avoid one; what is being tested is whether an index
+     * *can* serve this predicate at all. Written as a bare EXISTS over
+     * unnest(tags) it cannot, at any table size -- which is the whole reason
+     * for the shape of the tag arm in filters.ts.
+     *
+     * Four or more characters: a trigram index cannot help with a shorter
+     * pattern, because there are no full trigrams to look up.
+     */
+    const { sql: text, params } = db
+      .select({ title: listings.title })
+      .from(listings)
+      .where(matchesQuery('klav'))
+      .toSQL();
+
+    await client.exec('SET enable_seqscan = off');
+
+    try {
+      const plan = await client.query<{ 'QUERY PLAN': string }>(
+        `EXPLAIN ${text}`,
+        params as unknown[],
+      );
+      const lines = plan.rows.map((r) => r['QUERY PLAN']).join('\n');
+
+      expect(lines).toContain('idx_listings_tags_trgm');
+      expect(lines).toContain('idx_listings_title_trgm');
+      expect(lines).toContain('idx_listings_desc_trgm');
+      expect(lines).not.toContain('Seq Scan');
+    } finally {
+      await client.exec('SET enable_seqscan = on');
+    }
   });
 });

@@ -3,8 +3,6 @@ import {
   arrayContains,
   desc,
   eq,
-  ilike,
-  or,
   sql,
 } from 'drizzle-orm';
 
@@ -12,7 +10,7 @@ import { db } from '@/db/client';
 import { listings } from '@/db/schema';
 import { requireSession } from '@/lib/session';
 import { DEFAULT_RADIUS_KM, isRadius } from '@/lib/geo';
-import { resolvePlaceParam, withinRadius } from '@/db/filters';
+import { matchesQuery, resolvePlaceParam, withinRadius } from '@/db/filters';
 
 import type { Listing, Mode } from '@/types';
 import Marketplace from '@/components/Marketplace';
@@ -20,10 +18,6 @@ import Marketplace from '@/components/Marketplace';
 export const dynamic = 'force-dynamic';
 
 const PER_PAGE_OPTIONS = [15, 30, 50] as const;
-
-function likePattern(q: string): string {
-  return `%${q.replace(/[\\%_]/g, '\\$&')}%`;
-}
 
 export default async function HomePage({
   searchParams,
@@ -76,29 +70,20 @@ export default async function HomePage({
       ? arrayContains(listings.tags, [category])
       : undefined,
 
-    query
-      ? or(
-          ilike(listings.title, likePattern(query)),
-          ilike(listings.description, likePattern(query)),
-          sql`exists (
-            select 1 from unnest(${listings.tags}) as tag
-            where tag ilike ${likePattern(query)}
-          )`,
-        )
-      : undefined,
+    query ? matchesQuery(query) : undefined,
 
     place ? withinRadius(place, radiusKm) : undefined,
   );
 
   /*
-   * One HTTP request, not three.
+   * One HTTP request, not two.
    *
    * neon-http opens a fresh HTTPS request per query, so each `await db...`
    * is a full round trip to Postgres. Fetching the page of rows after the
    * count -- which is what the clamp below needs -- made that a two-wave
    * waterfall: the rows could not even be asked for until the count came
-   * back. `db.batch` sends all three as one non-interactive transaction, so
-   * the wire cost is a single round trip and the rows arrive with the count
+   * back. `db.batch` sends both as one non-interactive transaction, so the
+   * wire cost is a single round trip and the rows arrive with the count
    * rather than after it.
    *
    * The rows are fetched at the *requested* page, because the clamp is not
@@ -106,23 +91,13 @@ export default async function HomePage({
    * every normal navigation; only an out-of-range `?page=` needs the second
    * query below.
    */
-  const [[{ count }], tagRows, requestedRows] = await db.batch([
+  const [[{ count }], requestedRows] = await db.batch([
     db
       .select({
         count: sql<number>`count(*)::int`,
       })
       .from(listings)
       .where(where),
-
-    db
-      .select({
-        tag: sql<string>`unnest(${listings.tags})`,
-        count: sql<number>`count(*)::int`,
-      })
-      .from(listings)
-      .where(eq(listings.type, mode))
-      .groupBy(sql`1`)
-      .orderBy(sql`2 DESC`),
 
     db
       .select()
@@ -175,7 +150,6 @@ export default async function HomePage({
       category={category}
       query={query}
       email={session.email}
-      categoryTags={tagRows.map((r) => r.tag)}
       place={place}
       radiusKm={radiusKm}
       approximate={approximate}
