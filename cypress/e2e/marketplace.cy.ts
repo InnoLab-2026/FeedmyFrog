@@ -14,12 +14,20 @@
  * redirects, the security headers, the magic-link hand-off, and one full
  * create-a-listing journey through the dialog and back out to /meine.
  */
+/*
+ * `e2e-data`, not `e2e-user`. Cypress compiles this file for the browser, so
+ * anything it reaches has to bundle there -- and e2e-user.ts imports
+ * node:crypto to derive the user id, which webpack cannot resolve. Importing
+ * it here fails the whole spec at compile time, before a test runs.
+ *
+ * The id is not needed here anyway: the mintSession task defaults to the
+ * seeded user, and Cypress.env('E2E_USER_ID') has it if a test ever wants it.
+ */
 import {
   E2E_EMAIL,
-  E2E_USER_ID,
   SEEDED_LISTINGS,
   SESSION_COOKIE,
-} from '../fixtures/e2e-user';
+} from '../fixtures/e2e-data';
 
 /**
  * Signs in without going near the app's own surface.
@@ -31,7 +39,7 @@ import {
  * the guard on it happens not to hold.
  */
 function signIn() {
-  cy.task('mintSession', { userId: E2E_USER_ID, email: E2E_EMAIL }).then((jwt) =>
+  cy.task('mintSession').then((jwt) =>
     cy.setCookie(SESSION_COOKIE, jwt as string, {
       // The `__Host-` prefix is only accepted with all three of these.
       secure: true,
