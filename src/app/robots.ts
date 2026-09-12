@@ -6,7 +6,7 @@ import type { MetadataRoute } from 'next';
 // change crawler policy, edit the arrays below and redeploy; the generated
 // file is picked up automatically by Vercel.
 //
-// Reutlingen University Connect is a hochschulinterne (institution-internal),
+// FeedmyFrog is a hochschulinterne (institution-internal),
 // authentication-gated platform. We do not want AI/LLM crawlers training on,
 // indexing, or answering queries about its content. Robots.txt is advisory —
 // well-behaved AI crawlers honour it — so it is paired with an
@@ -94,7 +94,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: ['/login', '/impressum', '/datenschutz'],
-        disallow: ['/', '/meine/', '/new', '/verify', '/verify-prompt', '/api/'],
+        disallow: ['/', '/meine/', '/verify', '/verify-prompt', '/api/'],
       },
     ],
     ...(baseUrl ? { host: baseUrl } : {}),

@@ -32,11 +32,13 @@ const SENDER = { name: APP_NAME, email: 'noreply@feedmyfrog.click' } as const;
  * literal host so a preview deployment links its own copy instead of silently
  * pulling production's.
  *
- * The PNG, not `feedmyfrog.jpg`. JPEG has no alpha channel, so the site's copy
- * carries its white background baked in and rendered as a white rectangle on
- * whatever the mail put behind it. `feedmyfrog.png` is the same artwork with
- * the background keyed out and the dead margin trimmed: it sits on any colour,
- * and is smaller (50 KB against 117 KB) because the margin is gone.
+ * This has to be a format with an alpha channel. It was a JPEG, which has
+ * none, so the white background was baked into the file and every client drew
+ * it as a white rectangle on whatever the mail put behind it.
+ * `scripts/make_logo_png.py` produces the PNG: same artwork, background keyed
+ * out, dead margin trimmed. It is the site's only logo file — the header, the
+ * login card and the verify page all paint it too — so a change here is a
+ * change everywhere, which is the point.
  */
 const LOGO_URL = `${env.NEXT_PUBLIC_BASE_URL.replace(/\/$/, '')}/feedmyfrog.png`;
 

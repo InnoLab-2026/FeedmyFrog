@@ -142,14 +142,20 @@ export default function LoginCard({
             marginBottom: '26px',
           }}
         >
-          {/* Same 1024x1024 source as the header, painted at 220px here.
+          {/* Same 480x373 source as the header, painted at 220px here -- the
+              largest anything paints it, which is what sizes the file.
               `priority` because this logo is the login page's LCP element:
-              it sits at the top of the only card on the page. */}
+              it sits at the top of the only card on the page.
+
+              alt="" because the <h1> directly below reads the product name
+              already, and a described logo makes a screen reader say it
+              twice. Same reason the verify page's logo is undescribed. */}
           <Image
-            src="/feedmyfrog.jpg"
-            alt="feedmyfrog"
-            width={220}
-            height={220}
+            src="/feedmyfrog.png"
+            alt=""
+            width={480}
+            height={373}
+            sizes="220px"
             priority
             style={{
               width: '220px',
@@ -169,22 +175,20 @@ export default function LoginCard({
             boxShadow: CARD_SHADOW,
           }}
         >
-          <h1
-            style={{
-              margin: 0,
-              fontFamily: 'var(--font-family-display)',
-              fontWeight: 700,
-              fontSize: 'var(--fs-3xl)',
-              lineHeight: 1.2,
-              color: '#2F2F2F',
-            }}
-          >
-            {APP_NAME}
-          </h1>
+          {/* Visually hidden, not removed. The logo directly above is the
+              wordmark, so printing the name again under it says FeedmyFrog
+              twice; but the page still needs a level-one heading, and the
+              logo cannot be it — it is `alt=""` precisely because this
+              element names the page. Hidden keeps the document outline and
+              drops the stutter. */}
+          <h1 className="sr-only">{APP_NAME}</h1>
 
+          {/* marginTop 0: the heading above takes no layout space now, so
+              this is the card's first visible line and the padding is
+              already the gap. */}
           <p
             style={{
-              marginTop: '12px',
+              marginTop: 0,
               marginBottom: 0,
               fontSize: 'var(--fs-md)',
               lineHeight: 1.6,
