@@ -2,7 +2,6 @@
 
 import { useActionState, useEffect, useId, useState } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -27,11 +26,14 @@ import {
 interface CreateListingFormProps {
   email: string;
   /**
-   * Called instead of navigating to '/' once the listing is published and the
-   * confirmation has been shown. The dedicated /new page wants the navigation;
-   * the modal wants to close itself, because nothing unmounts it otherwise.
+   * Called once the listing is published and the confirmation has been shown.
+   *
+   * Required, and the form does nothing else at that point — it does not know
+   * whether it is a page that should navigate away or a dialog that should
+   * close, and guessing wrong is what left the modal stuck under a full-screen
+   * celebration it could not dismiss. Whoever renders it decides.
    */
-  onPublished?: () => void;
+  onPublished: () => void;
 }
 
 /*
@@ -79,7 +81,6 @@ export default function CreateListingForm({
       null,
     );
 
-  const router = useRouter();
   const reducedMotion = usePrefersReducedMotion();
 
   /*
@@ -93,20 +94,14 @@ export default function CreateListingForm({
   useEffect(() => {
     if (!published) return;
 
-    /*
-     * Whoever renders the form decides what "done" means. On /new the form is
-     * the page, so the page navigates away and takes the celebration with it.
-     * Inside the modal it must not navigate at all: pushing '/' while already
-     * on '/' leaves the modal open with the overlay still on top of it, since
-     * neither is state this component owns.
-     */
+    // Hand back once the confirmation has had its time on screen.
     const timer = window.setTimeout(
-      () => (onPublished ? onPublished() : router.push('/')),
+      onPublished,
       reducedMotion ? CELEBRATION_REDUCED_MS : CELEBRATION_MS,
     );
 
     return () => window.clearTimeout(timer);
-  }, [published, reducedMotion, router, onPublished]);
+  }, [published, reducedMotion, onPublished]);
 
   const [step, setStep] = useState(1);
 
