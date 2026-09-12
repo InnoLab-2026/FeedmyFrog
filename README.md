@@ -1,71 +1,89 @@
+<div align="center">
+
+<img src="public/feedmyfrog.png" alt="FeedmyFrog" width="120" />
+
 # FeedmyFrog
 
-Internal university platform for students and staff of Reutlingen
-University. Members post *Suche* (need) and *Biete* (offer) listings for
-services and goods. The poster's university email address is shown
-directly on each listing card; further communication takes place
-off-platform by mail. Every page that renders listing data is behind
-authentication, so the address is only ever visible to a closed
-community of verified university members.
+**Closed marketplace for the members of Reutlingen University.**
+Post what you need, offer what you can do, contact each other by university mail.
 
-The product is called **FeedmyFrog** everywhere a reader can see it: the
-page titles, the login and verify headings, the footer, and the display
-name on the magic-link mail all read `APP_NAME` in `src/constants.ts`.
-It matches the domain the mail is sent from, which is the point — a
-display name unrelated to its sending domain is the shape of a phishing
-mail, and the magic-link mail is the one that asks somebody to click a
-link and be signed in.
+[![Test](https://github.com/InnoLab-2026/FeedmyFrog/actions/workflows/test.yml/badge.svg)](https://github.com/InnoLab-2026/FeedmyFrog/actions/workflows/test.yml)
+[![Node](https://img.shields.io/badge/node-24-339933?logo=node.js&logoColor=white)](.nvmrc)
+[![Next.js](https://img.shields.io/badge/Next.js-16.3-black?logo=next.js)](https://nextjs.org)
+[![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-blue)](LICENSE)
 
-One internal name has not followed: `dienstleistungs-exchange`, the npm
-package name in `package.json`. It is never shown to a user.
+[Live site](https://feedmyfrog.click) · [Build guide](BUILD.MD) · [Performance notes](docs/PERFORMANCE.md) · [Compliance record](docs/COMPLIANCE.md)
 
-Hochschule Reutlingen is named as the responsible body in the Impressum
-and the Datenschutzerklärung, which is where it belongs; `app_description`
-says what the platform is.
+</div>
 
-Production: <https://feedmyfrog.click>
+---
 
-Figma reference design:
-<https://www.figma.com/make/vaEARPyhfvFIfzMZo79NDR/Mobile-Landing-Page-Design--Copy-?t=Um2UIN1WmiPhP7VK-1>
+Students and staff post *Suche* (need) and *Biete* (offer) listings for
+services and goods. Each card shows the poster's university email address;
+the conversation then continues off-platform by mail. There is no chat, no
+message history and no file upload to maintain.
+
+Every page that renders listing data sits behind authentication, so an
+address is only ever visible to verified members of the same university.
+Sign-in is a magic link sent to a `reutlingen-university.de` address. No
+passwords are stored, and there is no user table.
+
+The platform is live at **<https://feedmyfrog.click>**, hosted on Vercel in
+Frankfurt with a Neon PostgreSQL database in the same region.
 
 ## Contents
 
-1. [Requirements](#requirements)
+1. [Features](#features)
 2. [Tech stack](#tech-stack)
-3. [Architecture at a glance](#architecture-at-a-glance)
-4. [Page map](#page-map)
-5. [Repository layout](#repository-layout)
-6. [Installation](#installation)
-7. [Configuration](#configuration)
-8. [Backend](#backend)
-9. [Frontend](#frontend)
-10. [Testing and quality gates](#testing-and-quality-gates)
-11. [DevOps](#devops)
-12. [Data protection](#data-protection)
+3. [Quick start](#quick-start)
+4. [Configuration](#configuration)
+5. [Architecture](#architecture)
+6. [Backend](#backend)
+7. [Frontend](#frontend)
+8. [Security](#security)
+9. [Testing and quality gates](#testing-and-quality-gates)
+10. [Deployment and operations](#deployment-and-operations)
+11. [Data protection](#data-protection)
+12. [Project conventions](#project-conventions)
 13. [Roadmap](#roadmap)
-14. [License](#license)
-15. [Author](#author)
+14. [Contributing](#contributing)
+15. [License](#license)
+16. [Credits](#credits)
 
-Two companion documents carry the detail this file summarises:
-[`docs/PERFORMANCE.md`](docs/PERFORMANCE.md) (measured latency work) and
-[`docs/COMPLIANCE.md`](docs/COMPLIANCE.md) (the SSR and EU data-law audit
-record). [`BUILD.MD`](BUILD.MD) is the step-by-step build guide that
-reconstructs the project from an empty directory.
+Three companion documents carry detail this file summarises:
+[`BUILD.MD`](BUILD.MD) reconstructs the project from an empty directory,
+[`docs/PERFORMANCE.md`](docs/PERFORMANCE.md) records the measured latency
+work, and [`docs/COMPLIANCE.md`](docs/COMPLIANCE.md) holds the SSR and
+EU data-law audit.
 
-## Requirements
+## Features
 
-- Node.js 24 (pinned in `package.json` `engines: ">=24 <25"` and `.nvmrc`; run `nvm use`)
-- A Neon PostgreSQL project (EU region, Frankfurt / `eu-central-1`) on which
-  the `pg_trgm` extension can be created — migration `0002` needs it
-- A Brevo API key for sending magic-link emails, with `feedmyfrog.click`
-  verified as a sender domain (DKIM published, DMARC configured)
-- A Vercel account for production hosting
+- **Two listing modes.** One `listings` table serves both *Suche* and
+  *Biete*, switched by a mode toggle.
+- **Contact by mail.** Cards carry the poster's address and a prefilled
+  `mailto:` button. Nothing is relayed through the platform.
+- **Magic-link sign-in.** Address-only login, restricted to
+  `reutlingen-university.de` and its subdomains, rate-limited per IP and
+  per address.
+- **Database-side search and filtering.** Mode, category tags, full-text
+  search over title, description and hashtags, place radius, and
+  pagination all resolve to SQL. Filter state lives in the URL, so any
+  view is linkable.
+- **Radius search without stored coordinates.** Locations are a closed set
+  of 20 place names. The optional GPS button reduces a fix to the nearest
+  town name inside the browser callback.
+- **Five languages.** EN, DE, FR, TR, ES, resolved on the server so the
+  first byte already carries the right `<html lang>` and title.
+- **Own-listing management.** Create, edit and delete under `/meine`,
+  scoped by owner in SQL.
+- **Legal pages.** Art. 13 GDPR privacy notice and § 5 DDG imprint, in all
+  five languages.
 
 ## Tech stack
 
 | Layer | Technology | Version |
 |-------|------------|---------|
-| Framework | Next.js, App Router | 16.2.12 |
+| Framework | Next.js, App Router | 16.3.5 |
 | UI runtime | React / React DOM | 19.2.4 |
 | Language | TypeScript, `strict: true` | 5.x |
 | Database | PostgreSQL on Neon, Frankfurt | — |
@@ -81,13 +99,95 @@ reconstructs the project from an empty directory.
 | Tracing | `@vercel/otel` + `@opentelemetry/api`, `@vercel/speed-insights` | 2.x |
 | Hosting | Vercel, functions pinned to `fra1` | — |
 
-Auth.js (formerly NextAuth) was evaluated but not adopted. Its built-in
-email provider requires a database adapter that introduces user, account,
-session, and verification-token tables. The custom flow described below
-avoids those tables and keeps the schema close to the project requirement
-of minimal data retention.
+Auth.js (formerly NextAuth) was evaluated and not adopted. Its email
+provider requires a database adapter that adds user, account, session and
+verification-token tables. The custom flow below avoids those four tables
+and keeps the schema close to the project's data-minimisation requirement.
 
-## Architecture at a glance
+## Quick start
+
+### Requirements
+
+- **Node.js 24**, pinned in `.nvmrc` and in `package.json` (`engines: ">=24 <25"`)
+- A **Neon PostgreSQL** project in an EU region (Frankfurt / `eu-central-1`)
+  on which the `pg_trgm` extension can be created; migration `0002` needs it
+- A **Brevo API key**, with `feedmyfrog.click` verified as a sender domain
+  (DKIM published, DMARC configured)
+- A **Vercel account** for production hosting
+
+### Setup
+
+```bash
+git clone https://github.com/InnoLab-2026/FeedmyFrog.git
+cd FeedmyFrog
+nvm use                        # Node 24, per .nvmrc
+npm install
+cp .env.example .env.local     # fill in the values from Configuration
+npx drizzle-kit migrate        # apply migrations to your Neon branch
+npm run dev                    # http://localhost:3000
+```
+
+`src/lib/env.ts` validates the whole environment at import time and throws
+on the first missing or malformed variable. A misconfigured `.env.local`
+therefore fails at startup rather than at the first database call.
+
+### Commands
+
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` | Development server on port 3000 |
+| `npm run build` | Production build |
+| `npm start` | Serve a production build |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run lint` | ESLint 9, `eslint-config-next` core-web-vitals + TypeScript |
+| `npm test` | Vitest, single run |
+| `npm run test:watch` | Vitest, watch mode |
+| `npx drizzle-kit generate` | Generate SQL from the current schema |
+| `npx drizzle-kit migrate` | Apply pending migrations to `DATABASE_URL` |
+
+## Configuration
+
+Every variable is required unless a default is given. The parser is
+`src/lib/env.ts`; `.env.example` is the template.
+
+```env
+# Database (Neon, Frankfurt region) — must be a valid URL
+DATABASE_URL="postgresql://USER:PASSWORD@ep-xxx.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+
+# Auth
+AUTH_SECRET="..."                         # >= 64 chars; openssl rand -hex 32
+MAGIC_LINK_TTL_MINUTES=15                 # default 15
+SESSION_TTL_DAYS=7                        # default 7
+
+# Email (sender is hardcoded in src/lib/email.ts — verified domain feedmyfrog.click)
+BREVO_API_KEY="xkeysib-..."               # must start with `xkeysib-`
+
+# Application (production: https://feedmyfrog.click)
+NEXT_PUBLIC_BASE_URL="http://localhost:3000"
+NEXT_PUBLIC_INSTITUTION_DOMAIN="reutlingen-university.de"  # must equal ALLOWED_EMAIL_DOMAIN
+ALLOWED_EMAIL_DOMAIN="reutlingen-university.de"
+
+# Rate limits (per hour, per dimension)
+RATE_LIMIT_SEND_LINK_PER_IP=10            # default 10
+RATE_LIMIT_SEND_LINK_PER_EMAIL=5          # default 5
+```
+
+Four validation rules have consequences beyond their own variable:
+
+- `AUTH_SECRET` is checked with `z.string().min(64)`. Thirty-two random
+  bytes in hex is exactly 64 characters.
+- `BREVO_API_KEY` must start with `xkeysib-`, which catches a pasted SMTP
+  password.
+- `NEXT_PUBLIC_INSTITUTION_DOMAIN` and `ALLOWED_EMAIL_DOMAIN` are compared
+  by a schema-level `.refine()`. The first is inlined into the client
+  bundle so the disclaimer can show `@(*.)domain`; the second is what the
+  server enforces. Letting them drift would show users one rule and apply
+  another.
+- `NODE_ENV` is parsed too, defaulting to `development`. It decides the
+  session cookie name (`__Host-session` or `session`), the cookie's
+  `Secure` flag, and whether `'unsafe-eval'` is added to the CSP for HMR.
+
+## Architecture
 
 ```mermaid
 flowchart LR
@@ -122,14 +222,14 @@ flowchart LR
     RH -.-> OTEL
 ```
 
-Every request that renders HTML passes through `src/proxy.ts`, which does
+Every request that renders HTML passes through `src/proxy.ts`, which has
 two independent jobs: it gates the `(auth)` route group, and it mints the
-per-request CSP nonce that the whole document is rendered under.
+per-request CSP nonce the whole document is rendered under.
 
 ### Request pipeline and the three auth layers
 
 Access control follows the defense-in-depth model recommended for the App
-Router — a lesson of CVE-2025-29927, where middleware could be bypassed.
+Router, after CVE-2025-29927 showed that middleware alone can be bypassed.
 Three independent layers each verify the session.
 
 ```mermaid
@@ -153,17 +253,13 @@ flowchart TD
     PAGE -->|"session"| RENDER["Query Postgres, render RSC"]
 ```
 
-- **Layer 1 — `src/proxy.ts`.** Cheap pre-filter. Verifies the JWT
-  signature and expiry; on failure it clears the cookie explicitly and
-  redirects to `/login`.
-- **Layer 2 — `src/app/(auth)/layout.tsx`.** Calls `getSession()`
-  server-side before any child page renders.
-- **Layer 3 — the data-access-layer guard.** Every page that reads
-  user-scoped or member-only data calls `requireSession()` from
-  `src/lib/session.ts`; every Server Action calls `getSession()` again
-  before it writes.
+| Layer | Location | Responsibility |
+|-------|----------|----------------|
+| 1 | `src/proxy.ts` | Cheap pre-filter. Verifies the JWT signature and expiry; on failure it clears the cookie explicitly and redirects to `/login`. |
+| 2 | `src/app/(auth)/layout.tsx` | Calls `getSession()` server-side before any child page renders. |
+| 3 | Data-access guard | Every page reading user-scoped or member-only data calls `requireSession()` from `src/lib/session.ts`; every Server Action calls `getSession()` again before it writes. |
 
-## Page map
+### Page map
 
 ```mermaid
 flowchart TD
@@ -184,7 +280,7 @@ flowchart TD
 
     subgraph API["Route handlers"]
         SEND["POST /api/auth/send-link"]
-        HZ["GET /api/healthz<br/>edge runtime"]
+        HZ["GET /api/healthz<br/>nodejs, force-dynamic"]
     end
 
     LOGIN -->|"submit email"| SEND
@@ -208,8 +304,6 @@ flowchart TD
     HOME -->|"logout server action"| LOGIN
 ```
 
-Route inventory, with how each one renders:
-
 | Route | Kind | Rendering | Session |
 |-------|------|-----------|---------|
 | `/` | page | `force-dynamic` | required |
@@ -222,14 +316,14 @@ Route inventory, with how each one renders:
 | `/datenschutz` | page | `force-dynamic` | none |
 | `not-found` | page | dynamic — `await headers()` keeps the nonce valid | none |
 | `/api/auth/send-link` | route handler | dynamic | none |
-| `/api/healthz` | route handler | `runtime = 'edge'` | none |
+| `/api/healthz` | route handler | `runtime = 'nodejs'`, `force-dynamic` | none |
 | `/robots.txt` | metadata route | static, built by `src/app/robots.ts` | none |
 
-Everything that emits HTML is dynamic on purpose: the CSP nonce differs
+Everything that emits HTML is dynamic by necessity. The CSP nonce differs
 per request, so a prerendered document would carry a nonce the response
-header no longer matches and its bootstrap scripts would be blocked.
+header no longer matches, and its bootstrap scripts would be blocked.
 
-## Repository layout
+### Repository layout
 
 ```
 src/
@@ -242,7 +336,7 @@ src/
       meine/[id]/edit/EditListingForm.tsx
       meine/[id]/edit/EditListingPageHeader.tsx
     api/auth/send-link/route.ts     POST — issue a magic link
-    api/healthz/route.ts            GET — liveness probe, edge runtime
+    api/healthz/route.ts            GET — liveness probe, always dynamic
     verify/route.ts                 GET legacy redirect, POST consumes token
     verify-prompt/                  confirmation page + VerifyPromptCard
     login/                          page + LoginCard + LoginForm
@@ -287,6 +381,7 @@ src/
     session.ts                      JWT cookie, getSession, requireSession
     email.ts                        Brevo client, HTML + text mail rendering
     validators.ts                   Email, ListingInput, Uuid, isAllowedEmail
+    csrf.ts                         isSameOriginRequest
     rate-limit.ts                   Postgres-backed limiter + cleanup
     geo.ts                          place table, GPS snapping, haversine, bbox
     initials.ts                     avatar initials, display name
@@ -306,69 +401,11 @@ drizzle.config.ts  next.config.ts  vercel.json  vitest.config.mts
 eslint.config.mjs  postcss.config.mjs  tsconfig.json  package.json
 ```
 
-The component layout under `src/components/` (and the supporting `data/`,
-`i18n/`, `types.ts`, `constants.ts` files at the `src/` root) deliberately
-mirrors the Figma reference package one-to-one, so a future design refresh
-can be applied as a file-level overwrite rather than a manual port. See
-*Component architecture* in [`BUILD.MD`](BUILD.MD) for the full prop
-contracts.
-
-## Installation
-
-```bash
-git clone https://github.com/InnoLab-2026/FeedmyFrog.git
-cd FeedmyFrog
-nvm use            # Node 24, per .nvmrc
-npm install
-cp .env.example .env.local   # then fill in the values below
-npm run dev        # http://localhost:3000
-```
-
-`src/lib/env.ts` validates the whole environment at import time and throws
-on the first bad or missing variable, so a misconfigured `.env.local`
-fails immediately and loudly rather than at the first database call.
-
-## Configuration
-
-Every variable below is required unless it has a default. The parser lives
-in `src/lib/env.ts`.
-
-```env
-# Database (Neon, Frankfurt region) — must be a valid URL
-DATABASE_URL="postgresql://USER:PASSWORD@ep-xxx.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-
-# Auth
-AUTH_SECRET="..."                         # >= 64 chars; use `openssl rand -hex 32`
-MAGIC_LINK_TTL_MINUTES=15                 # default 15
-SESSION_TTL_DAYS=7                        # default 7
-
-# Email (sender is hardcoded in src/lib/email.ts — verified domain feedmyfrog.click)
-BREVO_API_KEY="xkeysib-..."               # must start with `xkeysib-`
-
-# Application (production: https://feedmyfrog.click)
-NEXT_PUBLIC_BASE_URL="http://localhost:3000"
-NEXT_PUBLIC_INSTITUTION_DOMAIN="reutlingen-university.de"  # must equal ALLOWED_EMAIL_DOMAIN
-ALLOWED_EMAIL_DOMAIN="reutlingen-university.de"
-
-# Rate limits (per hour, per dimension)
-RATE_LIMIT_SEND_LINK_PER_IP=10            # default 10
-RATE_LIMIT_SEND_LINK_PER_EMAIL=5          # default 5
-```
-
-Validation rules worth knowing:
-
-- `AUTH_SECRET` is checked with `z.string().min(64)` — 32 random bytes in
-  hex is exactly 64 characters.
-- `BREVO_API_KEY` must start with `xkeysib-`, which catches a pasted
-  SMTP password.
-- `NEXT_PUBLIC_INSTITUTION_DOMAIN` and `ALLOWED_EMAIL_DOMAIN` are checked
-  for equality by a schema-level `.refine()`. The first is inlined into
-  the client bundle so the disclaimer can show `@(*.)domain`; the second
-  is the value the server actually enforces. Letting them drift would show
-  users one rule and apply another.
-- `NODE_ENV` is parsed too, defaulting to `development`. It decides the
-  session cookie name (`__Host-session` vs `session`), the cookie's
-  `Secure` flag, and whether `'unsafe-eval'` is added to the CSP for HMR.
+The layout under `src/components/`, and the supporting `data/`, `i18n/`,
+`types.ts` and `constants.ts` files at the `src/` root, mirror the Figma
+reference package one-to-one. A future design refresh can therefore be
+applied as a file-level overwrite rather than a manual port. Full prop
+contracts are in *Component architecture* in [`BUILD.MD`](BUILD.MD).
 
 ## Backend
 
@@ -378,28 +415,28 @@ Validation rules worth knowing:
 |----------|--------|----------|
 | `/api/auth/send-link` | `POST` | JSON `{ email, lang? }`. `415` if the content type is not JSON, `400` on unparsable JSON or an invalid address, `403` `forbidden_domain` for an outside domain, `429` with `Retry-After` when a rate limit is hit, `202` on success. There is no user table, so a valid in-domain address always yields `202` and there is nothing to enumerate. |
 | `/verify` | `GET` | Legacy path for links from older mails. Redirects to `/verify-prompt?token=…` without touching the database, so a link-scanning bot cannot spend the token. Missing token → `/login?error=missing_token`. |
-| `/verify` | `POST` | Accepts `application/x-www-form-urlencoded` or JSON. **`403` unless the request is same-origin** (`isSameOriginRequest`, see *Injection and CSRF posture*) — a form content type is a simple request, so CORS never gets a say. Otherwise consumes the token, creates the session cookie, `303` to `/`. Any failure is `303` to `/login?error=invalid_or_expired`. `runtime = 'nodejs'` because it hashes with `node:crypto`. |
-| `/api/healthz` | `GET` | `{ "status": "ok" }` with `cache-control: no-store`. `runtime = 'edge'`; it deliberately does not touch the database, so it reports process liveness rather than Neon's availability. |
+| `/verify` | `POST` | Accepts `application/x-www-form-urlencoded` or JSON. Returns `403` unless the request is same-origin (`isSameOriginRequest`, see [Injection and CSRF posture](#injection-and-csrf-posture)); a form content type is a simple request, so CORS never gets a say. Otherwise consumes the token, creates the session cookie, `303` to `/`. Any failure is `303` to `/login?error=invalid_or_expired`. `runtime = 'nodejs'`, because it hashes with `node:crypto`. |
+| `/api/healthz` | `GET` | `{ "status": "ok" }` with `cache-control: no-store`. It does not touch the database, so it reports process liveness rather than Neon's availability. `force-dynamic` is what makes that true: see [Health checks and crawler policy](#health-checks-and-crawler-policy). |
 
 ### Server Actions
 
 Mutations are Server Actions rather than API routes, so Next.js applies
-Origin-based CSRF protection automatically — it compares Origin against the
-forwarded host and aborts a mismatch. Route handlers get none of that, which
-is why `POST /verify` checks the origin itself. All four re-validate the
-session before doing anything.
+Origin-based CSRF protection automatically: it compares Origin against the
+forwarded host and aborts a mismatch. Route handlers get none of that,
+which is why `POST /verify` checks the origin itself. All four actions
+re-validate the session before doing anything.
 
 | Action | File | Returns |
 |--------|------|---------|
-| `createListing(prev, formData)` | `src/actions/listings.ts` | `{ ok: true }` or `{ ok: false, errors }`. Does **not** redirect: the form shows its confirmation on the result and navigates itself once the celebration has been seen. |
-| `updateListing(prev, formData)` | `src/actions/listings.ts` | `{ ok: false, errors }` on failure; `redirect('/meine')` on success. The `UPDATE … WHERE id = ? AND user_id = ?` returns zero rows for a listing that is not yours, which surfaces as `not_found`. |
+| `createListing(prev, formData)` | `src/actions/listings.ts` | `{ ok: true }` or `{ ok: false, errors }`. Does not redirect: the form shows its confirmation on the result and navigates itself once the celebration has been seen. |
+| `updateListing(prev, formData)` | `src/actions/listings.ts` | `{ ok: false, errors }` on failure; `redirect('/meine')` on success. `UPDATE … WHERE id = ? AND user_id = ?` returns zero rows for a listing that is not yours, which surfaces as `not_found`. |
 | `deleteListing(formData)` | `src/actions/listings.ts` | `void`. Scoped by `user_id` the same way. |
 | `logout()` | `src/actions/auth.ts` | Clears both cookie names, `redirect('/login')`. |
 
 Neither write touches coordinates. `location` is validated against
-`PLACES` (`src/lib/geo.ts`) by `ListingInput`, and that name is the whole of
-what is stored about where a listing is — see *Location as a closed set*
-below.
+`PLACES` (`src/lib/geo.ts`) by `ListingInput`, and that name is all that is
+stored about where a listing is. See
+[Location as a closed set](#location-as-a-closed-set).
 
 ### Shared library
 
@@ -408,15 +445,15 @@ below.
 | `lib/env.ts` | Zod-validated `process.env`, frozen and exported |
 | `lib/auth.ts` | `generateToken()` (32 random bytes, base64url + SHA-256 hash), `hashToken()`, `userIdFromEmail()` = `sha256(lowercased email)` |
 | `lib/session.ts` | `createSession`, `getSession`, `requireSession`, `destroySession`, `SESSION_COOKIE`. The JWT payload is re-validated with Zod after `jwtVerify`, so a correctly signed token with an unexpected shape is still rejected |
-| `lib/email.ts` | Brevo client. Renders both an HTML part (table layout, inline styles, preheader, `color-scheme`, `lang`) and a real plain-text part |
+| `lib/email.ts` | Brevo client. Renders an HTML part (table layout, inline styles, preheader, `color-scheme`, `lang`) and a real plain-text part |
 | `lib/validators.ts` | `isAllowedEmail`, `Email`, `ListingType`, `ListingInput`, `Uuid` |
-| `lib/csrf.ts` | `isSameOriginRequest` — the origin check `POST /verify` needs and Server Actions get for free |
+| `lib/csrf.ts` | `isSameOriginRequest`, the origin check `POST /verify` needs and Server Actions get for free |
 | `lib/rate-limit.ts` | `checkAndConsume` (single-statement count-and-insert), `cleanupRateLimits` (returned unexecuted so it can ride along in a batch) |
 | `lib/geo.ts` | `PLACES`, `Place`, `isPlace`, `PLACES_ALPHABETICAL`, `CITY_COORDS`, `DISTRICT_OF`, `haversineKm`, `findNearestTown`, `placesWithin`, `RADII`, `isRadius` |
 | `lib/initials.ts` | `getInitials`, `displayNameFromEmail` |
 
 Every helper that reads a secret or touches the database begins with
-`import 'server-only'`, so the bundler refuses to include it in any client
+`import 'server-only'`, so the bundler refuses to include it in a client
 bundle. `vitest.config.mts` aliases that package to its own no-op build,
 because Vitest does not set Next's `react-server` resolve condition.
 
@@ -459,10 +496,10 @@ sequenceDiagram
     end
 ```
 
-Details that matter:
+Seven properties of that flow are load-bearing:
 
 - **The domain check.** `isAllowedEmail` accepts the apex domain or any
-  proper subdomain — `student.reutlingen-university.de`,
+  proper subdomain, such as `student.reutlingen-university.de` or
   `lb.reutlingen-university.de`. Look-alikes such as
   `evil-reutlingen-university.de` and
   `reutlingen-university.de.attacker.com` are rejected, because the
@@ -475,22 +512,23 @@ Details that matter:
   asserts the row is unconsumed, asserts it has not expired, and marks it
   consumed in a single statement. That closes the read-then-write window
   in which two concurrent clicks could both succeed.
-- **Cookie.** HTTP-only, `SameSite=Lax`, `Path=/`, `Secure` in
-  production, where it is named `__Host-session` — and in production that
-  is the **only** name read. Development, which has no TLS, uses the plain
-  `session` and reads only that. TTL is `SESSION_TTL_DAYS`.
-- **Algorithm.** `jwtVerify` pins `algorithms: ['HS256']`, so a token's own
-  header can never choose how it is verified.
-- **Clearing.** The proxy clears an expired cookie with an explicit
-  `Set-Cookie … maxAge=0` rather than `.delete()`. Browsers silently
-  ignore deletion headers that omit the `Secure` and `Path=/` attributes
-  a `__Host-` prefix requires, so a plain delete would leave the stale
-  cookie in place until its natural expiry.
-- **Old links die.** Each new request marks every unconsumed token for
-  that address as consumed *before* inserting the new one — ordering that
-  is guaranteed because the four statements go out as one `db.batch`.
-- **Identity.** `userId` is `sha256(email)`, so the same person gets a
-  stable identifier across sessions without any user record existing.
+- **Cookie attributes.** HTTP-only, `SameSite=Lax`, `Path=/`, and `Secure`
+  in production, where the cookie is named `__Host-session` and that is the
+  only name read. Development has no TLS and uses the plain `session` name,
+  reading only that. TTL is `SESSION_TTL_DAYS`.
+- **Pinned algorithm.** `jwtVerify` pins `algorithms: ['HS256']`, so a
+  token's own header can never choose how it is verified.
+- **Explicit clearing.** The proxy clears an expired cookie with
+  `Set-Cookie … maxAge=0` rather than `.delete()`. Browsers ignore deletion
+  headers that omit the `Secure` and `Path=/` attributes a `__Host-` prefix
+  requires, so a plain delete would leave the stale cookie in place until
+  its natural expiry.
+- **Old links die.** Each new request marks every unconsumed token for that
+  address as consumed before inserting the new one. The ordering holds
+  because the four statements go out as one `db.batch`.
+
+`userId` is `sha256(email)`, which gives one person a stable identifier
+across sessions without any user record existing.
 
 ### Listing lifecycle
 
@@ -526,17 +564,17 @@ sequenceDiagram
     A->>A: revalidatePath('/'), revalidatePath('/meine')
 ```
 
-Validator messages are short machine-readable codes
-(`title_too_short`, `forbidden_domain`, …), never prose. The server does
-not know the reader's language; the client maps `error_<code>` through
-i18next. Constraints: title 3–120 characters, description 10–400, at
-most 8 tags of at most 40 characters each, and `location` must be one of
-the twenty names in `PLACES` — there is no length rule because there is no
-free text.
+Validator messages are short machine-readable codes such as
+`title_too_short` or `forbidden_domain`, never prose. The server does not
+know the reader's language, so the client maps `error_<code>` through
+i18next. Constraints: title 3–120 characters, description 10–400, at most
+8 tags of at most 40 characters each, and `location` must be one of the
+twenty names in `PLACES`. There is no length rule on location, because
+there is no free text.
 
 ### Data model
 
-One business table holds every listing — both *Suche* and *Biete* —
+One business table holds every listing, both *Suche* and *Biete*,
 distinguished by an enum column. Two internal tables hold hashed
 magic-link tokens and rate-limit counters.
 
@@ -566,35 +604,36 @@ erDiagram
     }
 ```
 
-There are no foreign keys, because there is no user table to point at:
-`listings.user_id` and `magic_tokens.email` are the only identity there
-is. Indexes, all defined in `src/db/schema.ts`:
+There are no foreign keys, because there is no user table to point at.
+`listings.user_id` and `magic_tokens.email` are the only identity in the
+system. Indexes, all defined in `src/db/schema.ts`:
 
 | Index | Type | Serves |
 |-------|------|--------|
 | `idx_listings_type_created` | btree `(type, created_at DESC)` | the default mode-filtered, newest-first page |
 | `idx_listings_user` | btree `(user_id)` | `/meine` and the ownership check on update/delete |
 | `idx_listings_location` | btree `(location)` | the radius filter's `location IN (…)` |
-| `idx_listings_tags` | GIN `(tags)` | category tabs, `tags @> ARRAY[…]` — a btree cannot answer array containment at all |
-| `idx_listings_title_trgm` | GIN `(title gin_trgm_ops)` | `ILIKE '%q%'` search; a leading wildcard makes btree useless |
+| `idx_listings_tags` | GIN `(tags)` | category tabs, `tags @> ARRAY[…]`; a btree cannot answer array containment at all |
+| `idx_listings_title_trgm` | GIN `(title gin_trgm_ops)` | `ILIKE '%q%'` search, where a leading wildcard makes btree useless |
 | `idx_listings_desc_trgm` | GIN `(description gin_trgm_ops)` | the same, over the description |
-| `idx_listings_tags_trgm` | GIN `(listing_tags_text(tags) gin_trgm_ops)` | the same, over the tags, so a search that includes hashtags is still answered from an index |
+| `idx_listings_tags_trgm` | GIN `(listing_tags_text(tags) gin_trgm_ops)` | the same, over the tags, so a search including hashtags is still answered from an index |
 | `idx_magic_tokens_email` | btree | invalidating an address's outstanding tokens |
 | `idx_magic_tokens_expires` | btree | the expiry sweep |
 | `idx_rate_limits_key_created` | btree `(key, created_at)` | the windowed count in `checkAndConsume` |
 
-The trigram indexes require `pg_trgm`. `drizzle-kit generate` does not
-emit extension statements, so `CREATE EXTENSION IF NOT EXISTS pg_trgm;`
-is written by hand at the top of `drizzle/0002_*.sql` — **it must be put
-back if that migration is ever regenerated.** The same applies to
-`listing_tags_text()` in `drizzle/0004_*.sql`: `array_to_string` is only
-`STABLE` in the catalogue and so cannot appear in an index expression, and
-the `IMMUTABLE` wrapper that gets around that is a hand-written
-`CREATE FUNCTION` drizzle-kit will not re-emit either.
+> [!IMPORTANT]
+> The trigram indexes require `pg_trgm`, and `drizzle-kit generate` does
+> not emit extension statements. `CREATE EXTENSION IF NOT EXISTS pg_trgm;`
+> is written by hand at the top of `drizzle/0002_*.sql` and **must be put
+> back if that migration is ever regenerated**. The same applies to
+> `listing_tags_text()` in `drizzle/0004_*.sql`: `array_to_string` is only
+> `STABLE` in the catalogue and cannot appear in an index expression, and
+> the `IMMUTABLE` wrapper that gets around that is a hand-written
+> `CREATE FUNCTION` drizzle-kit will not re-emit either.
 
 `listings` matches the Figma `Listing` TypeScript interface field for
-field, so designer-owned components consume database rows with no mapping
-layer, plus the `created_at` used for ordering.
+field, plus the `created_at` used for ordering, so designer-owned
+components consume database rows with no mapping layer.
 
 The schema holds no profile picture, age, gender, telephone number, or any
 other personal attribute beyond the address a listing exists to show.
@@ -618,36 +657,33 @@ flowchart TD
     CLAMP -->|"yes"| REFETCH["One extra query at the clamped page"] --> RENDER
 ```
 
-- **Search** is a parameterized `ILIKE` over title, description and the
-  tags, with `\`, `%` and `_` escaped in the user's input so a typed
-  wildcard is matched literally. The tag arm is two conjuncts
-  (`matchesQuery` in `src/db/filters.ts`): the joined-string form that
-  `idx_listings_tags_trgm` can serve, ANDed with an `EXISTS` over
-  `unnest(tags)`. The first is a strict superset of the second — a
-  substring of one tag is necessarily a substring of the tags joined, but
-  `['musik','mathe']` joins to `musik mathe`, which contains `ik ma` while
-  neither tag does — so the pair means exactly what the `EXISTS` means
-  while still starting from an index. On its own the `EXISTS` is a
-  correlated subquery no index can serve, and one unindexable arm turns
-  the whole `OR` into a sequential scan.
+- **Search** is a parameterized `ILIKE` over title, description and tags,
+  with `\`, `%` and `_` escaped in the user's input so a typed wildcard is
+  matched literally. The tag arm is two conjuncts (`matchesQuery` in
+  `src/db/filters.ts`): the joined-string form that `idx_listings_tags_trgm`
+  can serve, ANDed with an `EXISTS` over `unnest(tags)`. The first is a
+  strict superset of the second, since a substring of one tag is
+  necessarily a substring of the tags joined, while `['musik','mathe']`
+  joins to `musik mathe`, which contains `ik ma` although neither tag does.
+  The pair therefore means exactly what the `EXISTS` means while still
+  starting from an index. On its own the `EXISTS` is a correlated subquery
+  no index can serve, and one unindexable arm turns the whole `OR` into a
+  sequential scan.
 - **Location** travels as a place *name*. The server looks it up in
   `CITY_COORDS`; an unknown name yields `undefined`, which drizzle's
-  `and()` drops, so the filter is simply not applied rather than silently
-  matching nothing. A crafted link cannot ask about an arbitrary point on
-  the map.
-- **Radius** is a plain `location IN (…)`. `placesWithin()` does twenty
-  great-circle distances in memory, once per request, and hands the database
-  a set of names — no coordinate per row, no bounding box, no trigonometry
-  in SQL.
-- **Category tabs** are aggregated in the database and ranked by
-  frequency within the current mode, so every tag actually in use gets a
-  tab.
-- **Round trips**, not query time, dominate: `@neondatabase/serverless`
+  `and()` drops, so the filter is not applied rather than silently matching
+  nothing. A crafted link cannot ask about an arbitrary point on the map.
+- **Radius** is a plain `location IN (…)`. `placesWithin()` computes twenty
+  great-circle distances in memory, once per request, and hands the
+  database a set of names. No coordinate per row, no bounding box, no
+  trigonometry in SQL.
+- **Category tabs** are aggregated in the database and ranked by frequency
+  within the current mode, so every tag actually in use gets a tab.
+- **Round trips** dominate, not query time. `@neondatabase/serverless`
   opens a fresh HTTPS request per query. The marketplace went from three
   queries in two dependent waves to one `db.batch`; `send-link` went from
-  eight serial round trips to two. See
-  [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md) for the measurements and
-  how to reproduce them.
+  eight serial round trips to two. Measurements and how to reproduce them
+  are in [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md).
 
 ### Rate limiting
 
@@ -661,89 +697,11 @@ SELECT used.n, (SELECT count(*) FROM consumed) FROM used
 ```
 
 The `INSERT`'s own `SELECT` re-reads the tally inside the same statement,
-so the decision and the write cannot be separated by another
-transaction's commit — the check-then-act race a read-then-write pair
-would have. The caller is told the request was consumed only if a row was
+so the decision and the write cannot be separated by another transaction's
+commit. That removes the check-then-act race a read-then-write pair would
+have. The caller is told the request was consumed only if a row was
 actually inserted. A cleanup delete of rows older than six hours rides
-along inside the same batch as the token writes.
-
-### Security headers and CSP
-
-Static headers are set in `next.config.ts` for `/:path*`:
-
-| Header | Value |
-|--------|-------|
-| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains; preload` |
-| `X-Content-Type-Options` | `nosniff` |
-| `X-Frame-Options` | `DENY` |
-| `Referrer-Policy` | `strict-origin-when-cross-origin` |
-| `Permissions-Policy` | `camera=(), microphone=(), geolocation=(self), payment=()` |
-| `X-Robots-Tag` | `noai, noimageai` |
-
-`poweredByHeader` is off.
-
-`geolocation` is the one entry that is `(self)` rather than the empty
-`()` the other three carry. An empty allowlist disables a feature for
-*this document* as well as for nested frames, not only for third-party
-embeds — so `geolocation=()` refused the app's own "Use GPS location"
-button in `LocationSearch`, and the UI fell through to its `gps_error`
-message wherever a browser enforced the header. `(self)` keeps every
-embedded frame out while leaving the top-level document able to ask.
-Nothing else changes: the fix is requested only on a click, the
-browser's own permission prompt is still the gate the user sees, and the
-position is reduced to a town name before it leaves the callback (see
-*Location filter and GPS*). `camera`, `microphone` and `payment` stay
-fully disabled — the app never uses them.
-
-The `Content-Security-Policy` is **not** static — it carries a
-per-request nonce and is therefore built in `src/proxy.ts`:
-
-```
-default-src 'self'
-script-src  'self' 'nonce-<value>' 'strict-dynamic'      (+ 'unsafe-eval' outside production, for HMR)
-style-src   'self' 'unsafe-inline'
-img-src     'self' data:
-font-src    'self' data:
-connect-src 'self'
-form-action 'self'
-frame-ancestors 'none'
-base-uri 'self'
-object-src 'none'
-```
-
-There is no `'unsafe-inline'` for scripts. The proxy forwards the policy
-on the *request* headers so Next.js stamps the nonce onto its own inline
-bootstrap scripts, and exposes it as `x-nonce` for any future custom
-`<script>`. Styles keep `'unsafe-inline'` because the design system uses
-inline `style` attributes throughout.
-
-### Injection and CSRF posture
-
-An attacker-insertion audit of every path where untrusted input reaches a
-sink. The four findings it produced are fixed; the rest is recorded so the
-next reader does not have to re-derive it.
-
-| Vector | Status |
-|---|---|
-| SQL injection (search, category, radius, rate limiter) | **Safe.** Everything is a bound parameter — payloads never reach the SQL text. User-typed `%` and `_` are escaped, verified against real Postgres: searching `100%` matches only the row literally containing "100%". |
-| XSS | **Safe.** No `dangerouslySetInnerHTML`, `innerHTML`, `eval`, or `sql.raw` anywhere in `src/`. i18next runs with `escapeValue: false` *because* React escapes — a latent trap if any of this ever moves to raw HTML. |
-| Mass assignment | **Safe.** Actions build their input from a fixed field list and `ListingInput` strips the rest, so a posted `lat`/`lng` is never read. |
-| `mailto:` header injection | **Safe.** `listing.email` is interpolated unencoded, but Zod's `.email()` rejects `?`, `&`, quotes, CRLF and spaces — the safety rests entirely on that regex. |
-| Open redirect / magic-link host poisoning | **Safe.** Redirects are `new URL(path, req.url)`, same-origin; the magic link is built from `NEXT_PUBLIC_BASE_URL`, never the `Host` header. |
-| CSRF on `POST /api/auth/send-link` | **Safe.** The JSON content type forces a preflight and no CORS headers are sent, so a browser blocks it. |
-| CSRF on `POST /verify` | **Fixed.** It takes a form content type — a simple request, no preflight — and had no origin check, so a cross-site form could hand a victim a session for the *attacker's* account. Now `403` unless same-origin. |
-| Prototype-chain lookups | **Fixed.** `MESSAGES[?error=]`, `iconMap[tag]` and `tag in TRANSLATION_KEYS` all reached `Object.prototype`. `/login?error=__proto__` rendered an object as a React child and returned **500** — a crafted-link DoS of the one page an unauthenticated visitor needs. All three now use `Object.hasOwn`. |
-| `__Host-` session cookie | **Fixed.** Production also accepted a plain `session` cookie, giving back exactly what the prefix buys: a subdomain cannot set a `__Host-` cookie but can set an unprefixed one, which is enough to fix a reader into an attacker's session. Production now reads only the prefixed name. |
-| JWT algorithm confusion | **Hardened.** `algorithms: ['HS256']` is pinned, per RFC 8725. |
-| Rate-limit IP spoofing | **Hardened.** The limiter keys on the leftmost `x-forwarded-for`, the classic spoofable position. Vercel overwrites that header on the way in specifically to prevent this, so it was not exploitable here — but that is a property of the host, not the code, and `x-forwarded-for` is also what a proxy *in front of* Vercel would rewrite. `x-vercel-forwarded-for` is now preferred. |
-| Tag/translation-key confusion | **Fixed.** User tags were passed to `t()` as keys, so a listing tagged `logout` rendered a tab labelled "Log out". Only known category keys are looked up now; anything else renders verbatim. |
-
-Two of these were only reachable because a *different* bug masked them:
-`isStandardCategory` returned `true` for `constructor` and `__proto__`, which
-filtered those tags out before `iconMap[tag]` could evaluate them. Fixing that
-predicate alone would have turned a listing tagged `__proto__` into a **stored**
-crash for every viewer of that mode — so the pair had to move together, and
-`src/data/categories.test.ts` now holds them together.
+along in the same batch as the token writes.
 
 ## Frontend
 
@@ -788,31 +746,31 @@ flowchart TD
 
 `Marketplace.tsx` holds no filter state of its own. It receives
 `listings`, `totalCount`, `page`, `perPage`, `mode`, `category`, `query`,
-`place`, `radiusKm`, `approximate` and `email` as props,
-and every designer-owned child keeps the prop contract it had in Figma.
-Their callbacks are translated into router navigations:
+`place`, `radiusKm`, `approximate` and `email` as props, and every
+designer-owned child keeps the prop contract it had in Figma. Their
+callbacks are translated into router navigations:
 
 | Interaction | URL effect | Navigation |
 |-------------|-----------|------------|
 | Mode toggle | `?mode=`, resets `cat`, `page` | `push` |
 | Category tab | `?cat=`, resets `page` | `push` |
-| Search box | `?q=` after a 300 ms debounce, resets `page` | `replace` — typing must not fill the history stack |
+| Search box | `?q=` after a 300 ms debounce, resets `page` | `replace`, so typing does not fill the history stack |
 | Pagination | `?page=` | `push` |
 | Items per page | `?per=`, resets `page` | `push` |
 | Location / radius | `?loc=`, `?r=`, `?near=`, resets `page` | `push` |
 
 Defaults are omitted from the query string, so the clean marketplace URL
-is just `/`. Navigations run inside `startTransition`, and the listing
-grid drops to `opacity: 0.6` while a transition is pending. The only
-genuinely local state is the search input itself, so typing stays
-responsive between debounce ticks; a reconciliation check adopts a new
-server `query` value unless the user has typed since.
+is just `/`. Navigations run inside `startTransition`, and the listing grid
+drops to `opacity: 0.6` while a transition is pending. The only genuinely
+local state is the search input itself, which keeps typing responsive
+between debounce ticks; a reconciliation check adopts a new server `query`
+value unless the user has typed since.
 
 ### Location as a closed set
 
-Everywhere a location appears — the listing itself and the filter alike —
-it is one of the twenty names in `PLACES` (`src/lib/geo.ts`). Nothing about
-a location is free text, and the database holds no coordinate at all.
+Wherever a location appears, on the listing and in the filter alike, it is
+one of the twenty names in `PLACES` (`src/lib/geo.ts`). Nothing about a
+location is free text, and the database holds no coordinate at all.
 
 ```mermaid
 flowchart TD
@@ -839,66 +797,63 @@ flowchart TD
     end
 ```
 
-The three places a coordinate could have leaked are each closed:
+The three routes by which a coordinate could have leaked are each closed:
 
 | Route in | What stops it |
 |---|---|
-| The listing form | `<select>` — a dropdown cannot produce anything else |
-| A request that bypasses the form | `z.enum(PLACES)` rejects it as `location_invalid`; the action also builds its input from a fixed field list, so a posted `lat`/`lng` is never even read |
+| The listing form | `<select>`, which cannot produce anything else |
+| A request that bypasses the form | `z.enum(PLACES)` rejects it as `location_invalid`; the action also builds its input from a fixed field list, so a posted `lat`/`lng` is never read |
 | The URL | `?loc=` is a name looked up against `PLACES`; an unknown value applies no filter |
 
-`CITY_COORDS` still exists — the GPS snap and the radius set both need
-distances — but it is a **constant of the code, not a column**. Storing a
-copy per row would have duplicated a lookup as personal data, which is what
-`0003` removed.
+`CITY_COORDS` still exists, because the GPS snap and the radius set both
+need distances, but it is a constant of the code rather than a column.
+Storing a copy per row would have duplicated a lookup as personal data,
+which is what migration `0003` removed.
 
 ### The filter control and GPS
 
-`LocationSearch` offers the 20 places in `PLACES` by substring match
-and four radii (3, 5, 10, 20 km, default 10). The GPS button asks the
-browser for a **coarse** fix — `enableHighAccuracy: false`,
-`maximumAge` 30 minutes, `timeout` 10 s — and then throws the position
-away:
+`LocationSearch` offers the 20 places in `PLACES` by substring match and
+four radii (3, 5, 10, 20 km, default 10). The GPS button asks the browser
+for a coarse fix (`enableHighAccuracy: false`, `maximumAge` 30 minutes,
+`timeout` 10 s) and then discards the position:
 
-- `findNearestTown()` picks the closest known reference point and, if
-  that point is a *district* of Reutlingen, resolves it to Reutlingen
-  itself. Districts take part in the search but are never the answer:
-  returning "Betzingen" would pin the reader to a neighbourhood, while
-  excluding districts outright would put a Reutlingen resident in the
-  next municipality, because a fix taken in Betzingen is closer to
-  Wannweil's centre than to Reutlingen's.
-- Beyond `GPS_MAX_DISTANCE_KM` (50 km) no town is returned at all,
-  rather than labelling someone in Hamburg as near Stuttgart.
-- Only the resulting town name reaches the URL, and `?near=1` records
-  that it came from a fix so the control can keep saying "Near X" across
-  a navigation. Nothing downstream ever sees a position more precise than
-  a town centre.
+- `findNearestTown()` picks the closest known reference point and, if that
+  point is a *district* of Reutlingen, resolves it to Reutlingen itself.
+  Districts take part in the search but are never the answer. Returning
+  "Betzingen" would pin the reader to a neighbourhood, while excluding
+  districts outright would put a Reutlingen resident in the next
+  municipality, because a fix taken in Betzingen is closer to Wannweil's
+  centre than to Reutlingen's.
+- Beyond `GPS_MAX_DISTANCE_KM` (50 km) no town is returned at all, rather
+  than labelling someone in Hamburg as near Stuttgart.
+- Only the resulting town name reaches the URL. `?near=1` records that it
+  came from a fix, so the control can keep saying "Near X" across a
+  navigation. Nothing downstream sees a position more precise than a town
+  centre.
 
-Note the asymmetry between the two paths, which is deliberate: a **GPS
-fix** never resolves to a district (returning "Betzingen" would pin the
-reader to a neighbourhood), but a district is a perfectly good thing to
-**choose** from the dropdown for a listing, because that is the author
-saying where their listing is.
+The two paths are deliberately asymmetric. A GPS fix never resolves to a
+district, but a district is a reasonable thing to choose from the dropdown
+for a listing, because there the author is stating where their listing is.
 
 ### Categories and tags
 
 `src/data/categories.ts` is the single source of truth for the nine
-built-in categories (`Familie`, `Kinder`, `Wochenende`, `Mobilität`,
-`Pendeln`, `Verkauf`, `Dienstleistungen`, `Transport`, `Bildung`). They
-are stored as plain German tag strings, because that is what ends up in
-`listings.tags`; the UI never shows the raw string, it renders
+built-in categories: `Familie`, `Kinder`, `Wochenende`, `Mobilität`,
+`Pendeln`, `Verkauf`, `Dienstleistungen`, `Transport`, `Bildung`. They are
+stored as plain German tag strings, because that is what ends up in
+`listings.tags`. The UI never shows the raw string; it renders
 `t(getCategoryTranslationKey(tag))`. The create form offers exactly these
-as quick-picks (at most 2 per listing, leaving room under the server's cap
-of 8 for free-form hashtags), and the marketplace renders exactly these as
-its tabs — nothing else. The tab strip is a closed, translated set, so it
+as quick-picks, at most 2 per listing, leaving room under the server's cap
+of 8 for free-form hashtags. The marketplace renders exactly these as its
+tabs and nothing else, so the tab strip is a closed, translated set that
 looks the same on every visit whatever anybody has tagged their listing
 with.
 
-A free-form hashtag therefore has no tab of its own. It is not unreachable:
-step 1 of the create form will not advance without at least one built-in
-category, so every listing sits under a tab, and the search box matches
-hashtags as well as titles and descriptions. `src/data/icons.tsx` maps tags
-to icons, falling back to a search glyph.
+A free-form hashtag therefore has no tab of its own, but it is not
+unreachable. Step 1 of the create form will not advance without at least
+one built-in category, so every listing sits under a tab, and the search
+box matches hashtags as well as titles and descriptions.
+`src/data/icons.tsx` maps tags to icons, falling back to a search glyph.
 
 ### Internationalisation
 
@@ -909,7 +864,7 @@ purposes:
 | Bundle | Loaded | Used by |
 |--------|--------|---------|
 | `translations.ts` | in every i18next instance | the whole UI |
-| `legalResources.ts` | lazily, per instance, by `useLegalResources` | `/datenschutz`, `/impressum` only — the full policy in five languages must not ship with every route |
+| `legalResources.ts` | lazily, per instance, by `useLegalResources` | `/datenschutz` and `/impressum` only, so the full policy in five languages does not ship with every route |
 | `emailResources.ts` | server-side only | the magic-link mail |
 
 ```mermaid
@@ -925,57 +880,136 @@ flowchart LR
     COOKIE --> R
 ```
 
-The language is resolved on the server, before anything renders, so
+The language is resolved on the server before anything renders, so
 `<html lang>` and every `<title>` are right in the first byte and
-hydration has nothing to correct. `getI18nInstance()` builds a **fresh
-instance per server render** — the module is shared by every concurrent
+hydration has nothing to correct. `getI18nInstance()` builds a fresh
+instance per server render: the module is shared by every concurrent
 request, and a render that yields at an `await` could otherwise resume
-after another reader changed the language. On the client there is only
-ever one reader, so the instance is built once. Server components and
-`generateMetadata` use `serverT()`, a plain object lookup that cannot
-hold state at all. `I18nProvider` also carries a one-time migration for
-users whose choice predates the cookie and still lives in
-`localStorage`.
+after another reader changed the language. On the client there is only ever
+one reader, so the instance is built once. Server components and
+`generateMetadata` use `serverT()`, a plain object lookup that cannot hold
+state at all. `I18nProvider` also carries a one-time migration for users
+whose choice predates the cookie and still lives in `localStorage`.
 
 ### Design tokens and typography
 
 `src/app/theme.css` defines one shared type scale in a private `--fs-*`
-namespace (`--fs-2xs` 12px through `--fs-4xl` 38px, in `rem` so the
-reader's root font size is respected), plus purpose aliases
-`--fs-control-input` and `--fs-control-button` so header and body controls
-resolve to identical sizes. Tailwind's own `--text-*` utilities are left
-untouched. Fonts are **Plus Jakarta Sans** (base) and **DM Sans**
-(display), loaded through `next/font/google`, which downloads them at
-build time and self-hosts them — no runtime request ever reaches Google.
+namespace, from `--fs-2xs` (12px) to `--fs-4xl` (38px), expressed in `rem`
+so the reader's root font size is respected. Purpose aliases
+`--fs-control-input` and `--fs-control-button` make header and body
+controls resolve to identical sizes. Tailwind's own `--text-*` utilities
+are left untouched.
+
+Fonts are **Plus Jakarta Sans** (base) and **DM Sans** (display), loaded
+through `next/font/google`, which downloads them at build time and
+self-hosts them, so no runtime request ever reaches Google.
 `src/app/fonts.css` is intentionally empty; it exists so the design
 package's import chain still resolves.
 
 ### Accessibility and motion
 
 - Listing cards are focusable, carry `role="article"` and an `aria-label`
-  assembled from title, description, tags and location, and paint a
-  3px focus outline.
-- The account menu is `aria-haspopup="menu"` / `aria-expanded`, closes on
-  outside `mousedown`, and the disclaimer is a real `role="dialog"`
+  assembled from title, description, tags and location, and paint a 3px
+  focus outline.
+- The account menu is `aria-haspopup="menu"` / `aria-expanded` and closes
+  on outside `mousedown`. The disclaimer is a real `role="dialog"`
   `aria-modal`.
 - The mail button's subject is one interpolated sentence rather than
   concatenation, because the separator and its spacing are part of the
-  sentence — French puts a space before the colon.
+  sentence: French puts a space before the colon.
 - `usePrefersReducedMotion()` shortens the publish celebration from 1800 ms
   to 700 ms, and the login page's pointer-following frog never starts at
-  all under `prefers-reduced-motion: reduce`. It is decorative, so it is
-  `aria-hidden` and ignores pointer events; its position is written
+  all under `prefers-reduced-motion: reduce`. The frog is decorative, so it
+  is `aria-hidden` and ignores pointer events; its position is written
   through a ref inside one `requestAnimationFrame` per frame rather than
   through React state.
-- Images go through `next/image` — the header logo is `priority` because
-  it is the LCP candidate on wider viewports.
+- Images go through `next/image`. The header logo is `priority`, because it
+  is the LCP candidate on wider viewports.
+
+## Security
+
+### Security headers and CSP
+
+Static headers are set in `next.config.ts` for `/:path*`:
+
+| Header | Value |
+|--------|-------|
+| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains; preload` |
+| `X-Content-Type-Options` | `nosniff` |
+| `X-Frame-Options` | `DENY` |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=(self), payment=()` |
+| `X-Robots-Tag` | `noai, noimageai` |
+
+`poweredByHeader` is off.
+
+`geolocation` is the one entry that is `(self)` rather than the empty `()`
+the others carry. An empty allowlist disables a feature for *this document*
+as well as for nested frames, not only for third-party embeds, so
+`geolocation=()` refused the app's own "Use GPS location" button in
+`LocationSearch` and the UI fell through to its `gps_error` message
+wherever a browser enforced the header. `(self)` keeps every embedded frame
+out while leaving the top-level document able to ask. Nothing else changes:
+the fix is requested only on a click, the browser's own permission prompt
+is still the gate the user sees, and the position is reduced to a town name
+before it leaves the callback. `camera`, `microphone` and `payment` stay
+fully disabled, because the app never uses them.
+
+The `Content-Security-Policy` is not static. It carries a per-request nonce
+and is therefore built in `src/proxy.ts`:
+
+```
+default-src 'self'
+script-src  'self' 'nonce-<value>' 'strict-dynamic'      (+ 'unsafe-eval' outside production, for HMR)
+style-src   'self' 'unsafe-inline'
+img-src     'self' data:
+font-src    'self' data:
+connect-src 'self'
+form-action 'self'
+frame-ancestors 'none'
+base-uri 'self'
+object-src 'none'
+```
+
+There is no `'unsafe-inline'` for scripts. The proxy forwards the policy on
+the *request* headers so Next.js stamps the nonce onto its own inline
+bootstrap scripts, and exposes it as `x-nonce` for any future custom
+`<script>`. Styles keep `'unsafe-inline'`, because the design system uses
+inline `style` attributes throughout.
+
+### Injection and CSRF posture
+
+An attacker-insertion audit covered every path where untrusted input
+reaches a sink. The four findings it produced are fixed; the rest is
+recorded so the next reader does not have to re-derive it.
+
+| Vector | Status |
+|---|---|
+| SQL injection (search, category, radius, rate limiter) | **Safe.** Everything is a bound parameter, so payloads never reach the SQL text. User-typed `%` and `_` are escaped, verified against real Postgres: searching `100%` matches only the row literally containing "100%". |
+| XSS | **Safe.** No `dangerouslySetInnerHTML`, `innerHTML`, `eval`, or `sql.raw` anywhere in `src/`. i18next runs with `escapeValue: false` because React escapes, which is a latent trap if any of this ever moves to raw HTML. |
+| Mass assignment | **Safe.** Actions build their input from a fixed field list and `ListingInput` strips the rest, so a posted `lat`/`lng` is never read. |
+| `mailto:` header injection | **Safe.** `listing.email` is interpolated unencoded, but Zod's `.email()` rejects `?`, `&`, quotes, CRLF and spaces. The safety rests entirely on that regex. |
+| Open redirect / magic-link host poisoning | **Safe.** Redirects are `new URL(path, req.url)`, same-origin; the magic link is built from `NEXT_PUBLIC_BASE_URL`, never the `Host` header. |
+| CSRF on `POST /api/auth/send-link` | **Safe.** The JSON content type forces a preflight and no CORS headers are sent, so a browser blocks it. |
+| CSRF on `POST /verify` | **Fixed.** It takes a form content type, which is a simple request with no preflight, and had no origin check, so a cross-site form could hand a victim a session for the *attacker's* account. Now `403` unless same-origin. |
+| Prototype-chain lookups | **Fixed.** `MESSAGES[?error=]`, `iconMap[tag]` and `tag in TRANSLATION_KEYS` all reached `Object.prototype`. `/login?error=__proto__` rendered an object as a React child and returned **500**, a crafted-link denial of service against the one page an unauthenticated visitor needs. All three now use `Object.hasOwn`. |
+| `__Host-` session cookie | **Fixed.** Production also accepted a plain `session` cookie, which gave back exactly what the prefix buys: a subdomain cannot set a `__Host-` cookie, but it can set an unprefixed one, and that is enough to fix a reader into an attacker's session. Production now reads only the prefixed name. |
+| JWT algorithm confusion | **Hardened.** `algorithms: ['HS256']` is pinned, per RFC 8725. |
+| Rate-limit IP spoofing | **Hardened.** The limiter keyed on the leftmost `x-forwarded-for`, the classic spoofable position. Vercel overwrites that header on the way in specifically to prevent this, so it was not exploitable here, but that is a property of the host rather than of the code, and `x-forwarded-for` is also what a proxy *in front of* Vercel would rewrite. `x-vercel-forwarded-for` is now preferred. |
+| Tag/translation-key confusion | **Fixed.** User tags were passed to `t()` as keys, so a listing tagged `logout` rendered a tab labelled "Log out". Only known category keys are looked up now; anything else renders verbatim. |
+
+Two of these were only reachable because a different bug masked them.
+`isStandardCategory` returned `true` for `constructor` and `__proto__`,
+which filtered those tags out before `iconMap[tag]` could evaluate them.
+Fixing that predicate alone would have turned a listing tagged `__proto__`
+into a *stored* crash for every viewer of that mode, so the pair had to
+move together. `src/data/categories.test.ts` now holds them together.
 
 ## Testing and quality gates
 
-**348 unit tests across 17 files**, run with Vitest in a Node
-environment against `src/**/*.test.ts`. Counts below are the expanded
-case counts as Vitest reports them — several suites use `it.each` over
-the five locales.
+**371 unit tests across 17 files**, run with Vitest in a Node environment
+against `src/**/*.test.ts`. Counts are the expanded case counts Vitest
+reports; several suites use `it.each` over the five locales.
 
 ```bash
 npm run typecheck   # tsc --noEmit
@@ -986,28 +1020,27 @@ npm run test:watch  # vitest
 
 | File | Tests | Covers |
 |------|-------|--------|
+| `src/i18n/translations.test.ts` | 44 | key parity, empty strings and placeholder parity across all five languages |
 | `src/data/categories.test.ts` | 43 | that no prototype member is mistaken for a category, that `iconFor` never returns a function or object, and that a user tag cannot borrow a UI string |
-| `src/i18n/translations.test.ts` | 38 | key parity, empty strings and placeholder parity across all five languages |
 | `src/i18n/emailResources.test.ts` | 34 | the same parity checks for the mail copy, plus no emoji and no markup |
 | `src/lib/geo.test.ts` | 32 | haversine, GPS town snapping and the district rule, `PLACES` integrity, `isPlace`, `placesWithin` symmetry and monotonicity |
 | `src/i18n/legal.test.ts` | 31 | legal namespace registration, key parity, permitted inline markup |
-| `src/lib/validators.test.ts` | 28 | the domain rule including look-alike rejection, all `ListingInput` bounds, and that `location` accepts only `PLACES` |
+| `src/lib/validators.test.ts` | 30 | the domain rule including look-alike rejection, all `ListingInput` bounds, and that `location` accepts only `PLACES` |
+| `src/db/filters.test.ts` | 28 | `withinRadius` / `resolvePlaceParam` and migration `0003`'s normalisation against a real Postgres engine (`@electric-sql/pglite` with `pg_trgm` loaded); also asserts the `lat`/`lng` columns are gone |
+| `src/lib/email.test.ts` | 28 | Brevo payload shape, HTML escaping, both mail parts, per-locale rendering |
 | `src/i18n/matchLanguage.test.ts` | 22 | `Accept-Language` parsing, q-value ordering, tag normalisation |
-| `src/lib/email.test.ts` | 22 | Brevo payload shape, HTML escaping, both mail parts, per-locale rendering |
 | `src/actions/listings.test.ts` | 21 | create/update/delete: session guard, validation codes, ownership scoping, `revalidatePath`, and that no coordinate is written or accepted from a request |
-| `src/db/filters.test.ts` | 19 | `withinRadius` / `resolvePlaceParam` and migration `0003`'s normalisation against a **real Postgres engine** — `@electric-sql/pglite` with `pg_trgm` loaded; also asserts the `lat`/`lng` columns are gone |
 | `src/lib/initials.test.ts` | 13 | initials and display names from an address |
-| `src/lib/csrf.test.ts` | 12 | the origin check `POST /verify` relies on: cross-site and subdomain refused, look-alike hosts refused, Sec-Fetch-Site trusted over a forgeable Origin |
+| `src/lib/csrf.test.ts` | 12 | the origin check `POST /verify` relies on: cross-site and subdomain refused, look-alike hosts refused, `Sec-Fetch-Site` trusted over a forgeable Origin |
 | `src/lib/auth.test.ts` | 11 | token generation, hashing, `userIdFromEmail` stability |
 | `src/lib/rate-limit.test.ts` | 8 | allow/deny at the boundary, `Retry-After`, cleanup cutoff |
 | `src/lib/session.test.ts` | 7 | cookie attributes, payload re-validation, expiry |
-| `src/lib/session.production.test.ts` | 6 | that production reads **only** `__Host-session`, and that a token signed with another algorithm is refused |
+| `src/lib/session.production.test.ts` | 6 | that production reads only `__Host-session`, and that a token signed with another algorithm is refused |
 | `src/actions/auth.test.ts` | 1 | logout clears both cookie names and redirects |
 
-The `filters.test.ts` choice is deliberate: SQL built by a query builder
-can be syntactically valid and semantically wrong, and mocking the
-database would make exactly that class of bug invisible. It runs against
-a real engine instead.
+`filters.test.ts` runs against a real engine on purpose. SQL built by a
+query builder can be syntactically valid and semantically wrong, and
+mocking the database would make exactly that class of bug invisible.
 
 ### End-to-end, against a simulated production
 
@@ -1125,12 +1158,14 @@ nothing is how an operator ends up wrong about where their queries go.
 `src/db/httpEndpoint.test.ts` holds each of those rules down, including the
 near-misses (`localhost.evil.example.com`, `169.254.169.254`).
 
-## DevOps
+## Deployment and operations
 
-### CI
+### Continuous integration
 
 `.github/workflows/test.yml` runs on every push to `main` and on every
-pull request:
+pull request, as two parallel jobs on `ubuntu-latest`: *Typecheck, lint &
+unit tests* and *End-to-end (simulated production)*. Both must pass before
+a pull request is merged.
 
 ```mermaid
 flowchart TD
@@ -1163,11 +1198,11 @@ it by hand. Screenshots are uploaded only when it fails; videos are off.
 Node comes from `.nvmrc` in both, so CI and local development cannot
 drift.
 
-### Deployment pipeline
+### Pipeline
 
-The production stack is **live at `https://feedmyfrog.click`**: hosting on
-Vercel with the project chained to this repository, the database on Neon
-in Frankfurt, and Brevo handling outbound mail from the verified sender
+The production stack is live at `https://feedmyfrog.click`: hosting on
+Vercel with the project chained to this repository, the database on Neon in
+Frankfurt, and Brevo handling outbound mail from the verified sender
 domain. The terms and data processing agreements of all three platforms
 have been accepted.
 
@@ -1199,15 +1234,15 @@ flowchart TD
 | Pull request to `main` | Preview, unique URL per PR | Neon preview branch |
 | Local `npm run dev` | not deployed | local or development Neon branch |
 
-### Initial setup
+### First-time hosting setup
 
 1. Push the repository to GitHub.
 2. Create a Vercel project and import the repository. Vercel detects
    Next.js automatically.
 3. Add the variables from `.env.example` under *Project Settings →
-   Environment Variables*, for all three scopes: *Production*,
-   *Preview*, *Development*. A separate Neon branch for previews is
-   recommended so pull requests never write to production data.
+   Environment Variables* for all three scopes: *Production*, *Preview*
+   and *Development*. A separate Neon branch for previews is recommended,
+   so pull requests never write to production data.
 4. Connect the custom domain under *Project Settings → Domains*. In
    production this is `feedmyfrog.click`; a university subdomain such as
    `dienstleistungen.reutlingen-university.de` can be added the same way
@@ -1215,7 +1250,7 @@ flowchart TD
 
 ### Region
 
-`vercel.json` pins functions to **`fra1`** (Frankfurt):
+`vercel.json` pins functions to `fra1` (Frankfurt):
 
 ```json
 { "$schema": "https://openapi.vercel.sh/vercel.json", "regions": ["fra1"], "framework": "nextjs" }
@@ -1223,13 +1258,14 @@ flowchart TD
 
 Vercel's default is `iad1`, Washington DC. Because the HTTP driver pays a
 full round trip per query, running in `iad1` against a Frankfurt database
-would add roughly 90–120 ms *per query*. Colocating the function with the
-data is worth more than any query tuning in this codebase — and the
+would add roughly 90–120 ms per query. Colocating the function with the
+data is worth more than any query tuning in this codebase, and the
 readership is a German university, so it is closer to the users too.
 
 ### Migrations
 
-Migrations are applied during the Vercel build:
+Migrations are applied during the Vercel build. Vercel runs `vercel-build`
+if it is defined, falling back to `build`:
 
 ```json
 {
@@ -1240,13 +1276,10 @@ Migrations are applied during the Vercel build:
 }
 ```
 
-Vercel runs `vercel-build` if it is defined, falling back to `build`. The
-migration step uses `DATABASE_URL` from the active environment scope, so
-production deploys migrate the production database and preview deploys
+The migration step uses `DATABASE_URL` from the active environment scope,
+so production deploys migrate the production database and preview deploys
 migrate the preview branch. Local migrations against the production
 database are not part of the workflow.
-
-Locally:
 
 ```bash
 npx drizzle-kit generate   # generate SQL from the current schema
@@ -1254,24 +1287,20 @@ npx drizzle-kit migrate    # apply pending migrations against DATABASE_URL
 npx drizzle-kit push       # early development only — no migration file
 ```
 
-Current migrations:
-
 | File | Contents |
 |------|----------|
 | `0000_wise_the_liberteens.sql` | `listing_type` enum, the three tables, five btree indexes |
-| `0001_aspiring_mandrill.sql` | `lat`/`lng` columns, `idx_listings_coords`, and a backfill that places existing rows with the same matching rule as `resolveLocation()` — longest name wins, so `Kirchentellinsfurt` is not matched by a shorter name inside it |
+| `0001_aspiring_mandrill.sql` | `lat`/`lng` columns, `idx_listings_coords`, and a backfill that places existing rows with the same matching rule as `resolveLocation()`, longest name wins, so `Kirchentellinsfurt` is not matched by a shorter name inside it |
 | `0002_romantic_virginia_dare.sql` | `CREATE EXTENSION pg_trgm` (hand-written), the GIN tag index and the two trigram indexes |
-| `0003_bumpy_big_bertha.sql` | Location becomes a closed set: normalises legacy free text to the canonical name (hand-written, same matching rule as `0001`), then drops `lat`, `lng` and `idx_listings_coords` and adds `idx_listings_location`. Rows naming nowhere we know are deliberately left untouched — the file carries a query to list them |
-| `0004_tag_search_trgm.sql` | `listing_tags_text()`, an `IMMUTABLE` wrapper around `array_to_string` (hand-written — the plain function is only `STABLE` and cannot appear in an index expression), and the trigram index over it that keeps the tag arm of the search indexable |
+| `0003_bumpy_big_bertha.sql` | Location becomes a closed set: normalises legacy free text to the canonical name (hand-written, same matching rule as `0001`), then drops `lat`, `lng` and `idx_listings_coords` and adds `idx_listings_location`. Rows naming nowhere we know are deliberately left untouched; the file carries a query to list them |
+| `0004_tag_search_trgm.sql` | `listing_tags_text()`, an `IMMUTABLE` wrapper around `array_to_string` (hand-written, because the plain function is only `STABLE` and cannot appear in an index expression), and the trigram index over it that keeps the tag arm of the search indexable |
 
-### Rollback
+### Rollback and manual deployment
 
-Vercel keeps every previous deployment; a faulty release is reverted by
+Vercel keeps every previous deployment. A faulty release is reverted by
 promoting the previous successful build from the *Deployments* tab.
-Database migrations are forward-only — a schema rollback requires an
+Database migrations are forward-only: a schema rollback requires an
 additional migration that reverses the change.
-
-### Manual deployment
 
 For a one-off deployment without going through Git:
 
@@ -1281,89 +1310,147 @@ vercel              # preview deployment
 vercel --prod       # production deployment
 ```
 
-Emergency fixes only. The Git workflow above is the primary path.
+That path is for emergency fixes. The Git workflow above is the primary
+one.
 
 ### Observability
 
 Two first-party instruments, both inert off Vercel:
 
-- **`src/instrumentation.ts`** — `registerOTel({ serviceName: 'feedmyfrog' })`
-  gives server-side spans under the deployment's *Observability* tab, with
-  no exporter configuration and no third-party account. What that buys
-  over Vercel's built-in function timings is the shape *inside* a request:
-  a 300 ms response caused by eight serial database calls and one caused
-  by rendering look identical in function duration and are fixed very
+- **`src/instrumentation.ts`** calls
+  `registerOTel({ serviceName: 'feedmyfrog' })`, which gives server-side
+  spans under the deployment's *Observability* tab with no exporter
+  configuration and no third-party account. What it adds over Vercel's
+  built-in function timings is the shape *inside* a request: a 300 ms
+  response caused by eight serial database calls and one caused by
+  rendering look identical in function duration and are fixed very
   differently. The same file exports `onRequestError`, which logs every
   uncaught server-component, route-handler or Server Action error as one
-  JSON line with path, method, router kind, route path and render source —
-  without it those errors are a digest hash in the client and an ungrouped
-  line in the runtime log.
-- **`<SpeedInsights />`** in `src/app/layout.tsx` — real-user Core Web
-  Vitals per route. It renders no markup and appends its own script, which
-  is why it survives the `strict-dynamic` CSP: a script *tag* in the HTML
-  would need the per-request nonce and the package has no prop for one,
-  but a script created by the already-trusted bundle inherits its trust.
-  Its beacon is same-origin, so `connect-src 'self'` covers it.
+  JSON line with path, method, router kind, route path and render source.
+  Without it, those errors are a digest hash in the client and an
+  ungrouped line in the runtime log.
+- **`<SpeedInsights />`** in `src/app/layout.tsx` reports real-user Core
+  Web Vitals per route. It renders no markup and appends its own script,
+  which is why it survives the `strict-dynamic` CSP: a script *tag* in the
+  HTML would need the per-request nonce and the package has no prop for
+  one, but a script created by the already-trusted bundle inherits its
+  trust. Its beacon is same-origin, so `connect-src 'self'` covers it.
 
 ### Health checks and crawler policy
 
-`GET /api/healthz` returns `{"status":"ok"}` with `cache-control:
-no-store` on the edge runtime. It intentionally does not query the
-database, so it answers "is the process serving?" rather than "is Neon
-up?".
+`GET /api/healthz` returns `{"status":"ok"}` with `cache-control: no-store`.
+It does not query the database, so it answers "is the process serving?"
+rather than "is Neon up?".
+
+The route runs on the `nodejs` runtime and declares
+`dynamic = 'force-dynamic'`. It used the `edge` runtime until Next.js 16.3
+deprecated that, and the deprecation removed something the route was
+relying on: the edge runtime had opted it out of static generation
+implicitly. A handler that reads no request and performs no I/O is
+prerenderable, and a probe answered from a prerendered asset reports `ok`
+whether or not the function is serving. Rendering per request is the whole
+signal, so the opt-out is now explicit.
 
 `src/app/robots.ts` is a Next.js metadata route, turned into a static
-`/robots.txt` at build time and served from Vercel's edge. It disallows
-the 46 named AI/LLM/agent crawler user-agents in `AI_CRAWLERS` site-wide, and gives the wildcard
-rule access only to `/login`, `/impressum` and `/datenschutz` while
-disallowing `/`, `/meine/`, `/verify`, `/verify-prompt` and
-`/api/`. Because `robots.txt` is only advisory, it is paired with the
-`X-Robots-Tag: noai, noimageai` response header and, above all, with the
-fact that all real content sits behind a session cookie.
+`/robots.txt` at build time and served from Vercel's edge. It disallows the
+46 named AI, LLM and agent crawler user-agents in `AI_CRAWLERS` site-wide,
+and gives the wildcard rule access only to `/login`, `/impressum` and
+`/datenschutz` while disallowing `/`, `/meine/`, `/verify`,
+`/verify-prompt` and `/api/`. Because `robots.txt` is only advisory, it is
+paired with the `X-Robots-Tag: noai, noimageai` response header and, above
+all, with the fact that all real content sits behind a session cookie.
 
 ### Dependency hygiene
 
-`package.json` carries an `overrides` block pinning transitive
-dependencies that had open advisories — `postcss`, `sharp`,
-`brace-expansion`, `js-yaml`, `esbuild`. When bumping `next` or the
+`npm audit` reports zero vulnerabilities, and
+[`.github/dependabot.yml`](.github/dependabot.yml) keeps it that way by
+opening weekly grouped pull requests for npm and monthly ones for the
+workflow actions. The `next`, `react`, `drizzle` and `i18n` groups exist
+because those packages have to move together: bumping `next` alone leaves
+`eslint-config-next` behind, and the lint step then resolves against a
+different Next.js than the build.
+
+`dev-tooling` is the exception and takes minor and patch only. It is a
+bucket of unrelated tools rather than a set that moves together, so a
+grouped major traps the safe updates behind the one that cannot merge. The
+first run proved it: eslint 9 to 10, typescript 5 to 7 and vitest 4 to 5
+arrived as one pull request, and the whole thing failed lint on the
+typescript bump alone.
+
+Three ignores are deliberate, each with the condition for removing it in
+the config comment.
+
+- **`@types/node` majors** are held because Node 24 is pinned by `.nvmrc`
+  and by `engines`, so the types must not run ahead of the runtime.
+- **`typescript` majors** are held because `eslint-config-next` bundles
+  typescript-eslint, which refuses to load against TypeScript 7 and fails
+  `npm run lint` outright. Drop the entry once typescript-eslint supports
+  TS 7.1 or later
+  ([issue 10940](https://github.com/typescript-eslint/typescript-eslint/issues/10940)).
+- **`eslint` majors** are held by the same package one layer deeper. The
+  `eslint-plugin-react` inside `eslint-config-next` still calls the
+  ESLint 9 context API that 10 removed, so every rule load throws
+  `contextOrFilename.getFilename is not a function`. Nothing here can fix
+  that; it needs a new `eslint-config-next`.
+
+The ESLint pin and the `brace-expansion` override are coupled, so move them
+together. ESLint 10 pulls minimatch 10, which requires `brace-expansion` 5
+and its named `expand` export, while the override forces 1.1.18 under
+`eslint` because ESLint 9's minimatch wants the 1.x default export. Bumping
+either alone breaks lint.
+
+`package.json` also carries an `overrides` block pinning transitive
+dependencies that had open advisories: `postcss`, `sharp`,
+`brace-expansion`, `js-yaml` and `esbuild`. When bumping `next` or the
 ESLint toolchain, check whether an override has become redundant before
-carrying it forward.
+carrying it forward, and test that on a clean install
+(`rm -rf node_modules package-lock.json && npm install`) rather than an
+incremental one, because an incremental resolve keeps the old tree and
+will report a removed override as harmless when it is not.
+
+The `esbuild` pin is the one to leave alone for now. `drizzle-kit`
+reaches `esbuild` through the unmaintained `@esbuild-kit/core-utils`, and
+without the override that resolves to 0.18.20, which carries
+[GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99).
+The only upstream fix is a `drizzle-kit` major.
 
 ## Data protection
 
 The platform is subject to the GDPR, the German TDDDG (§ 25 governs
 cookies and terminal-equipment access) and the German DDG (§ 5 Impressum
 duty). The full audit record with sources is in
-[`docs/COMPLIANCE.md`](docs/COMPLIANCE.md). The following properties
-implement the requirements.
+[`docs/COMPLIANCE.md`](docs/COMPLIANCE.md). The properties below implement
+those requirements.
 
 **Transparency duties.** A public privacy notice (Art. 13 GDPR) lives at
 `/datenschutz` and a provider identification (§ 5 DDG) at `/impressum`,
 both in all five languages. Both are linked from the footer and from the
-login page — the point at which the email address is collected. The
-controller and provider identity fields are clearly marked placeholders in
-`src/i18n/legalResources.ts` and **must be filled in before the internal
-pilot**.
+login page, which is the point at which the email address is collected.
+
+> [!WARNING]
+> The controller and provider identity fields are clearly marked
+> placeholders in `src/i18n/legalResources.ts` and **must be filled in
+> before the internal pilot**.
 
 **Data minimisation (Art. 5(1)(c)).**
 
-- No user table. Identity is the email address; the stored identifier is
-  its SHA-256 hash.
+- No user table. Identity is the email address, and the stored identifier
+  is its SHA-256 hash.
 - Session state is a signed cookie, not a database row.
 - Magic-link tokens are stored only as hashes, expire after 15 minutes,
   and are single-use.
 - No file uploads, no chat, no message history. The schema holds no
   personal attribute beyond the contact address a listing exists to show.
-- **No coordinates are stored at all.** `location` is one of twenty place
-  names; the coordinates behind them are a constant of the code. A GPS fix
-  is reduced to a place name inside the browser callback that produced it,
-  and no coordinate is ever written to the database, put in a URL, or
+- No coordinates are stored at all. `location` is one of twenty place
+  names, and the coordinates behind them are a constant of the code. A GPS
+  fix is reduced to a place name inside the browser callback that produced
+  it, and no coordinate is ever written to the database, put in a URL, or
   logged.
-- **The location field is a closed set, not free text.** A dropdown in the
-  UI and `z.enum(PLACES)` on the server, so a street, a house number or a
+- The location field is a closed set rather than free text: a dropdown in
+  the UI and `z.enum(PLACES)` on the server. A street, a house number or a
   pasted coordinate pair cannot be entered as a location even deliberately.
-  This closed the one remaining way a precise position could reach the
-  database: the author typing one.
+  That closed the one remaining way a precise position could reach the
+  database, which was the author typing one.
 
 **Storage limitation (Art. 5(1)(e)).** Retention is bounded for every
 stored datum:
@@ -1375,146 +1462,177 @@ stored datum:
 | IP address in `rate_limits` (abuse prevention, Art. 6(1)(f)) | deleted after 6 hours |
 | Listings incl. email address | until edited or deleted by their owner |
 
-Both purges ride along inside the batch that `POST /api/auth/send-link`
-was already paying for, so they cost no extra round trip and need no cron.
+Both purges ride along inside the batch that `POST /api/auth/send-link` was
+already paying for, so they cost no extra round trip and need no cron job.
 
-**Cookies / TDDDG.** Two cookies exist. The HttpOnly session cookie is
-strictly necessary for the requested service and therefore exempt from
+**Cookies and the TDDDG.** Two cookies exist. The HttpOnly session cookie
+is strictly necessary for the requested service and therefore exempt from
 consent under § 25(2) Nr. 2 TDDDG. The `lang` cookie stores an explicit
 language choice the user made themselves, is not used for tracking, and
 falls under the same functional exemption. There is no analytics
-identifier, no tracking, and no third-party embed — Speed Insights
-reports Web Vitals to a same-origin endpoint and stores nothing on the
-device. Adding any tracking feature later requires a consent banner
-*first*.
+identifier, no tracking and no third-party embed; Speed Insights reports
+Web Vitals to a same-origin endpoint and stores nothing on the device.
+Adding any tracking feature later requires a consent banner first.
 
 **No third-party leakage.** Fonts are downloaded at build time and
-self-hosted via `next/font` — no runtime request to Google, which is what
-LG München I, 3 O 17493/20 was about. The CSP's `connect-src 'self'`
-technically prevents the browser from talking to third parties at all.
+self-hosted via `next/font`, so there is no runtime request to Google,
+which is what LG München I, 3 O 17493/20 was about. The CSP's
+`connect-src 'self'` prevents the browser from talking to third parties at
+all.
 
 **Visibility of the address (Art. 6(1)(b)).** Every listing-rendering page
-is behind the three-layer session check. The inserent's address is shown
-on the card, but only ever to an authenticated member of the same
-university — a closed community rather than the public web. The in-app
-*Disclaimer* overlay states this guarantee in five languages, and shows
-the accepted address pattern `@(*.)reutlingen-university.de`.
+is behind the three-layer session check. The poster's address is shown on
+the card, but only to an authenticated member of the same university, which
+is a closed community rather than the public web. The in-app *Disclaimer*
+overlay states this in five languages and shows the accepted address
+pattern `@(*.)reutlingen-university.de`.
 
 **Processors (Art. 28) and transfers (Chapter V).** The database is hosted
 in the EU (Neon, Frankfurt, `eu-central-1`; Neon, Inc. is a Databricks
 company, and the project is region-locked to Frankfurt). Application
 hosting is on Vercel (EU-US Data Privacy Framework certified), with
 functions pinned to `fra1`. Transactional email goes through Brevo
-(Sendinblue SAS, Paris — an EU provider). The Art. 28 DPAs with all three
-processors **have been accepted**. External hosting on Vercel was
-confirmed in advance with university IT operations. As hosting provider,
-Vercel processes server log data (IP addresses, request metadata) for
-delivery and operational security; this is disclosed in the privacy
-notice under Art. 6(1)(f).
+(Sendinblue SAS, Paris, an EU provider). The Art. 28 DPAs with all three
+processors have been accepted, and external hosting on Vercel was confirmed
+in advance with university IT operations. As hosting provider, Vercel
+processes server log data (IP addresses, request metadata) for delivery and
+operational security; this is disclosed in the privacy notice under
+Art. 6(1)(f).
 
 **Data-subject rights (Art. 15–21).** Users can edit and delete their own
-listings at any time; since no other user record exists, deleting all own
+listings at any time. Since no other user record exists, deleting all own
 listings removes all stored content tied to the person. Logout clears the
 session cookie. The privacy notice names a contact channel for the
 remaining rights.
 
-Only standard PostgreSQL features are used — `pg_trgm` is a contrib module
+Only standard PostgreSQL features are used; `pg_trgm` is a contrib module
 shipped with every distribution. A later migration of the database to
 university-operated infrastructure is therefore feasible.
 
+## Project conventions
+
+- **Product name.** `FeedmyFrog` is the name on every reader-facing
+  surface: page titles, the login and verify headings, the footer, and the
+  display name on the magic-link mail. All of them read `APP_NAME` in
+  `src/constants.ts`, which matches the domain the mail is sent from. A
+  display name unrelated to its sending domain is the shape of a phishing
+  mail, and the magic-link mail is the one that asks somebody to click a
+  link and be signed in. The npm package is still named
+  `dienstleistungs-exchange`; it is never shown to a user. Hochschule
+  Reutlingen is named as the responsible body in the Impressum and the
+  Datenschutzerklärung, where that belongs legally, and `app_description`
+  says what the platform is.
+- **Validator output is codes, not prose.** The server returns
+  `title_too_short`, not a sentence. The client maps `error_<code>` through
+  i18next, because the server does not know the reader's language.
+- **Tests sit next to their subject**, as `src/**/*.test.ts`.
+- **Server-side modules declare themselves.** Anything reading a secret or
+  touching the database starts with `import 'server-only'`.
+- **Design-owned components keep their Figma prop contracts**, so a design
+  refresh can be a file-level overwrite.
+
 ## Roadmap
 
-- [x] Technical concept and data model (Marty Lauterbach)
-- [x] Figma reference design integrated into the component layout (Marty Lauterbach)
-- [x] Project scaffold (Next.js, TypeScript, App Router, `src/`) (Marty Lauterbach)
-- [x] Drizzle schema (single `listings` table) and initial migration (Marty Lauterbach)
-- [x] Magic-link authentication with JWT session and per-IP / per-email
-      rate limiting (Marty Lauterbach)
-- [x] CRUD for listings via Server Actions — create, edit, delete (Marty Lauterbach)
-- [x] Auth-gated platform layout and route gate (Marty Lauterbach)
-- [x] Session expiry enforced: expired `__Host-session` cookies are correctly
-      cleared on the first protected request and the user is redirected to
-      `/login` (Marty Lauterbach)
-- [x] Marketplace page with mode toggle, tag-derived categories, search,
-      and pagination, per the Figma design (Marty Lauterbach)
-- [x] `/meine` page for managing own listings, with in-place editing (Marty Lauterbach)
-- [x] Apply migrations on Neon and run end-to-end against a real `DATABASE_URL`
-      (Marty Lauterbach)
-- [x] CSP nonce in the proxy — `'unsafe-inline'` removed from `script-src`
-      (Marty Lauterbach)
-- [x] Page-level `requireSession()` data-access guard (defense in depth)
-      (Marty Lauterbach)
-- [x] Public `/datenschutz` (Art. 13 GDPR) and `/impressum` (§ 5 DDG) pages
-      (Marty Lauterbach)
-- [x] Production stack live at `feedmyfrog.click` — Vercel + Neon Frankfurt +
-      Brevo, chained and working (Marty Lauterbach)
-- [x] Art. 28 DPAs / terms accepted with Vercel, Neon, and Brevo
-      (Marty Lauterbach)
-- [x] Server-side pagination and search — URL-driven filters, SQL
-      `ILIKE`/`@>`/`LIMIT`/`OFFSET` over title, description and tags
-      (Marty Lauterbach)
-- [x] Location filter: radius search over a closed place set,
-      privacy-preserving GPS snapping (Marty Lauterbach)
-- [x] Location reduced to a closed set — dropdown instead of free text,
-      coordinate columns dropped from the database (Marty Lauterbach)
-- [x] Server-resolved i18n in five languages, incl. legal pages and
-      transactional email (Marty Lauterbach, Kathrin Neu)
-- [x] Unit test suite (348 tests) and GitHub Actions CI (Marty Lauterbach)
+Shipped:
+
+- [x] Technical concept, data model, and the Next.js / TypeScript / App
+      Router scaffold
+- [x] Figma reference design integrated into the component layout
+- [x] Drizzle schema, five migrations, and Neon Frankfurt applied
+      end-to-end against a real `DATABASE_URL`
+- [x] Magic-link authentication: JWT session, per-IP and per-email rate
+      limiting, enforced session expiry, three-layer auth with a
+      `requireSession()` data-access guard
+- [x] Listing CRUD via Server Actions, and `/meine` for managing own
+      listings
+- [x] Marketplace with mode toggle, category tabs, server-side search and
+      pagination over title, description and tags
+- [x] Location filter: radius search over a closed place set, GPS snapping
+      to a town name, coordinate columns dropped from the database
+- [x] Server-resolved i18n in five languages, including legal pages and
+      transactional email
+- [x] Public `/datenschutz` (Art. 13 GDPR) and `/impressum` (§ 5 DDG)
+- [x] CSP nonce in the proxy, with `'unsafe-inline'` removed from
+      `script-src`, and `Permissions-Policy` corrected to
+      `geolocation=(self)`
+- [x] Attacker-insertion audit, with all four findings fixed: prototype-chain
+      lookups, the `__Host-` cookie fallback, login CSRF on `POST /verify`,
+      and the spoofable rate-limit IP
+- [x] 371 unit tests and GitHub Actions CI
 - [x] Latency work: query batching, GIN and trigram indexes, `fra1` pinning
-      (Marty Lauterbach) — see `docs/PERFORMANCE.md`
 - [x] Observability: OpenTelemetry spans, `onRequestError`, Speed Insights
-      (Marty Lauterbach)
 - [x] AI-crawler policy: `robots.txt` deny-list plus `X-Robots-Tag`
-      (Marty Lauterbach)
-- [x] `Permissions-Policy` corrected to `geolocation=(self)` — the empty
-      allowlist had been disabling the app's own GPS button
-- [x] Attacker-insertion audit, and the four findings it produced fixed:
-      prototype-chain lookups, the `__Host-` cookie fallback, login CSRF on
-      `POST /verify`, and the spoofable rate-limit IP (Marty Lauterbach)
-- [ ] Frontend alignment (Busra, Kathrin)
-- [ ] Frontend design (Busra, Kathrin)
-- [ ] Fill in controller/provider placeholders in `src/i18n/legalResources.ts`
-      for `/datenschutz` and `/impressum`
+- [x] Production stack live at `feedmyfrog.click`, with Art. 28 DPAs
+      accepted for Vercel, Neon and Brevo
+
+Open:
+
+- [ ] Frontend alignment and design pass (Busra Sunanur Arpa, Kathrin Neu)
+- [ ] Fill in the controller and provider placeholders in
+      `src/i18n/legalResources.ts`
 - [ ] Add the platform to the university's record of processing activities
       (Art. 30 GDPR)
-- [ ] Cache the category-tab aggregation if the listing count grows — it is
-      a full scan per marketplace render (`docs/PERFORMANCE.md`)
-- [ ] Browser/E2E test layer
+- [ ] Cache the category-tab aggregation if the listing count grows; it is
+      a full scan per marketplace render, see
+      [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md)
+- [ ] Browser / end-to-end test layer
 - [ ] Internal pilot
 - [ ] Review for migration to university infrastructure
 
+## Contributing
+
+This is a university project with a small fixed team, but the workflow is
+open to read and to reproduce.
+
+1. Branch from `main`.
+2. Keep `npm run typecheck`, `npm run lint` and `npm test` green. CI runs
+   all three on every pull request and they gate the merge.
+3. Add or extend tests next to the code you change. Anything that builds
+   SQL should be tested against the real engine, as `src/db/filters.test.ts`
+   is.
+4. Open a pull request against `main`. A Vercel preview deployment with its
+   own Neon branch is built and commented on the pull request.
+
+Bug reports use the template in
+[`.github/ISSUE_TEMPLATE/bug_report.md`](.github/ISSUE_TEMPLATE/bug_report.md).
+For anything touching stored data, authentication or the legal pages, read
+[`docs/COMPLIANCE.md`](docs/COMPLIANCE.md) first.
+
 ## License
 
-[PolyForm Noncommercial License 1.0.0](LICENSE) (SPDX:
-`PolyForm-Noncommercial-1.0.0`).
+[PolyForm Noncommercial License 1.0.0](LICENSE), SPDX
+`PolyForm-Noncommercial-1.0.0`.
 
-**Permitted (free of charge):** personal use; research, study, and hobby
+**Permitted free of charge:** personal use; research, study and hobby
 projects; charitable organizations; educational institutions; public
-research organizations; public safety, health, or environmental protection
+research organizations; public safety, health or environmental protection
 organizations; government institutions. A non-profit *Verein* using this
 software internally falls inside these categories.
 
 **Not permitted:** any commercial purpose, including a company using the
 software for internal business tools, a freelancer using it on a paid
-client engagement, or selling it (or a derivative) as a product or
-service.
+client engagement, or selling it or a derivative as a product or service.
 
 **Patents.** The license includes a Patent Defense clause: anyone who
 asserts a patent claim against this software loses their license
 immediately. Combined with the public publication of this repository on
-GitHub (which establishes prior art), the project's intent is that no
-patent should be enforceable against this software or its noncommercial
-users.
+GitHub, which establishes prior art, the project's intent is that no patent
+should be enforceable against this software or its noncommercial users.
 
 **Liability.** The software is provided "as is" with no warranty and no
 liability, to the maximum extent permitted by law. See section *No
 Liability* in the [LICENSE](LICENSE).
 
-## Author
+## Credits
 
-Martin Lauterbach, Reutlingen University, May 2026.
+Martin Lauterbach, Reutlingen University, May 2026. Architecture, backend,
+authentication, data model, i18n, tests, deployment and compliance.
 
-E2E Testing Framework & Cypress Setup: **Meinhard Holzknecht**.
+End-to-end testing framework and Cypress setup: Meinhard Holzknecht.
 
-Frontend contributions: Kathrin Neu, Busra Sunanur Arpa. Team WayMakr —
-Lauterbach, Holzknecht, Neu, Arpa.
+Frontend contributions: Kathrin Neu, Busra Sunanur Arpa.
+
+Team WayMakr: Lauterbach, Holzknecht, Neu, Arpa.
+
+Reference design:
+[Figma – Mobile Landing Page Design](https://www.figma.com/make/vaEARPyhfvFIfzMZo79NDR/Mobile-Landing-Page-Design--Copy-?t=Um2UIN1WmiPhP7VK-1).
