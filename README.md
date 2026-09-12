@@ -9,7 +9,7 @@ Post what you need, offer what you can do, contact each other by university mail
 
 [![Test](https://github.com/InnoLab-2026/FeedmyFrog/actions/workflows/test.yml/badge.svg)](https://github.com/InnoLab-2026/FeedmyFrog/actions/workflows/test.yml)
 [![Node](https://img.shields.io/badge/node-24-339933?logo=node.js&logoColor=white)](.nvmrc)
-[![Next.js](https://img.shields.io/badge/Next.js-16.2-black?logo=next.js)](https://nextjs.org)
+[![Next.js](https://img.shields.io/badge/Next.js-16.3-black?logo=next.js)](https://nextjs.org)
 [![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-blue)](LICENSE)
 
 [Live site](https://feedmyfrog.click) · [Build guide](BUILD.MD) · [Performance notes](docs/PERFORMANCE.md) · [Compliance record](docs/COMPLIANCE.md)
@@ -83,7 +83,7 @@ EU data-law audit.
 
 | Layer | Technology | Version |
 |-------|------------|---------|
-| Framework | Next.js, App Router | 16.2.12 |
+| Framework | Next.js, App Router | 16.3.5 |
 | UI runtime | React / React DOM | 19.2.4 |
 | Language | TypeScript, `strict: true` | 5.x |
 | Database | PostgreSQL on Neon, Frankfurt | — |
@@ -1223,10 +1223,27 @@ all, with the fact that all real content sits behind a session cookie.
 
 ### Dependency hygiene
 
-`package.json` carries an `overrides` block pinning transitive dependencies
-that had open advisories: `postcss`, `sharp`, `brace-expansion`, `js-yaml`
-and `esbuild`. When bumping `next` or the ESLint toolchain, check whether
-an override has become redundant before carrying it forward.
+`npm audit` reports zero vulnerabilities, and
+[`.github/dependabot.yml`](.github/dependabot.yml) keeps it that way by
+opening weekly grouped pull requests for npm and monthly ones for the
+workflow actions. The groups exist because some packages have to move
+together: bumping `next` alone leaves `eslint-config-next` behind, and the
+lint step then resolves against a different Next.js than the build.
+
+`package.json` also carries an `overrides` block pinning transitive
+dependencies that had open advisories: `postcss`, `sharp`,
+`brace-expansion`, `js-yaml` and `esbuild`. When bumping `next` or the
+ESLint toolchain, check whether an override has become redundant before
+carrying it forward, and test that on a clean install
+(`rm -rf node_modules package-lock.json && npm install`) rather than an
+incremental one, because an incremental resolve keeps the old tree and
+will report a removed override as harmless when it is not.
+
+The `esbuild` pin is the one to leave alone for now. `drizzle-kit`
+reaches `esbuild` through the unmaintained `@esbuild-kit/core-utils`, and
+without the override that resolves to 0.18.20, which carries
+[GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99).
+The only upstream fix is a `drizzle-kit` major.
 
 ## Data protection
 
@@ -1389,6 +1406,8 @@ Open:
 - [ ] Cache the category-tab aggregation if the listing count grows; it is
       a full scan per marketplace render, see
       [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md)
+- [ ] Replace the `edge` runtime on `/api/healthz`. Next.js 16.3 deprecates
+      it and the build now warns on every deploy
 - [ ] Browser / end-to-end test layer
 - [ ] Internal pilot
 - [ ] Review for migration to university infrastructure

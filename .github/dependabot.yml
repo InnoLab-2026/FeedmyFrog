@@ -1,0 +1,49 @@
+# Dependabot keeps the advisory fixes arriving as pull requests instead of
+# accumulating as unread alerts. Grouping is by the packages that have to move
+# together: bumping `next` on its own leaves `eslint-config-next` behind and
+# the lint step then resolves against a different Next.js than the build.
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 5
+    groups:
+      next:
+        patterns:
+          - next
+          - eslint-config-next
+          - '@next/*'
+      react:
+        patterns:
+          - react
+          - react-dom
+          - '@types/react'
+          - '@types/react-dom'
+      drizzle:
+        patterns:
+          - drizzle-orm
+          - drizzle-kit
+      i18n:
+        patterns:
+          - i18next
+          - react-i18next
+      dev-tooling:
+        dependency-type: development
+    ignore:
+      # Node 24 is pinned by .nvmrc and by engines in package.json, so the
+      # types package must not run ahead of the runtime CI installs.
+      - dependency-name: '@types/node'
+        update-types:
+          - 'version-update:semver-major'
+
+  # actions/checkout and actions/setup-node in .github/workflows/test.yml
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: monthly
