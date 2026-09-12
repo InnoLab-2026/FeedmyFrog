@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 
 vi.mock('@/lib/env', () => ({
   env: {
@@ -111,8 +112,63 @@ describe('sendMagicLink', () => {
     const html = payload().htmlContent;
     // A mail client has no page to resolve a relative src against, and a
     // hardcoded host makes a preview deployment quietly serve production's.
-    expect(html).toContain('src="https://feedmyfrog.click/feedmyfrog.jpg"');
+    expect(html).toContain('src="https://feedmyfrog.click/feedmyfrog.png"');
     expect(html).not.toMatch(/src="\/[^/]/);
+  });
+
+  it('points at a format that can carry a transparent background', async () => {
+    await sendMagicLink('anna@reutlingen-university.de', URL_TOKEN, 'en');
+
+    /*
+     * JPEG has no alpha channel. The site's feedmyfrog.jpg has the white
+     * background baked into it, and every client rendered it as a white
+     * rectangle sitting on whatever was behind it. Switching this back to
+     * the .jpg brings the box back.
+     */
+    const html = payload().htmlContent;
+    expect(html).not.toContain('.jpg');
+    expect(html).not.toContain('.jpeg');
+  });
+
+  it('ships a logo that really is transparent, not just named .png', () => {
+    /*
+     * Read out of the file's own chunks rather than through an image library.
+     * The only decoder in the dependency tree is sharp, which is here as a
+     * transitive dependency of next rather than one this project asked for,
+     * and a test is a poor place to start relying on that. A PNG's header and
+     * its transparency table are both plain bytes at known offsets.
+     */
+    const png = readFileSync('public/feedmyfrog.png');
+    const chunks = new Map<string, Buffer>();
+
+    for (let offset = 8; offset + 8 <= png.length; ) {
+      const length = png.readUInt32BE(offset);
+      const type = png.toString('ascii', offset + 4, offset + 8);
+      chunks.set(type, png.subarray(offset + 8, offset + 8 + length));
+      if (type === 'IEND') break;
+      offset += 12 + length;
+    }
+
+    const ihdr = chunks.get('IHDR');
+    expect(ihdr).toBeDefined();
+
+    /*
+     * Colour type 3 is indexed, and an indexed PNG carries its alpha in a
+     * tRNS table. 0 and 2 are greyscale and truecolour with no alpha at all —
+     * which is what a re-export through a tool that flattens the background
+     * would leave behind, and it would still be called .png.
+     */
+    const colourType = ihdr![9];
+    expect([3, 4, 6]).toContain(colourType);
+
+    const trns = chunks.get('tRNS');
+    expect(trns).toBeDefined();
+
+    const alphas = [...trns!];
+    // At least one fully clear entry: the background actually went away.
+    expect(alphas).toContain(0);
+    // And a spread of partial values: a soft edge, not a stair-stepped cutout.
+    expect(alphas.filter((a) => a > 0 && a < 255).length).toBeGreaterThan(20);
   });
 
   it('declares a colour scheme so a dark-mode client does not invert the card', async () => {
@@ -120,9 +176,67 @@ describe('sendMagicLink', () => {
 
     // Without this, Apple Mail and Outlook auto-invert: the brand green button
     // becomes a colour nobody chose, and its label can end up unreadable.
+    // `light dark` rather than `light`, because the mail now carries its own
+    // dark palette and has no reason to ask to be left alone in light mode.
     const html = payload().htmlContent;
-    expect(html).toContain('name="color-scheme" content="light"');
-    expect(html).toContain('name="supported-color-schemes" content="light"');
+    expect(html).toContain('name="color-scheme" content="light dark"');
+    expect(html).toContain('name="supported-color-schemes" content="light dark"');
+  });
+
+  it('carries a dark palette behind a prefers-color-scheme query', async () => {
+    await sendMagicLink('anna@reutlingen-university.de', URL_TOKEN, 'en');
+
+    const html = payload().htmlContent;
+    expect(html).toContain('@media (prefers-color-scheme: dark)');
+
+    // Every rule in that block overrides an inline style on the same element,
+    // and inline wins on specificity. A rule that loses the !important stops
+    // doing anything at all, silently.
+    const block = html.slice(
+      html.indexOf('@media (prefers-color-scheme: dark)'),
+      html.indexOf('</style>'),
+    );
+    const declarations = block.match(/[a-z-]+:\s*#[0-9a-fA-F]{3,8}[^;]*;/g) ?? [];
+
+    expect(declarations.length).toBeGreaterThan(5);
+    for (const declaration of declarations) {
+      expect(declaration).toContain('!important');
+    }
+  });
+
+  it('keeps the light rendering entirely inline, so stripping <style> is safe', async () => {
+    await sendMagicLink('anna@reutlingen-university.de', URL_TOKEN, 'en');
+
+    const html = payload().htmlContent;
+    const withoutStyleBlock = html.replace(/<style>[\s\S]*?<\/style>/, '');
+
+    // Most clients drop <style>. What is left has to be the finished light
+    // mail, not a half-styled one — so the light colours live inline and the
+    // block only ever overrides them.
+    expect(withoutStyleBlock).toContain('background:#f5f5f5');
+    expect(withoutStyleBlock).toContain('background:#ffffff');
+    expect(withoutStyleBlock).toContain('color:#2f2f2f');
+    expect(withoutStyleBlock).toContain('bgcolor="#8DC63F"');
+  });
+
+  it('keeps the logo on a light plate in dark mode', async () => {
+    await sendMagicLink('anna@reutlingen-university.de', URL_TOKEN, 'en');
+
+    /*
+     * The logo is dark-grey line art with a dark-teal wordmark, drawn for a
+     * light ground. Now that it is transparent it takes the colour behind it,
+     * so letting the header band go dark makes the frog and half the wordmark
+     * vanish — the transparency makes this worse, not better, than the old
+     * opaque file did.
+     */
+    const html = payload().htmlContent;
+    const block = html.slice(
+      html.indexOf('@media (prefers-color-scheme: dark)'),
+      html.indexOf('</style>'),
+    );
+
+    expect(block).toContain('.fmf-logo-band');
+    expect(block).toMatch(/\.fmf-logo-band\s*\{[^}]*#ffffff/);
   });
 
   it('gives every layout table border="0"', async () => {

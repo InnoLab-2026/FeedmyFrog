@@ -31,8 +31,14 @@ const SENDER = { name: APP_NAME, email: 'noreply@feedmyfrog.click' } as const;
  * relative path against. Built from the configured base URL rather than a
  * literal host so a preview deployment links its own copy instead of silently
  * pulling production's.
+ *
+ * The PNG, not `feedmyfrog.jpg`. JPEG has no alpha channel, so the site's copy
+ * carries its white background baked in and rendered as a white rectangle on
+ * whatever the mail put behind it. `feedmyfrog.png` is the same artwork with
+ * the background keyed out and the dead margin trimmed: it sits on any colour,
+ * and is smaller (50 KB against 117 KB) because the margin is gone.
  */
-const LOGO_URL = `${env.NEXT_PUBLIC_BASE_URL.replace(/\/$/, '')}/feedmyfrog.jpg`;
+const LOGO_URL = `${env.NEXT_PUBLIC_BASE_URL.replace(/\/$/, '')}/feedmyfrog.png`;
 
 /** Escapes text for interpolation into the HTML part. */
 function escapeHtml(value: string): string {
@@ -86,11 +92,35 @@ function renderText(copy: MagicLinkCopy, url: string, minutes: number): string {
  * `color-scheme` is declared so a client in dark mode uses its documented
  * dark-mode handling instead of auto-inverting the card — an inversion turns
  * the brand green button into a colour nobody chose and can leave its label
- * unreadable.
+ * unreadable. It declares `light dark` rather than `light`: this mail has a
+ * dark palette of its own now, so there is no reason to ask to be left in
+ * light mode.
+ *
+ * That palette is the one <style> block, keyed on prefers-color-scheme. It is
+ * the exception to the inline-only rule above rather than a contradiction of
+ * it: a media query cannot be expressed inline at all, and the inline styles
+ * remain the complete light rendering, so a client that strips <style> — which
+ * is most of the ones that predate it — shows the light card and loses
+ * nothing. Every rule inside carries !important because it is competing with
+ * an inline style on the same element. Outlook on Windows ignores the block
+ * outright and stays light, which is a fine answer.
+ *
+ * Two things deliberately do not change between the modes: the button, whose
+ * brand green is legible either way, and the logo band, which is white in both
+ * because the logo is line art drawn for a light ground.
  *
  * `lang` is set on <html> so a screen reader announces the mail in the right
  * language, and the preheader gives the inbox preview line something better
  * than the first words of the greeting.
+ *
+ * The header band is white with a green rule under it, and the brand green is
+ * spent on the button instead. That was originally a workaround for the logo
+ * being an opaque JPEG; it is not any more — the logo has a real alpha channel
+ * now — but the band stays white on its own merits. The logo's own green is
+ * #9ABA33 (the lily pad, and the "frog" half of the wordmark) and the brand
+ * green is #8DC63F: 1.09:1 against each other, so on a green band those parts
+ * of the artwork disappear. The grey tagline goes from 4.75:1 to 2.33:1 as
+ * well. Green behind this logo needs a different logo, not a different file.
  */
 function renderHtml(
   copy: MagicLinkCopy,
@@ -107,26 +137,49 @@ function renderHtml(
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light">
-<meta name="supported-color-schemes" content="light">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
 <title>${escapeHtml(copy.subject)}</title>
+<style>
+  @media (prefers-color-scheme: dark) {
+    /* !important throughout, because every rule here is overriding an inline
+       style on the same element and inline wins on specificity otherwise.
+       The inline styles stay the light version, so a client that strips this
+       block renders the light card rather than nothing. */
+    .fmf-page    { background:#161616 !important; }
+    .fmf-card    { background:#1f1f1f !important; border-color:#333333 !important; }
+    .fmf-body    { color:#e8e8e8 !important; }
+    .fmf-heading { color:#f4f4f4 !important; }
+    .fmf-muted   { color:#b4b4b4 !important; }
+    .fmf-faint   { color:#9a9a9a !important; }
+    .fmf-rule    { border-top-color:#333333 !important; }
+    .fmf-link    { color:#a9d95f !important; }
+
+    /* The logo keeps a light plate in both modes. It is dark-grey line art
+       with a dark-teal wordmark, drawn for a light ground: on #1f1f1f the
+       frog and half the wordmark disappear. A logo that reads on dark is a
+       second drawing, not a CSS rule. */
+    .fmf-logo-band { background:#ffffff !important; }
+    .fmf-logo-name { color:#1a3200 !important; }
+  }
+</style>
 </head>
-<body style="margin:0;padding:0;background:#f5f5f5;-webkit-text-size-adjust:100%;">
+<body class="fmf-page" style="margin:0;padding:0;background:#f5f5f5;-webkit-text-size-adjust:100%;">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${preheader}</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f5f5;">
+<table role="presentation" class="fmf-page" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f5f5;">
 <tr>
 <td align="center" style="padding:32px 16px;">
-<table role="presentation" width="560" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e6e6e6;">
+<table role="presentation" class="fmf-card" width="560" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e6e6e6;">
 <tr>
-<td align="center" bgcolor="#ffffff" style="padding:28px 24px 20px;border-bottom:3px solid #8DC63F;">
-<img src="${LOGO_URL}" width="120" alt="" style="display:block;border:0;max-width:120px;height:auto;">
-<p style="margin:12px 0 0;font-family:${FONT_STACK};font-size:20px;font-weight:700;color:#1a3200;">${escapeHtml(APP_NAME)}</p>
+<td align="center" class="fmf-logo-band" bgcolor="#ffffff" style="padding:28px 24px 20px;border-bottom:3px solid #8DC63F;">
+<img src="${LOGO_URL}" width="140" height="109" alt="" style="display:block;border:0;max-width:140px;height:auto;">
+<p class="fmf-logo-name" style="margin:12px 0 0;font-family:${FONT_STACK};font-size:20px;font-weight:700;color:#1a3200;">${escapeHtml(APP_NAME)}</p>
 </td>
 </tr>
 <tr>
-<td style="padding:32px 28px;font-family:${FONT_STACK};font-size:16px;line-height:1.6;color:#2f2f2f;">
-<p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#2f2f2f;">${escapeHtml(copy.greeting)}</p>
-<p style="margin:0 0 28px;color:#555555;">${escapeHtml(copy.intro)}</p>
+<td class="fmf-body" style="padding:32px 28px;font-family:${FONT_STACK};font-size:16px;line-height:1.6;color:#2f2f2f;">
+<p class="fmf-heading" style="margin:0 0 8px;font-size:18px;font-weight:700;color:#2f2f2f;">${escapeHtml(copy.greeting)}</p>
+<p class="fmf-muted" style="margin:0 0 28px;color:#555555;">${escapeHtml(copy.intro)}</p>
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
 <tr>
 <td bgcolor="#8DC63F" style="border-radius:10px;border:1px solid #d0d0d0;">
@@ -134,13 +187,13 @@ function renderHtml(
 </td>
 </tr>
 </table>
-<p style="margin:0 0 20px;font-size:14px;color:#6a6a6a;">${validity}</p>
-<p style="margin:0 0 8px;font-size:13px;color:#8a8a8a;">${escapeHtml(copy.fallbackIntro)}</p>
-<p style="margin:0;font-size:12px;word-break:break-all;"><a href="${href}" style="color:#659629;">${href}</a></p>
+<p class="fmf-muted" style="margin:0 0 20px;font-size:14px;color:#6a6a6a;">${validity}</p>
+<p class="fmf-faint" style="margin:0 0 8px;font-size:13px;color:#8a8a8a;">${escapeHtml(copy.fallbackIntro)}</p>
+<p style="margin:0;font-size:12px;word-break:break-all;"><a class="fmf-link" href="${href}" style="color:#659629;">${href}</a></p>
 </td>
 </tr>
 <tr>
-<td style="padding:16px 28px 24px;border-top:1px solid #eeeeee;font-family:${FONT_STACK};font-size:12px;color:#9a9a9a;">
+<td class="fmf-rule fmf-faint" style="padding:16px 28px 24px;border-top:1px solid #eeeeee;font-family:${FONT_STACK};font-size:12px;color:#9a9a9a;">
 ${escapeHtml(copy.ignore)}
 </td>
 </tr>
