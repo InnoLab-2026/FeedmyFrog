@@ -44,11 +44,10 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'npm'
 
+      # No Cypress browser binary: .npmrc turns that download off for every
+      # install of this project, and this job never opens a browser.
       - name: Install dependencies
         run: npm ci
-        env:
-          # The unit job never opens a browser, and the binary is ~300 MB.
-          CYPRESS_INSTALL_BINARY: '0'
 
       - name: Typecheck
         run: npm run typecheck
@@ -115,8 +114,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # The one place that does want the browser binary. Called directly rather
+      # than through npx: npx is npm, so it would pass .npmrc's
+      # cypress_install_binary=0 down to Cypress and skip the very download this
+      # step exists to perform.
       - name: Install the Cypress binary
-        run: npx cypress install
+        run: ./node_modules/.bin/cypress install
 
       - name: Run the suite
         run: ./scripts/e2e.sh
