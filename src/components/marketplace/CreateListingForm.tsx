@@ -163,11 +163,11 @@ export default function CreateListingForm({
   const inputStyle: React.CSSProperties = {
     width: '100%',
     padding: '14px 16px',
-    background: 'white',
+    background: 'var(--page-bg)',
     border: '1px solid rgba(47,47,47,0.2)',
     borderRadius: '8px',
     fontSize: 'var(--fs-control-input)',
-    color: '#2F2F2F',
+    color: 'var(--page-fg)',
     outline: 'none',
     boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
   };
@@ -202,7 +202,7 @@ export default function CreateListingForm({
           <h2
             style={{
               margin: '0 0 26px',
-              color: '#2F2F2F',
+              color: 'var(--page-fg)',
               fontSize: 'var(--fs-xl)',
               fontWeight: 600,
             }}
@@ -233,11 +233,11 @@ export default function CreateListingForm({
                     onClick={() => setType(item)}
                     style={{
                       minHeight: '62px',
-                      background: active ? '#8DC63F' : 'white',
-                      color: active ? 'white' : '#2F2F2F',
+                      background: active ? '#8DC63F' : 'var(--page-bg)',
+                      color: active ? '#1a3200' : 'var(--page-fg)',
                       border: active
                         ? '1px solid #8DC63F'
-                        : '1px solid rgba(47,47,47,0.2)',
+                        : '1px solid rgba(232,234,223,0.2)',
                       borderRadius: '9px',
                       fontSize: 'var(--fs-lg)',
                       fontWeight: 600,
@@ -293,16 +293,16 @@ export default function CreateListingForm({
                       minHeight: '50px',
                       padding: '0 16px',
                       textAlign: 'left',
-                      background: selected ? '#8DC63F' : 'white',
-                      color: selected ? '#1a3200' : '#2F2F2F',
+                      background: selected ? '#8DC63F' : 'var(--page-bg)',
+                      color: selected ? '#1a3200' : 'var(--page-fg)',
                       border: selected
                         ? '1px solid #8DC63F'
-                        : '1px solid rgba(47,47,47,0.2)',
+                        : '1px solid rgba(232,234,223,0.2)',
                       borderRadius: '8px',
                       fontSize: 'var(--fs-md)',
                       fontWeight: 500,
                       cursor: blocked ? 'not-allowed' : 'pointer',
-                      opacity: blocked ? 0.45 : 1,
+                      opacity: blocked ? 0.55 : 1,
                       boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
                     }}
                   >
@@ -341,7 +341,7 @@ export default function CreateListingForm({
           <h2
             style={{
               margin: '0 0 26px',
-              color: '#2F2F2F',
+              color: 'var(--page-fg)',
               fontSize: 'var(--fs-xl)',
               fontWeight: 600,
             }}
@@ -483,8 +483,9 @@ export default function CreateListingForm({
               onClick={() => setStep(1)}
               style={{
                 minHeight: '52px',
-                background: 'white',
-                border: '1px solid rgba(47,47,47,0.2)',
+                background: 'var(--page-bg)',
+                color: 'var(--page-fg)',
+                border: '1px solid rgba(232,234,223,0.2)',
                 borderRadius: '8px',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -518,7 +519,7 @@ export default function CreateListingForm({
           <h2
             style={{
               margin: '0 0 26px',
-              color: '#2F2F2F',
+              color: 'var(--page-fg)',
               fontSize: 'var(--fs-xl)',
               fontWeight: 600,
             }}
@@ -542,8 +543,8 @@ export default function CreateListingForm({
               value={email}
               style={{
                 ...inputStyle,
-                background: '#F5F5F5',
-                color: '#666',
+                    background: 'var(--page-bg)',
+                    color: 'var(--page-fg)',
               }}
             />
             <p
@@ -560,12 +561,12 @@ export default function CreateListingForm({
           <div
             style={{
               padding: '20px',
-              background: '#F7FBF9',
-              border: '1px solid rgba(47,47,47,0.15)',
+              background: 'var(--page-bg)',
+              border: '1px solid rgba(232,234,223,0.2)',
               borderRadius: '10px',
             }}
           >
-            <p style={{ margin: '0 0 10px', fontWeight: 600 }}>
+            <p style={{ margin: '0 0 10px', fontWeight: 600, color: 'var(--muted-fg)' }}>
               {t('preview')}
             </p>
             <h3
@@ -573,6 +574,7 @@ export default function CreateListingForm({
                 margin: '0 0 8px',
                 fontSize: 'var(--fs-lg)',
                 fontWeight: 600,
+                color: 'var(--page-fg)',
               }}
             >
               {title}
@@ -657,7 +659,7 @@ export default function CreateListingForm({
               onClick={() => setStep(2)}
               style={{
                 minHeight: '52px',
-                background: 'white',
+                background: 'var(--page-bg)',
                 border: '1px solid rgba(47,47,47,0.2)',
                 borderRadius: '8px',
                 fontWeight: 600,

@@ -16,6 +16,7 @@ import LocationSearch, {
 } from '@/components/marketplace/LocationSearch';
 
 import CreateListingModal from '@/components/marketplace/CreateListingModal';
+import ThemeToggle from '@/components/layout/ThemeToggle';
 
 interface HeaderProps {
   searchQuery: string;
@@ -75,7 +76,7 @@ export default function Header({
       <header
         className="relative"
         style={{
-          background: 'white',
+          background: 'var(--card-bg)',
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
         }}
       >
@@ -112,7 +113,8 @@ export default function Header({
                 style={{
                   top: 'calc(100% + 8px)',
                   width: '280px',
-                  background: 'white',
+                  color: 'var(--page-fg)',
+                  background: 'var(--card-bg)',
                   border: '1px solid rgba(47,47,47,0.15)',
                   borderRadius: '14px',
                   boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
@@ -130,7 +132,7 @@ export default function Header({
                       height: '40px',
                       borderRadius: '50%',
                       background: '#8DC63F',
-                      color: '#1a3200',
+                      color: 'var(--page-fg)',
                       fontWeight: 700,
                       fontSize: 'var(--fs-xs)',
                       display: 'flex',
@@ -146,7 +148,7 @@ export default function Header({
                       style={{
                         fontWeight: 700,
                         fontSize: 'var(--fs-sm)',
-                        color: '#2F2F2F',
+                        color: 'var(--page-fg)',
                       }}
                     >
                       {displayName}
@@ -157,7 +159,7 @@ export default function Header({
                         display: 'flex',
                         alignItems: 'center',
                         gap: '6px',
-                        color: '#888',
+                        color: 'var(--page-fg)',
                         fontSize: 'var(--fs-2xs)',
                         textDecoration: 'none',
                       }}
@@ -186,11 +188,12 @@ export default function Header({
                   style={{
                     gap: '10px',
                     padding: '12px 16px',
-                    color: '#2F2F2F',
+                    color: 'var(--page-fg)',
                     fontSize: 'var(--fs-sm)',
                     fontWeight: 600,
                     textDecoration: 'none',
-                    background: 'white',
+                    background: 'var(--card-bg)',
+                    border: '1px solid rgba(232,234,223,0.2)',
                   }}
                 >
                   <List style={{ width: '16px', height: '16px' }} />
@@ -207,9 +210,9 @@ export default function Header({
                     style={{
                       gap: '10px',
                       padding: '12px 16px',
-                      background: 'white',
+                      background: 'var(--card-bg)',
                       border: 'none',
-                      color: '#dc2626',
+                      color: '#f87171',
                       fontSize: 'var(--fs-sm)',
                       fontWeight: 600,
                       cursor: 'pointer',
@@ -234,16 +237,16 @@ export default function Header({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'white',
-              border: '1px solid rgba(47,47,47,0.18)',
+              background: 'var(--card-bg)',
+              border: '1px solid rgba(232,234,223,0.2)',
               borderRadius: '8px',
               cursor: 'pointer',
-              color: '#6a6a6a',
+              color: 'var(--page-fg)',
             }}
           >
             <Info style={{ width: '16px', height: '16px' }} />
           </button>
-
+          <ThemeToggle />
           <LanguageButton />
         </div>
 

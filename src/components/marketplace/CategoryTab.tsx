@@ -34,8 +34,8 @@ const CategoryTab = ({
     }`}
     style={{
       minHeight: '44px',
-      background: isSelected ? '#8DC63F' : 'white',
-      color: '#2f2f2f',
+      background: isSelected ? '#8DC63F' : 'var(--card-bg)',
+      color: isSelected ? '#1a3200' : 'var(--page-fg)',
       borderTop: '1px solid rgba(47,47,47,0.15)',
       borderBottom: '1px solid rgba(47,47,47,0.15)',
       borderLeft: isFirst
