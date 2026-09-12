@@ -14,7 +14,6 @@ interface ListingCardProps {
 export default function ListingCard({
   listing,
   ownerActions,
-  alternateBackground = false,
 }: ListingCardProps) {
   const { t } = useTranslation();
 
@@ -27,9 +26,6 @@ export default function ListingCard({
     t('aria_location', { location: listing.location }),
   ].join('. ');
 
-  // The subject is one translated string with the title interpolated, not
-  // `t('contact') + ': ' + title` — the separator and its spacing are part of
-  // the sentence (French, for one, puts a space before the colon).
   const mailtoLink = `mailto:${listing.email}?subject=${encodeURIComponent(
     t('contact_subject', { title: listing.title }),
   )}`;
@@ -41,7 +37,7 @@ export default function ListingCard({
       role="article"
       aria-label={ariaLabel}
       style={{
-        background: alternateBackground ? 'white' : '#F7FBF9',
+        background: 'var(--card-bg)',
         border: '1px solid rgba(47, 47, 47, 0.15)',
         borderRadius: '10px',
         boxShadow:
@@ -62,7 +58,7 @@ export default function ListingCard({
           fontWeight: 600,
           fontSize: 'var(--fs-lg)',
           lineHeight: 1.3,
-          color: '#2F2F2F',
+          color: 'var(--page-fg)',
         }}
       >
         {listing.title}
@@ -73,7 +69,7 @@ export default function ListingCard({
         style={{
           fontSize: 'var(--fs-sm)',
           lineHeight: 1.6,
-          color: '#5a5a5a',
+          color: 'var(--muted-fg)',
         }}
       >
         {listing.description}
@@ -107,7 +103,7 @@ export default function ListingCard({
       >
         <div
           className="flex items-center gap-1.5"
-          style={{ color: '#6a6a6a' }}
+          style={{ color: 'var(--muted-fg)' }}
         >
           <MapPin className="w-3.5 h-3.5" />
           <span>{listing.location}</span>

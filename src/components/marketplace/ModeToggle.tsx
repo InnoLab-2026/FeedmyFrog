@@ -23,7 +23,7 @@ export default function ModeToggle({ mode, onChange }: ModeToggleProps) {
       <div
         className="inline-flex p-1"
         style={{
-          background: 'white',
+          background: 'var(--card-bg)',
           border: '1px solid rgba(47,47,47,0.18)',
           borderRadius: '999px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
@@ -43,7 +43,7 @@ export default function ModeToggle({ mode, onChange }: ModeToggleProps) {
                 borderRadius: '999px',
                 border: 'none',
                 background: active ? '#8DC63F' : 'transparent',
-                color: active ? '#1a3200' : '#2f2f2f',
+                color: active ? '#1a3200' : 'var(--page-fg)',
                 fontWeight: 600,
                 fontSize: 'var(--fs-control-button)',
                 cursor: 'pointer',

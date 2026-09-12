@@ -28,7 +28,7 @@ export default function MyListingsPageContent({
       <main
         className="min-h-screen"
         style={{
-          background: '#f7f8f7',
+          background: 'var(--page-bg)',
           padding: '20px 30px 80px',
         }}
       >
@@ -62,7 +62,7 @@ export default function MyListingsPageContent({
               <h1
                 style={{
                   margin: '0 0 6px',
-                  color: '#2f2f2f',
+                  color: 'var(--page-fg)',
                   fontSize: 'var(--fs-3xl)',
                   lineHeight: 1.25,
                   fontWeight: 700,
@@ -73,7 +73,7 @@ export default function MyListingsPageContent({
               <p
                 style={{
                   margin: 0,
-                  color: '#6a6a6a',
+                  color: 'var(--muted-fg)',
                   fontSize: 'var(--fs-md)',
                   lineHeight: 1.5,
                 }}
@@ -123,9 +123,9 @@ export default function MyListingsPageContent({
                         style={{
                           minHeight: '42px',
                           padding: '0 18px',
-                          background: 'white',
-                          color: '#2f2f2f',
-                          border: '1px solid rgba(47,47,47,0.2)',
+                          background: 'var(--page-bg)',
+                          color: 'var(--page-fg)',
+                          border: '1px solid rgba(232,234,223,0.25)',
                           borderRadius: '7px',
                           fontSize: 'var(--fs-xs)',
                           fontWeight: 600,

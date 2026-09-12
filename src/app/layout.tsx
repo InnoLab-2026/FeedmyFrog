@@ -49,10 +49,18 @@ export default async function RootLayout({
       lang={language}
       className={`${jakarta.variable} ${dmSans.variable} h-full antialiased`}
     >
+        <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body
         className="min-h-full flex flex-col"
         style={{
-          background: '#f5f5f5',
+          background: 'var(--page-bg)',
+          color: 'var(--page-fg)',
         }}
       >
         <I18nProvider language={language}>
