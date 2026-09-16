@@ -10,6 +10,7 @@ import type { Listing, Mode, Category } from '@/types';
 import { iconFor } from '@/data/icons';
 import {
   STANDARD_CATEGORY_TAGS,
+  isStandardCategory,
   categoryLabel,
 } from '@/data/categories';
 
@@ -29,6 +30,11 @@ interface MarketplaceProps {
   perPage: number;
   mode: Mode;
   category: string;
+  /**
+   * The built-in categories in tab order, ranked server-side by how many
+   * listings of this mode carry each one. Always the whole set.
+   */
+  categoryOrder: string[];
   query: string;
   email: string;
 
@@ -48,6 +54,7 @@ export default function Marketplace({
   perPage,
   mode,
   category,
+  categoryOrder,
   query,
   email,
   place,
@@ -166,9 +173,12 @@ export default function Marketplace({
   }
 
   /*
-   * "All" first, then the built-in categories in their fixed order, and
-   * nothing else: the tab strip is a closed, translated set, so it looks the
-   * same on every visit whatever anybody has tagged their listing with.
+   * "All" first, then the built-in categories ranked by how many listings of
+   * this mode carry each one, and nothing else: the tab strip is a closed,
+   * translated set, so the same tabs are present on every visit whatever
+   * anybody has tagged their listing with -- only their order follows the
+   * data, and a category nobody has used sinks to the end rather than
+   * disappearing.
    *
    * A free-form hashtag therefore has no tab of its own. It is not lost --
    * every listing must carry at least one built-in category (step 1 of the
@@ -178,19 +188,33 @@ export default function Marketplace({
    * fit and folds the rest under "more categories".
    */
   const categories = useMemo<Category[]>(() => {
+    /*
+     * `categoryOrder` is the server's ranking, but the strip is rebuilt from
+     * the built-in list rather than from the prop: an id that is not a known
+     * category must never reach CategoryTab, where it would be used as a
+     * filter value and a translation key. Anything unrecognised is dropped
+     * and anything missing is appended in declaration order, so the set is
+     * exactly the built-in one however the prop arrives.
+     */
+    const ranked = categoryOrder.filter(isStandardCategory);
+    const ordered = [
+      ...ranked,
+      ...STANDARD_CATEGORY_TAGS.filter((tag) => !ranked.includes(tag)),
+    ];
+
     return [
       {
         id: 'All',
         label: t('category_all'),
         icon: <Search className="w-4 h-4" />,
       },
-      ...STANDARD_CATEGORY_TAGS.map((tag) => ({
+      ...ordered.map((tag) => ({
         id: tag,
         label: categoryLabel(tag, t),
         icon: iconFor(tag) ?? <Search className="w-4 h-4" />,
       })),
     ];
-  }, [t]);
+  }, [t, categoryOrder]);
 
   // `isPlace` narrows the string from the URL to a member of PLACES before it
   // is used as a key, so an unknown `?loc=` yields no filter rather than an
