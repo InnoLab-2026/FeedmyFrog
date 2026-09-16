@@ -84,7 +84,7 @@ EU data-law audit.
 | Layer | Technology | Version |
 |-------|------------|---------|
 | Framework | Next.js, App Router | 16.3.5 |
-| UI runtime | React / React DOM | 19.2.4 |
+| UI runtime | React / React DOM | 19.3.0 |
 | Language | TypeScript, `strict: true` | 5.x |
 | Database | PostgreSQL on Neon, Frankfurt | — |
 | DB driver | `@neondatabase/serverless` over HTTP | 1.1.x |
@@ -95,7 +95,7 @@ EU data-law audit.
 | Styling | Tailwind CSS 4 plus a CSS custom-property type scale | 4.x |
 | Icons | `lucide-react` | 1.x |
 | i18n | `i18next` / `react-i18next`, five languages | 26 / 17 |
-| Tests | Vitest, with `@electric-sql/pglite` for real-SQL tests | 4.x / 0.5.x |
+| Tests | Vitest, with `@electric-sql/pglite` for real-SQL tests | 5.0 / 0.5.x |
 | Tracing | `@vercel/otel` + `@opentelemetry/api`, `@vercel/speed-insights` | 2.x |
 | Hosting | Vercel, functions pinned to `fra1` | — |
 
@@ -381,6 +381,7 @@ src/
     session.ts                      JWT cookie, getSession, requireSession
     email.ts                        Brevo client, HTML + text mail rendering
     validators.ts                   Email, ListingInput, Uuid, isAllowedEmail
+    listingLimits.ts                title/description/tag bounds
     csrf.ts                         isSameOriginRequest
     rate-limit.ts                   Postgres-backed limiter + cleanup
     geo.ts                          place table, GPS snapping, haversine, bbox
@@ -447,6 +448,7 @@ stored about where a listing is. See
 | `lib/session.ts` | `createSession`, `getSession`, `requireSession`, `destroySession`, `SESSION_COOKIE`. The JWT payload is re-validated with Zod after `jwtVerify`, so a correctly signed token with an unexpected shape is still rejected |
 | `lib/email.ts` | Brevo client. Renders an HTML part (table layout, inline styles, preheader, `color-scheme`, `lang`) and a real plain-text part |
 | `lib/validators.ts` | `isAllowedEmail`, `Email`, `ListingType`, `ListingInput`, `Uuid` |
+| `lib/listingLimits.ts` | the length and count bounds `ListingInput` enforces, in one place so the forms can show the same numbers |
 | `lib/csrf.ts` | `isSameOriginRequest`, the origin check `POST /verify` needs and Server Actions get for free |
 | `lib/rate-limit.ts` | `checkAndConsume` (single-statement count-and-insert), `cleanupRateLimits` (returned unexecuted so it can ride along in a batch) |
 | `lib/geo.ts` | `PLACES`, `Place`, `isPlace`, `PLACES_ALPHABETICAL`, `CITY_COORDS`, `DISTRICT_OF`, `haversineKm`, `findNearestTown`, `placesWithin`, `RADII`, `isRadius` |
@@ -1056,8 +1058,8 @@ drift.
 
 ```mermaid
 flowchart LR
-    PR["Push to main / pull request"] --> CO["actions/checkout@v4"]
-    CO --> NODE["actions/setup-node@v4<br/>node-version-file: .nvmrc, npm cache"]
+    PR["Push to main / pull request"] --> CO["actions/checkout@v7"]
+    CO --> NODE["actions/setup-node@v7<br/>node-version-file: .nvmrc, npm cache"]
     NODE --> CI["npm ci"]
     CI --> TC["npm run typecheck"]
     TC --> LT["npm run lint"]
@@ -1245,7 +1247,9 @@ bucket of unrelated tools rather than a set that moves together, so a
 grouped major traps the safe updates behind the one that cannot merge. The
 first run proved it: eslint 9 to 10, typescript 5 to 7 and vitest 4 to 5
 arrived as one pull request, and the whole thing failed lint on the
-typescript bump alone.
+typescript bump alone. Split up, the safe ones landed: vitest is on 5.0
+and the 371 tests pass on it. ESLint and TypeScript are still held, for
+the reasons below.
 
 Three ignores are deliberate, each with the condition for removing it in
 the config comment.
@@ -1263,15 +1267,20 @@ the config comment.
   `contextOrFilename.getFilename is not a function`. Nothing here can fix
   that; it needs a new `eslint-config-next`.
 
-The ESLint pin and the `brace-expansion` override are coupled, so move them
-together. ESLint 10 pulls minimatch 10, which requires `brace-expansion` 5
-and its named `expand` export, while the override forces 1.1.18 under
-`eslint` because ESLint 9's minimatch wants the 1.x default export. Bumping
-either alone breaks lint.
+The ESLint pin and the `brace-expansion` overrides are coupled, so move
+them together. ESLint 9's minimatch wants the 1.x default export, while
+typescript-eslint's minimatch wants `brace-expansion` 5 and its named
+`expand` export — so both majors are pinned at once, each scoped to the
+dependent that needs it. ESLint 10 would pull minimatch 10 and make the
+1.1.18 pin wrong. Bumping either alone breaks lint.
 
-`package.json` also carries an `overrides` block pinning transitive
-dependencies that had open advisories: `postcss`, `sharp`,
-`brace-expansion`, `js-yaml` and `esbuild`. When bumping `next` or the
+`package.json` also carries an `overrides` block for transitive
+dependencies that had open advisories. Every entry is scoped to the
+dependent that pulls the bad version rather than applied tree-wide:
+`postcss` 8.5.26 and `sharp` 0.35.4 under `next`; `js-yaml` 4.3.2 under
+`eslint`'s `@eslint/eslintrc`; `brace-expansion` 1.1.18 under `eslint`'s
+`minimatch` and 5.0.9 under `typescript-eslint`'s; and `esbuild` 0.25.12
+under `@esbuild-kit/core-utils`. When bumping `next` or the
 ESLint toolchain, check whether an override has become redundant before
 carrying it forward, and test that on a clean install
 (`rm -rf node_modules package-lock.json && npm install`) rather than an
