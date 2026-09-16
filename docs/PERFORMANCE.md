@@ -87,14 +87,21 @@ coordinates were genuinely per-row data. Once the location became a choice
 from a fixed list, the coordinates stopped being per-row data and the
 geometry stopped being necessary.
 
-### Known remaining cost
+### Resolved: the category-tab aggregation
 
-The category-tab aggregation (`SELECT unnest(tags), count(*) … GROUP BY 1`) is
-a parallel sequential scan of every listing of that mode, ~11 ms at 50,000
-rows, and it runs on **every** marketplace render. No index helps a full
-aggregation. It is inside the batch, so it costs no extra round trip, but it
-grows linearly with the table. If the listing count gets large, cache it —
-it depends only on `mode`, and it changes only when a listing is written.
+The marketplace used to carry a third query, `SELECT unnest(tags), count(*) …
+GROUP BY 1`, to rank the tags in use and give each one a tab. It was a
+parallel sequential scan of every listing of that mode, ~11 ms at 50,000
+rows, on **every** marketplace render, and no index helps a full aggregation.
+Being inside the batch it cost no extra round trip, but it grew linearly with
+the table, so the note here used to be "cache it if the listing count gets
+large".
+
+It is gone instead. The tab strip became the closed set of built-in
+categories, assembled client-side, so the ranking it fed had nothing left to
+rank; the query was removed with it. The marketplace batch is now two
+queries — the count and the page of rows — and the render cost no longer
+scales with the table at all.
 
 ## Region
 
