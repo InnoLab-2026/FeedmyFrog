@@ -16,10 +16,16 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { PGlite } from '@electric-sql/pglite';
 import { pg_trgm } from '@electric-sql/pglite/contrib/pg_trgm';
 import { drizzle } from 'drizzle-orm/pglite';
-import { and, eq } from 'drizzle-orm';
+import { and, arrayContains, eq, sql } from 'drizzle-orm';
 
 import { listings } from './schema';
-import { matchesQuery, resolvePlaceParam, withinRadius } from './filters';
+import {
+  categoryCountColumns,
+  matchesQuery,
+  resolvePlaceParam,
+  withinRadius,
+} from './filters';
+import { STANDARD_CATEGORY_TAGS, rankCategories } from '@/data/categories';
 import { PLACES, placesWithin } from '@/lib/geo';
 
 /*
@@ -360,6 +366,97 @@ describe('matchesQuery (real SQL)', () => {
       expect(lines).not.toContain('Seq Scan');
     } finally {
       await client.exec('SET enable_seqscan = on');
+    }
+  });
+});
+
+describe('categoryCountColumns (real SQL)', () => {
+  async function countsFor(mode: 'need' | 'offer') {
+    const [row] = await db
+      .select(categoryCountColumns())
+      .from(listings)
+      .where(eq(listings.type, mode));
+
+    return row as Record<string, number>;
+  }
+
+  it('returns one row carrying every built-in category', async () => {
+    const counts = await countsFor('need');
+
+    expect(Object.keys(counts).sort()).toEqual(
+      [...STANDARD_CATEGORY_TAGS].sort(),
+    );
+    for (const tag of STANDARD_CATEGORY_TAGS) {
+      expect(Number.isInteger(counts[tag])).toBe(true);
+    }
+  });
+
+  it('agrees with counting each category independently', async () => {
+    // The FILTER aggregate does in one pass what nine separate counts do
+    // separately. If the two ever disagree the aggregate is built wrong.
+    const counts = await countsFor('need');
+
+    for (const tag of STANDARD_CATEGORY_TAGS) {
+      const [independent] = await db
+        .select({ n: sql<number>`count(*)::int` })
+        .from(listings)
+        .where(
+          and(eq(listings.type, 'need'), arrayContains(listings.tags, [tag])),
+        );
+
+      expect(counts[tag]).toBe(independent.n);
+    }
+  });
+
+  it('counts the listings added to a category, and only that category', async () => {
+    const before = await countsFor('offer');
+
+    await client.exec(`
+      INSERT INTO listings (user_id, email, type, title, description, location, tags) VALUES
+        ('u', 'a@x.de', 'offer', 'Count 1', 'body body', 'Reutlingen', ARRAY['Verkauf']),
+        ('u', 'a@x.de', 'offer', 'Count 2', 'body body', 'Reutlingen', ARRAY['Verkauf']),
+        ('u', 'a@x.de', 'offer', 'Count 3', 'body body', 'Reutlingen', ARRAY['Verkauf','Transport']);
+    `);
+
+    const after = await countsFor('offer');
+
+    expect(after.Verkauf - before.Verkauf).toBe(3);
+    expect(after.Transport - before.Transport).toBe(1);
+    expect(after.Bildung - before.Bildung).toBe(0);
+  });
+
+  it('does not count a listing of the other mode', async () => {
+    const before = await countsFor('offer');
+
+    await client.exec(`
+      INSERT INTO listings (user_id, email, type, title, description, location, tags) VALUES
+        ('u', 'a@x.de', 'need', 'Wrong mode', 'body body', 'Reutlingen', ARRAY['Verkauf']);
+    `);
+
+    const after = await countsFor('offer');
+    expect(after.Verkauf).toBe(before.Verkauf);
+  });
+
+  it('gives a hashtag no key of its own, however often it is used', async () => {
+    await client.exec(`
+      INSERT INTO listings (user_id, email, type, title, description, location, tags) VALUES
+        ('u', 'a@x.de', 'offer', 'Hash 1', 'body body', 'Reutlingen', ARRAY['Bildung','tandem-partner']),
+        ('u', 'a@x.de', 'offer', 'Hash 2', 'body body', 'Reutlingen', ARRAY['Bildung','tandem-partner']);
+    `);
+
+    const counts = await countsFor('offer');
+
+    expect(counts).not.toHaveProperty('tandem-partner');
+    expect(rankCategories(counts)).not.toContain('tandem-partner');
+  });
+
+  it('feeds a ranking that is the built-in set in count order', async () => {
+    const order = rankCategories(await countsFor('offer'));
+    const counts = await countsFor('offer');
+
+    expect([...order].sort()).toEqual([...STANDARD_CATEGORY_TAGS].sort());
+    for (let i = 1; i < order.length; i += 1) {
+      expect(counts[order[i - 1]]).toBeGreaterThanOrEqual(counts[order[i]]);
     }
   });
 });

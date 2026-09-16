@@ -10,7 +10,13 @@ import { db } from '@/db/client';
 import { listings } from '@/db/schema';
 import { requireSession } from '@/lib/session';
 import { DEFAULT_RADIUS_KM, isRadius } from '@/lib/geo';
-import { matchesQuery, resolvePlaceParam, withinRadius } from '@/db/filters';
+import {
+  categoryCountColumns,
+  matchesQuery,
+  resolvePlaceParam,
+  withinRadius,
+} from '@/db/filters';
+import { rankCategories } from '@/data/categories';
 
 import type { Listing, Mode } from '@/types';
 import Marketplace from '@/components/Marketplace';
@@ -91,7 +97,7 @@ export default async function HomePage({
    * every normal navigation; only an out-of-range `?page=` needs the second
    * query below.
    */
-  const [[{ count }], requestedRows] = await db.batch([
+  const [[{ count }], requestedRows, [categoryCounts]] = await db.batch([
     db
       .select({
         count: sql<number>`count(*)::int`,
@@ -106,6 +112,20 @@ export default async function HomePage({
       .orderBy(desc(listings.createdAt))
       .limit(perPage)
       .offset((requestedPage - 1) * perPage),
+
+    /*
+     * The tab order, counted over the mode alone rather than over `where`.
+     *
+     * Ranking within the filtered set would reorder the strip as the reader
+     * types in the search box, and picking a category would re-sort the row
+     * the pointer is already in. The tabs answer "what is there to look at
+     * in Suche" -- a property of the mode -- so narrowing must not change
+     * them. It rides along in the batch, so it costs no extra round trip.
+     */
+    db
+      .select(categoryCountColumns())
+      .from(listings)
+      .where(eq(listings.type, mode)),
   ]);
 
   const totalPages = Math.max(
@@ -130,6 +150,8 @@ export default async function HomePage({
           .limit(perPage)
           .offset((page - 1) * perPage);
 
+  const categoryOrder = rankCategories(categoryCounts);
+
   const items: Listing[] = rows.map((r) => ({
     id: r.id,
     type: r.type,
@@ -148,6 +170,7 @@ export default async function HomePage({
       perPage={perPage}
       mode={mode}
       category={category}
+      categoryOrder={categoryOrder}
       query={query}
       email={session.email}
       place={place}

@@ -61,3 +61,38 @@ export function isStandardCategory(tag: string): boolean {
 export function categoryLabel(tag: string, t: (key: string) => string): string {
   return isStandardCategory(tag) ? t(getCategoryTranslationKey(tag)) : tag;
 }
+
+/**
+ * Orders the built-in categories by how many listings carry each one, most
+ * first, and returns all of them.
+ *
+ * Two properties the tab strip depends on:
+ *
+ * It always returns exactly the built-in set. The counts come from the
+ * server, but this is a UI ordering over a closed list, not a list built
+ * from data -- a category with no listings sinks to the end rather than
+ * disappearing, so the strip does not gain and lose tabs as people post.
+ * An unknown key in `counts` is ignored for the same reason: a hashtag
+ * cannot earn a tab by being popular.
+ *
+ * Ties keep the declaration order of STANDARD_CATEGORY_TAGS. Sorting by
+ * count alone would leave equal counts to the sort's own ordering, and the
+ * strip would reshuffle between two renders that describe the same data --
+ * on an empty database, every count is zero and every render would differ.
+ */
+export function rankCategories(
+  counts: Readonly<Record<string, number>>,
+): string[] {
+  const countOf = (tag: string): number =>
+    Object.hasOwn(counts, tag) && Number.isFinite(counts[tag])
+      ? counts[tag]
+      : 0;
+
+  return [...STANDARD_CATEGORY_TAGS].sort((a, b) => {
+    const byCount = countOf(b) - countOf(a);
+    if (byCount !== 0) return byCount;
+    return (
+      STANDARD_CATEGORY_TAGS.indexOf(a) - STANDARD_CATEGORY_TAGS.indexOf(b)
+    );
+  });
+}
