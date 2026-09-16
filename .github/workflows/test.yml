@@ -5,21 +5,47 @@ on:
     branches: [main]
   pull_request:
 
+# `pull_request`, never `pull_request_target`. The difference is the whole
+# security model of this file: `pull_request` checks out the fork's code with a
+# read-only token and no access to repository secrets, which is what makes it
+# safe to execute a stranger's branch. `pull_request_target` runs with the base
+# repository's permissions and secrets against the fork's code, and would hand
+# every secret this repository has to anyone who can open a pull request.
+
+# Least privilege, stated rather than inherited. Nothing here writes to the
+# repository, so nothing here may.
+permissions:
+  contents: read
+
+# Superseded runs are pointless spend, and a queue of them delays the one that
+# matters.
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+# Third-party actions are pinned to a commit, not a tag. A tag is a moving
+# pointer its owner can repoint at any time; a compromised or retagged action
+# runs with full access to the job, and pinning is the difference between
+# trusting a commit somebody reviewed and trusting whatever that tag names on
+# the morning it runs. The version each SHA corresponds to is in the comment.
+
 jobs:
-  test:
+  unit:
     name: Typecheck, lint & unit tests
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Node
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
 
+      # No Cypress browser binary: .npmrc turns that download off for every
+      # install of this project, and this job never opens a browser.
       - name: Install dependencies
         run: npm ci
 
@@ -31,3 +57,80 @@ jobs:
 
       - name: Unit tests
         run: npm test
+
+  e2e:
+    name: End-to-end (simulated production)
+    runs-on: ubuntu-latest
+
+    # A database of its own, created empty by the runner and destroyed with it.
+    # It never holds anything but the fixtures scripts/seed-e2e.ts inserts, so
+    # there is no real data here to expose -- not redacted, not anonymised,
+    # simply never present.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: feedmyfrog_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    # This job reads no repository secret, deliberately and checkably -- a grep
+    # of this file for the expression that would inject one comes back empty.
+    # It therefore holds no credential that could reach Neon, Brevo or any
+    # other real service, so there is nothing for a malicious pull request to
+    # steal and no way for a mistake here to touch production data. The values
+    # below are literals precisely so that stays true.
+    env:
+      POSTGRES_URL: postgres://postgres:postgres@127.0.0.1:5432/feedmyfrog_e2e
+      # A throwaway signing key for throwaway sessions against a throwaway app.
+      # It is written in the open on purpose: a real AUTH_SECRET here would be a
+      # production credential exposed to every fork's CI run, which is the thing
+      # this job is designed not to have. It must stay a literal.
+      AUTH_SECRET: '0000000000000000000000000000000000000000000000000000000000000000'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Cache the Cypress binary
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: ~/.cache/Cypress
+          key: cypress-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The one place that does want the browser binary. Called directly rather
+      # than through npx: npx is npm, so it would pass .npmrc's
+      # cypress_install_binary=0 down to Cypress and skip the very download this
+      # step exists to perform.
+      - name: Install the Cypress binary
+        run: ./node_modules/.bin/cypress install
+
+      - name: Run the suite
+        run: ./scripts/e2e.sh
+
+      # Only on failure, and only screenshots. They are of a seeded database,
+      # so there is nothing in them that belongs to anybody.
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+          if-no-files-found: ignore
+          retention-days: 7

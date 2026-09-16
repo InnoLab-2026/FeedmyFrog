@@ -231,6 +231,7 @@ export default function CreateListingForm({
                     key={item}
                     type="button"
                     onClick={() => setType(item)}
+                    data-testid={`listing-type-${item}`}
                     style={{
                       minHeight: '62px',
                       background: active ? '#8DC63F' : 'white',
@@ -289,6 +290,7 @@ export default function CreateListingForm({
                     aria-pressed={selected}
                     disabled={blocked}
                     onClick={() => toggleTag(tag)}
+                    data-testid={`listing-category-${tag}`}
                     style={{
                       minHeight: '50px',
                       padding: '0 16px',
@@ -317,6 +319,7 @@ export default function CreateListingForm({
             type="button"
             disabled={!step1Valid}
             onClick={() => setStep(2)}
+            data-testid="wizard-next"
             style={{
               width: '100%',
               minHeight: '58px',
@@ -362,6 +365,7 @@ export default function CreateListingForm({
             </label>
             <input
               id={titleFieldId}
+              data-testid="listing-title"
               type="text"
               value={title}
               maxLength={TITLE_MAX_LENGTH}
@@ -403,6 +407,7 @@ export default function CreateListingForm({
             </label>
             <textarea
               id={descriptionFieldId}
+              data-testid="listing-description"
               className="slim-scrollbar"
               value={description}
               maxLength={DESCRIPTION_MAX_LENGTH}
@@ -436,6 +441,7 @@ export default function CreateListingForm({
             </label>
             <PlaceSelect
               required
+              data-testid="listing-location"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               style={inputStyle}
@@ -496,6 +502,7 @@ export default function CreateListingForm({
               type="button"
               disabled={!step2Valid}
               onClick={() => setStep(3)}
+              data-testid="wizard-next"
               style={{
                 minHeight: '52px',
                 background: '#8DC63F',
@@ -626,6 +633,7 @@ export default function CreateListingForm({
           {state && !state.ok && (
             <ul
               role="alert"
+              data-testid="listing-errors"
               style={{
                 marginTop: '18px',
                 color: '#dc2626',
@@ -668,6 +676,7 @@ export default function CreateListingForm({
             </button>
             <button
               type="submit"
+              data-testid="listing-publish"
               disabled={pending}
               className="flex items-center justify-center"
               style={{
