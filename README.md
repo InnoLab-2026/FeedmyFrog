@@ -679,13 +679,17 @@ flowchart TD
   great-circle distances in memory, once per request, and hands the
   database a set of names. No coordinate per row, no bounding box, no
   trigonometry in SQL.
-- **Category tabs** are aggregated in the database and ranked by frequency
-  within the current mode, so every tag actually in use gets a tab.
+- **Category tabs** are not a query at all. The strip is the nine built-in
+  categories from `src/data/categories.ts`, assembled client-side and
+  translated, so it is the same closed set on every visit. The per-request
+  `unnest`/`GROUP BY` that used to rank tags by frequency was removed when
+  hashtags stopped making tabs — see *Categories and tags* below.
 - **Round trips** dominate, not query time. `@neondatabase/serverless`
   opens a fresh HTTPS request per query. The marketplace went from three
-  queries in two dependent waves to one `db.batch`; `send-link` went from
-  eight serial round trips to two. Measurements and how to reproduce them
-  are in [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md).
+  queries in two dependent waves to one `db.batch` of two — the count and
+  the page of rows; `send-link` went from eight serial round trips to two.
+  Measurements and how to reproduce them are in
+  [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md).
 
 ### Rate limiting
 
@@ -1307,9 +1311,15 @@ both in all five languages. Both are linked from the footer and from the
 login page, which is the point at which the email address is collected.
 
 > [!WARNING]
-> The controller and provider identity fields are clearly marked
-> placeholders in `src/i18n/legalResources.ts` and **must be filled in
-> before the internal pilot**.
+> The identity fields in `src/i18n/legalResources.ts` are still marked
+> placeholders and **must be filled in before the internal pilot**. There
+> are 50 of them: eight distinct fields — controller name and address, the
+> university DPO's contact details, a contact email (three occurrences),
+> a phone number, street and number, postcode and city, the operator's
+> name, and the person responsible for the content — each repeated across
+> all five languages. They read as `[…]` in the source, so
+> `grep -o "\[[^]]\{8,\}\]" src/i18n/legalResources.ts` lists exactly
+> what is outstanding.
 
 **Data minimisation (Art. 5(1)(c)).**
 
@@ -1441,19 +1451,18 @@ Shipped:
 - [x] Latency work: query batching, GIN and trigram indexes, `fra1` pinning
 - [x] Observability: OpenTelemetry spans, `onRequestError`, Speed Insights
 - [x] AI-crawler policy: `robots.txt` deny-list plus `X-Robots-Tag`
+- [x] Category tabs reduced to the closed built-in set, which removed the
+      per-request tag aggregation from the marketplace render
 - [x] Production stack live at `feedmyfrog.click`, with Art. 28 DPAs
       accepted for Vercel, Neon and Brevo
 
 Open:
 
 - [ ] Frontend alignment and design pass (Busra Sunanur Arpa, Kathrin Neu)
-- [ ] Fill in the controller and provider placeholders in
-      `src/i18n/legalResources.ts`
+- [ ] Fill in the 50 identity placeholders in
+      `src/i18n/legalResources.ts` (eight fields × five languages)
 - [ ] Add the platform to the university's record of processing activities
       (Art. 30 GDPR)
-- [ ] Cache the category-tab aggregation if the listing count grows; it is
-      a full scan per marketplace render, see
-      [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md)
 - [ ] Browser / end-to-end test layer
 - [ ] Internal pilot
 - [ ] Review for migration to university infrastructure
