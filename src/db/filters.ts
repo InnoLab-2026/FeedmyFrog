@@ -2,6 +2,7 @@ import { and, ilike, inArray, or, sql } from 'drizzle-orm';
 
 import { listings } from './schema';
 import { PLACES, isPlace, placesWithin } from '@/lib/geo';
+import { STANDARD_CATEGORY_TAGS } from '@/data/categories';
 
 /**
  * Restricts a listings query to rows whose location is within `radiusKm` of a
@@ -83,3 +84,32 @@ export function resolvePlaceParam(value: string | undefined): string | null {
 }
 
 export { isPlace };
+
+/**
+ * Select shape counting, per built-in category, the listings of one mode
+ * that carry it. Ranked by `rankCategories` into the order of the tab strip.
+ *
+ * A select *shape* rather than a query, for the same reason `cleanupRateLimits`
+ * is a builder: the caller owns the connection and can put this in the
+ * `db.batch` it was already sending, so the tab order costs no round trip of
+ * its own. Over neon-http a separate await would cost a full one.
+ *
+ * One pass, nine counters. This replaces an `unnest(tags) … GROUP BY 1` that
+ * ranked every tag in use, and is cheaper than it in a way that matters at
+ * size: the aggregate is bounded by the number of built-in categories, not
+ * by the number of distinct tags in the table, and no row is expanded into
+ * one output row per tag on the way through. A listing carrying eight
+ * hashtags costs exactly what a listing carrying one costs.
+ *
+ * The tag is bound as a parameter, not interpolated. These are compile-time
+ * constants today, but a category list that later comes from anywhere else
+ * must not be able to reach the SQL text.
+ */
+export function categoryCountColumns() {
+  return Object.fromEntries(
+    STANDARD_CATEGORY_TAGS.map((tag) => [
+      tag,
+      sql<number>`(count(*) filter (where ${listings.tags} @> array[${tag}]::text[]))::int`,
+    ]),
+  );
+}

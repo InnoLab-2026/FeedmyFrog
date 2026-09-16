@@ -449,6 +449,7 @@ stored about where a listing is. See
 | `lib/email.ts` | Brevo client. Renders an HTML part (table layout, inline styles, preheader, `color-scheme`, `lang`) and a real plain-text part |
 | `lib/validators.ts` | `isAllowedEmail`, `Email`, `ListingType`, `ListingInput`, `Uuid` |
 | `lib/listingLimits.ts` | the length and count bounds `ListingInput` enforces, in one place so the forms can show the same numbers |
+| `data/categories.ts` | `STANDARD_CATEGORY_TAGS`, `isStandardCategory`, `categoryLabel`, and `rankCategories` — the tab strip's closed set and its ordering |
 | `lib/csrf.ts` | `isSameOriginRequest`, the origin check `POST /verify` needs and Server Actions get for free |
 | `lib/rate-limit.ts` | `checkAndConsume` (single-statement count-and-insert), `cleanupRateLimits` (returned unexecuted so it can ride along in a batch) |
 | `lib/geo.ts` | `PLACES`, `Place`, `isPlace`, `PLACES_ALPHABETICAL`, `CITY_COORDS`, `DISTRICT_OF`, `haversineKm`, `findNearestTown`, `placesWithin`, `RADII`, `isRadius` |
@@ -679,17 +680,22 @@ flowchart TD
   great-circle distances in memory, once per request, and hands the
   database a set of names. No coordinate per row, no bounding box, no
   trigonometry in SQL.
-- **Category tabs** are not a query at all. The strip is the nine built-in
-  categories from `src/data/categories.ts`, assembled client-side and
-  translated, so it is the same closed set on every visit. The per-request
-  `unnest`/`GROUP BY` that used to rank tags by frequency was removed when
-  hashtags stopped making tabs — see *Categories and tags* below.
+- **Category tabs** keep the closed built-in set, ranked by use.
+  `categoryCountColumns()` counts, per built-in category, the listings of
+  the current mode carrying it — one pass, nine `count(*) FILTER (…)`
+  counters — and `rankCategories()` orders the strip by those counts, most
+  first, ties on declaration order. The count is scoped to the **mode
+  alone**, not to the search box or the place filter: ranking within the
+  filtered set would reorder the tabs as the reader types, and picking a
+  category would re-sort the row the pointer is in. Every category always
+  has a tab; an unused one sinks to the end rather than disappearing, and
+  a hashtag can never earn one.
 - **Round trips** dominate, not query time. `@neondatabase/serverless`
   opens a fresh HTTPS request per query. The marketplace went from three
-  queries in two dependent waves to one `db.batch` of two — the count and
-  the page of rows; `send-link` went from eight serial round trips to two.
-  Measurements and how to reproduce them are in
-  [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md).
+  queries in two dependent waves to one `db.batch` — the count, the page of
+  rows and the tab ranking, in a single round trip; `send-link` went from
+  eight serial round trips to two. Measurements and how to reproduce them
+  are in [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md).
 
 ### Rate limiting
 
@@ -851,9 +857,11 @@ stored as plain German tag strings, because that is what ends up in
 `t(getCategoryTranslationKey(tag))`. The create form offers exactly these
 as quick-picks, at most 2 per listing, leaving room under the server's cap
 of 8 for free-form hashtags. The marketplace renders exactly these as its
-tabs and nothing else, so the tab strip is a closed, translated set that
-looks the same on every visit whatever anybody has tagged their listing
-with.
+tabs and nothing else, so the tab strip is a closed, translated set: the
+same tabs are present on every visit whatever anybody has tagged their
+listing with, and only their *order* follows the data — ranked by how many
+listings of the current mode carry each category, most first, with ties on
+declaration order so equal counts do not reshuffle between renders.
 
 A free-form hashtag therefore has no tab of its own, but it is not
 unreachable. Step 1 of the create form will not advance without at least
@@ -1013,7 +1021,7 @@ move together. `src/data/categories.test.ts` now holds them together.
 
 ## Testing and quality gates
 
-**371 unit tests across 17 files**, run with Vitest in a Node environment
+**385 unit tests across 17 files**, run with Vitest in a Node environment
 against `src/**/*.test.ts`. Counts are the expanded case counts Vitest
 reports; several suites use `it.each` over the five locales.
 
@@ -1026,13 +1034,13 @@ npm run test:watch  # vitest
 
 | File | Tests | Covers |
 |------|-------|--------|
+| `src/data/categories.test.ts` | 51 | that no prototype member is mistaken for a category, that `iconFor` never returns a function or object, that a user tag cannot borrow a UI string, and that `rankCategories` returns the whole built-in set in a deterministic order |
 | `src/i18n/translations.test.ts` | 44 | key parity, empty strings and placeholder parity across all five languages |
-| `src/data/categories.test.ts` | 43 | that no prototype member is mistaken for a category, that `iconFor` never returns a function or object, and that a user tag cannot borrow a UI string |
 | `src/i18n/emailResources.test.ts` | 34 | the same parity checks for the mail copy, plus no emoji and no markup |
+| `src/db/filters.test.ts` | 34 | `withinRadius`, `resolvePlaceParam`, the category-count aggregate and migration `0003`'s normalisation, against a real Postgres engine (`@electric-sql/pglite` with `pg_trgm` loaded); also asserts the `lat`/`lng` columns are gone |
 | `src/lib/geo.test.ts` | 32 | haversine, GPS town snapping and the district rule, `PLACES` integrity, `isPlace`, `placesWithin` symmetry and monotonicity |
 | `src/i18n/legal.test.ts` | 31 | legal namespace registration, key parity, permitted inline markup |
 | `src/lib/validators.test.ts` | 30 | the domain rule including look-alike rejection, all `ListingInput` bounds, and that `location` accepts only `PLACES` |
-| `src/db/filters.test.ts` | 28 | `withinRadius` / `resolvePlaceParam` and migration `0003`'s normalisation against a real Postgres engine (`@electric-sql/pglite` with `pg_trgm` loaded); also asserts the `lat`/`lng` columns are gone |
 | `src/lib/email.test.ts` | 28 | Brevo payload shape, HTML escaping, both mail parts, per-locale rendering |
 | `src/i18n/matchLanguage.test.ts` | 22 | `Accept-Language` parsing, q-value ordering, tag normalisation |
 | `src/actions/listings.test.ts` | 21 | create/update/delete: session guard, validation codes, ownership scoping, `revalidatePath`, and that no coordinate is written or accepted from a request |
@@ -1252,7 +1260,7 @@ grouped major traps the safe updates behind the one that cannot merge. The
 first run proved it: eslint 9 to 10, typescript 5 to 7 and vitest 4 to 5
 arrived as one pull request, and the whole thing failed lint on the
 typescript bump alone. Split up, the safe ones landed: vitest is on 5.0
-and the 371 tests pass on it. ESLint and TypeScript are still held, for
+and the test suite passes on it. ESLint and TypeScript are still held, for
 the reasons below.
 
 Three ignores are deliberate, each with the condition for removing it in
@@ -1447,12 +1455,12 @@ Shipped:
 - [x] Attacker-insertion audit, with all four findings fixed: prototype-chain
       lookups, the `__Host-` cookie fallback, login CSRF on `POST /verify`,
       and the spoofable rate-limit IP
-- [x] 371 unit tests and GitHub Actions CI
+- [x] 385 unit tests and GitHub Actions CI
 - [x] Latency work: query batching, GIN and trigram indexes, `fra1` pinning
 - [x] Observability: OpenTelemetry spans, `onRequestError`, Speed Insights
 - [x] AI-crawler policy: `robots.txt` deny-list plus `X-Robots-Tag`
-- [x] Category tabs reduced to the closed built-in set, which removed the
-      per-request tag aggregation from the marketplace render
+- [x] Category tabs reduced to the closed built-in set, then ranked by
+      listing count per mode with a bounded server-side aggregate
 - [x] Production stack live at `feedmyfrog.click`, with Art. 28 DPAs
       accepted for Vercel, Neon and Brevo
 

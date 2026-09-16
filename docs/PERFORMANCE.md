@@ -87,21 +87,42 @@ coordinates were genuinely per-row data. Once the location became a choice
 from a fixed list, the coordinates stopped being per-row data and the
 geometry stopped being necessary.
 
-### Resolved: the category-tab aggregation
+### The category-tab ranking, and what it used to cost
 
-The marketplace used to carry a third query, `SELECT unnest(tags), count(*) …
-GROUP BY 1`, to rank the tags in use and give each one a tab. It was a
-parallel sequential scan of every listing of that mode, ~11 ms at 50,000
-rows, on **every** marketplace render, and no index helps a full aggregation.
-Being inside the batch it cost no extra round trip, but it grew linearly with
-the table, so the note here used to be "cache it if the listing count gets
+The tab strip is ordered by how many listings of the current mode carry each
+category, so the marketplace carries a third query to count them. What that
+costs has changed twice.
+
+It began as `SELECT unnest(tags), count(*) … GROUP BY 1`, ranking every tag
+in use. That is a parallel sequential scan of every listing of the mode,
+~11 ms at 50,000 rows, on **every** render, and no index helps a full
+aggregation. Worse than the scan, `unnest` expands each row into one output
+row per tag before grouping, so the work scaled with the number of *tags*
+written, not the number of listings: a listing carrying eight hashtags cost
+eight times what a listing carrying one cost. Being inside the batch it cost
+no round trip of its own, but it grew with the table and with how freely
+people tagged. The note here used to be "cache it if the listing count gets
 large".
 
-It is gone instead. The tab strip became the closed set of built-in
-categories, assembled client-side, so the ranking it fed had nothing left to
-rank; the query was removed with it. The marketplace batch is now two
-queries — the count and the page of rows — and the render cost no longer
-scales with the table at all.
+It is now nine `count(*) FILTER (WHERE tags @> ARRAY['…'])` aggregates in a
+single statement — one pass over the mode's rows, nine counters, no row
+expansion:
+
+```sql
+select (count(*) filter (where "tags" @> array[$1]::text[]))::int,
+       …
+  from "listings" where "listings"."type" = $10
+```
+
+The aggregate is bounded by the number of built-in categories rather than by
+the number of distinct tags in the table, which is what makes it safe to run
+per render: adding categories is a decision somebody makes, while adding
+hashtags is something every user does. It still scans, so it still grows
+with the listing count — but linearly, with a constant nine counters, and
+without the multiplier the old shape had.
+
+If it ever does need caching, the shape is friendly to it: the result
+depends only on `mode` and changes only when a listing is written.
 
 ## Region
 
