@@ -313,11 +313,12 @@ export default function Header({
                     height: '44px',
                     paddingLeft: '42px',
                     paddingRight: '16px',
-                    background: '#F7FBF9',
-                    border: '1px solid rgba(47,47,47,0.15)',
+                  background: 'var(--card-bg)',
+                  color: 'var(--page-fg)',
+                  border: '1px solid rgba(232,234,223,0.2)',
                     borderRadius: '9px',
                     fontSize: 'var(--fs-control-input)',
-                    color: '#444',
+                    
                   }}
                 />
               </div>

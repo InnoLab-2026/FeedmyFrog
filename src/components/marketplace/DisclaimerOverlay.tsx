@@ -23,7 +23,14 @@ export default function DisclaimerOverlay({ onClose }: DisclaimerOverlayProps) {
     >
       <div
         className="p-6 rounded-2xl w-full"
-        style={{ background: 'white', border: '2px solid black', boxShadow: CARD_SHADOW, maxWidth: '400px', cursor: 'default' }}
+        style={{
+          background: 'var(--card-bg)',
+          color: 'var(--page-fg)',
+          border: '1px solid rgba(232,234,223,0.2)',
+          boxShadow: CARD_SHADOW,
+          maxWidth: '400px',
+          cursor: 'default',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
@@ -33,7 +40,12 @@ export default function DisclaimerOverlay({ onClose }: DisclaimerOverlayProps) {
           <button
             onClick={onClose}
             className="w-7 h-7 flex items-center justify-center rounded-full"
-            style={{ border: '2px solid black', background: 'white', cursor: 'pointer' }}
+            style={{
+              border: '1px solid rgba(232,234,223,0.25)',
+              background: 'var(--page-bg)',
+              color: 'var(--page-fg)',
+              cursor: 'pointer',
+            }}
             aria-label={t('close')}
           >
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
