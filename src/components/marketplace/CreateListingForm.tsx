@@ -567,7 +567,7 @@ export default function CreateListingForm({
           <div
             style={{
               padding: '20px',
-              background: 'var(--card-bg)',
+              background: 'var(--accent-tint)',
               border: '1px solid var(--card-border)',
               borderRadius: '10px',
             }}
