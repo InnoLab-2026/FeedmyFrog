@@ -28,7 +28,7 @@
      exact same token. */
   --fs-control-input: var(--fs-sm);    /* 14px */
   --fs-control-button: var(--fs-base); /* 16px */
-
+  --muted-fg: #5a5a5a;
   --background: #FBF8F4;
   --foreground: #2D2821;
   --card: #ffffff;
@@ -66,9 +66,18 @@
   --sidebar-accent-foreground: #2D2821;
   --sidebar-border: rgba(141, 123, 104, 0.12);
   --sidebar-ring: #E87461;
+  --page-bg: #f5f5f5;
+  --page-fg: #2F2F2F;
+  --card-bg: #ffffff;
 }
 
+
 .dark {
+  --page-bg: #1b1f18;
+  --page-fg: #e8eadf;
+  --card-bg: #242a20;
+  --muted-fg: #b5b8ae;
+  color-scheme: dark;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.145 0 0);

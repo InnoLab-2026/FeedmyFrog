@@ -35,21 +35,28 @@
    two-step form whose publish button is below the fold, both depend on it.
    `scrollbar-width` is Firefox-only and `::-webkit-scrollbar` is Blink and
    WebKit only, so both spellings are needed for one appearance. */
-.slim-scrollbar {
+html {
   scrollbar-width: thin;
-  scrollbar-color: rgba(47, 47, 47, 0.28) transparent;
+  scrollbar-color: rgba(47, 47, 47, 0.25) transparent;
 }
 
-.slim-scrollbar::-webkit-scrollbar {
+html.dark {
+  scrollbar-color: rgba(232, 234, 223, 0.25) transparent;
+}
+
+html::-webkit-scrollbar {
   width: 6px;
-  height: 6px;
 }
 
-.slim-scrollbar::-webkit-scrollbar-track {
+html::-webkit-scrollbar-thumb {
+  background: rgba(47, 47, 47, 0.25);
+  border-radius: 4px;
+}
+
+html.dark::-webkit-scrollbar-thumb {
+  background: rgba(232, 234, 223, 0.25);
+}
+
+html::-webkit-scrollbar-track {
   background: transparent;
-}
-
-.slim-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(47, 47, 47, 0.28);
-  border-radius: 3px;
 }

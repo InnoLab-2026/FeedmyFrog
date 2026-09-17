@@ -7,7 +7,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
   if (!session) redirect('/login');
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#f5f5f5' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--page-bg)' }}>
       {children}
       <Footer />
     </div>

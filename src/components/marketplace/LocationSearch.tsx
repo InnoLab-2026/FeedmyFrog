@@ -14,31 +14,18 @@ import {
 } from '@/lib/geo';
 
 export interface LocationFilter {
-  /**
-   * The place itself, never a translated label — a stored label would keep
-   * saying "Near Reutlingen" in English after the reader switches language.
-   * The label is built at render time from this plus `approximate`.
-   */
   city: Place;
-  /** True when the place was derived from a GPS fix rather than picked. */
   approximate?: boolean;
   lat: number;
   lng: number;
   radius: number;
 }
 
-/*
- * Town-level is all this feature needs, so ask the browser for the cheap,
- * coarse network fix rather than switching on the GPS chip, and accept a
- * recent cached one. The timeout matters: without it the success callback can
- * simply never arrive and the spinner turns forever.
- */
 const GEOLOCATION_OPTIONS: PositionOptions = {
   enableHighAccuracy: false,
   maximumAge: 30 * 60 * 1000,
   timeout: 10_000,
 };
-
 
 interface LocationSearchProps {
   value: LocationFilter | null;
@@ -56,7 +43,9 @@ export default function LocationSearch({
   const [suggestions, setSuggestions] = useState<Place[]>([]);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState('');
-  const [pendingRadius, setPendingRadius] = useState(value?.radius ?? DEFAULT_RADIUS_KM);
+  const [pendingRadius, setPendingRadius] = useState(
+    value?.radius ?? DEFAULT_RADIUS_KM,
+  );
 
   const ref = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -117,12 +106,6 @@ export default function LocationSearch({
       (position) => {
         setGpsLoading(false);
 
-        /*
-         * The reader's own coordinates exist only inside this callback. They
-         * answer one question — which town? — and are then dropped; what gets
-         * stored is that town's coordinates, so nothing downstream can see a
-         * position more precise than a town centre.
-         */
         const nearest = findNearestTown(
           position.coords.latitude,
           position.coords.longitude,
@@ -178,9 +161,9 @@ export default function LocationSearch({
           paddingLeft: '16px',
           paddingRight: '14px',
           gap: '10px',
-          background: 'white',
-          color: value ? '#444' : '#555',
-          border: `1px solid ${open ? '#8DC63F' : 'rgba(47,47,47,0.15)'}`,
+          background: 'var(--card-bg)',
+          color: value ? 'var(--page-fg)' : 'var(--muted-fg)',
+          border: `1px solid ${open ? '#8DC63F' : 'rgba(232,234,223,0.2)'}`,
           borderRadius: '10px',
           boxShadow: open ? '0 0 0 3px rgba(141,198,63,0.10)' : 'none',
           fontSize: 'var(--fs-control-input)',
@@ -191,7 +174,7 @@ export default function LocationSearch({
           style={{
             width: '17px',
             height: '17px',
-            color: value ? '#8DC63F' : '#666',
+            color: value ? '#8DC63F' : 'var(--muted-fg)',
             flexShrink: 0,
           }}
         />
@@ -227,7 +210,7 @@ export default function LocationSearch({
                 event.stopPropagation();
                 clear();
               }}
-              style={{ display: 'flex', color: '#aaa' }}
+              style={{ display: 'flex', color: 'var(--muted-fg)' }}
             >
               <X style={{ width: '16px', height: '16px' }} />
             </span>
@@ -243,10 +226,10 @@ export default function LocationSearch({
             left: 0,
             right: 0,
             padding: '14px',
-            background: 'white',
-            border: '1px solid rgba(47,47,47,0.13)',
+            background: 'var(--card-bg)',
+            border: '1px solid rgba(232,234,223,0.2)',
             borderRadius: '12px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
             zIndex: 200,
           }}
         >
@@ -259,7 +242,7 @@ export default function LocationSearch({
                 transform: 'translateY(-50%)',
                 width: '18px',
                 height: '18px',
-                color: '#aaa',
+                color: 'var(--muted-fg)',
               }}
             />
             <input
@@ -272,8 +255,9 @@ export default function LocationSearch({
                 height: '48px',
                 paddingLeft: '40px',
                 paddingRight: '36px',
-                background: 'white',
-                border: '1px solid rgba(47,47,47,0.2)',
+                background: 'var(--page-bg)',
+                color: 'var(--page-fg)',
+                border: '1px solid rgba(232,234,223,0.2)',
                 borderRadius: '8px',
                 fontSize: 'var(--fs-md)',
                 outline: 'none',
@@ -292,7 +276,7 @@ export default function LocationSearch({
                   transform: 'translateY(-50%)',
                   width: '16px',
                   height: '16px',
-                  color: '#aaa',
+                  color: 'var(--muted-fg)',
                   cursor: 'pointer',
                 }}
               />
@@ -303,7 +287,7 @@ export default function LocationSearch({
             <div
               style={{
                 marginBottom: '10px',
-                border: '1px solid rgba(47,47,47,0.1)',
+                border: '1px solid rgba(232,234,223,0.15)',
                 borderRadius: '8px',
                 overflow: 'hidden',
               }}
@@ -319,7 +303,8 @@ export default function LocationSearch({
                     alignItems: 'center',
                     gap: '8px',
                     padding: '10px 12px',
-                    background: 'white',
+                    background: 'var(--page-bg)',
+                    color: 'var(--page-fg)',
                     border: 'none',
                     fontSize: 'var(--fs-sm)',
                     textAlign: 'left',
@@ -349,10 +334,10 @@ export default function LocationSearch({
               alignItems: 'center',
               gap: '10px',
               padding: '12px',
-              background: 'rgba(141,198,63,0.07)',
-              border: '1px solid rgba(141,198,63,0.25)',
+              background: 'rgba(141,198,63,0.12)',
+              border: '1px solid rgba(141,198,63,0.3)',
               borderRadius: '8px',
-              color: '#1a3200',
+              color: 'var(--page-fg)',
               fontSize: 'var(--fs-sm)',
               fontWeight: 600,
               cursor: gpsLoading ? 'default' : 'pointer',
@@ -372,7 +357,7 @@ export default function LocationSearch({
             <p
               style={{
                 marginTop: '8px',
-                color: '#dc2626',
+                color: '#f87171',
                 fontSize: 'var(--fs-2xs)',
               }}
             >
@@ -384,7 +369,7 @@ export default function LocationSearch({
             <p
               style={{
                 marginBottom: '7px',
-                color: '#777',
+                color: 'var(--muted-fg)',
                 fontSize: 'var(--fs-2xs)',
                 fontWeight: 500,
               }}
@@ -402,10 +387,10 @@ export default function LocationSearch({
                     style={{
                       flex: 1,
                       padding: '8px 0',
-                      background: active ? '#8DC63F' : 'white',
-                      color: active ? '#1a3200' : '#2F2F2F',
+                      background: active ? '#8DC63F' : 'var(--page-bg)',
+                      color: active ? '#1a3200' : 'var(--page-fg)',
                       border: `1px solid ${
-                        active ? '#8DC63F' : 'rgba(47,47,47,0.2)'
+                        active ? '#8DC63F' : 'rgba(232,234,223,0.2)'
                       }`,
                       borderRadius: '7px',
                       fontSize: 'var(--fs-xs)',

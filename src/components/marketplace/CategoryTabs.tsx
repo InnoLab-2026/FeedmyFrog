@@ -156,13 +156,13 @@ export default function CategoryTabs({
                     }}
                     onMouseLeave={(e) => {
                       if (selectedCategory !== cat.id) {
-                        e.currentTarget.style.background = 'white';
+                        e.currentTarget.style.background = 'var(--card-bg)';
                       }
                     }}
                     className="flex items-center gap-2 py-3 px-4 w-full text-left transition-colors duration-150"
                     style={{
-                      background: selectedCategory === cat.id ? '#8DC63F' : 'white',
-                      color: selectedCategory === cat.id ? '#1a3200' : '#2F2F2F',
+                      background: selectedCategory === cat.id ? '#8DC63F' : 'var(--card-bg)',
+                      color: selectedCategory === cat.id ? '#1a3200' : 'var(--page-fg)',
                       borderBottom:
                         i < overflow.length - 1 ? '1px solid rgba(47, 47, 47, 0.06)' : 'none',
                       fontWeight: selectedCategory === cat.id ? 600 : 500,
