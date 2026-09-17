@@ -169,7 +169,7 @@ export default function CreateListingModal({
           className="fixed inset-0 flex items-center justify-center"
           style={{
             padding: '24px',
-            background: 'rgba(0, 0, 0, 0.55)',
+            color: 'var(--page-fg)',
             zIndex: 100,
           }}
           onMouseDown={(e) => {
@@ -192,7 +192,7 @@ export default function CreateListingModal({
               maxWidth: '760px',
               maxHeight: '90vh',
               overflowY: 'auto',
-              background: 'white',
+              background: 'var(--card-bg)',
               border: '1px solid rgba(47,47,47,0.18)',
               borderRadius: '18px',
               padding: '32px',
@@ -211,7 +211,7 @@ export default function CreateListingModal({
                 id={titleId}
                 style={{
                   margin: 0,
-                  color: '#2F2F2F',
+                  color: 'var(--page-fg)',
                   fontSize: 'var(--fs-3xl)',
                   lineHeight: 1.2,
                   fontWeight: 700,
@@ -229,8 +229,8 @@ export default function CreateListingModal({
                   width: '48px',
                   height: '48px',
                   flexShrink: 0,
-                  background: 'white',
-                  color: '#2F2F2F',
+                  background: 'var(--page-bg)',
+                  color: 'var(--page-fg)',
                   border: '1px solid rgba(47,47,47,0.2)',
                   borderRadius: '10px',
                   cursor: 'pointer',

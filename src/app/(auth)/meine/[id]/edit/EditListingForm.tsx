@@ -10,6 +10,15 @@ import {
   TITLE_MAX_LENGTH,
 } from '@/lib/listingLimits';
 
+const fieldStyle: React.CSSProperties = {
+  padding: '12px 16px',
+  background: 'var(--page-bg)',
+  color: 'var(--page-fg)',
+  border: '1px solid rgba(232,234,223,0.2)',
+  borderRadius: '10px',
+  fontSize: 'var(--fs-control-input)',
+};
+
 export default function EditListingForm({ listing }: { listing: Listing }) {
   const { t } = useTranslation();
   const [state, action, pending] = useActionState<UpdateState | null, FormData>(
@@ -21,12 +30,18 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
     <form
       action={action}
       className="flex flex-col gap-4 p-6 rounded-2xl"
-      style={{ background: 'white', border: '2px solid black' }}
+      style={{
+        background: 'var(--card-bg)',
+        color: 'var(--page-fg)',
+        border: '1px solid rgba(232,234,223,0.2)',
+      }}
     >
       <input type="hidden" name="id" value={listing.id} />
 
       <fieldset>
-        <legend style={{ fontWeight: 600, marginBottom: '8px' }}>{t('type')}</legend>
+        <legend style={{ fontWeight: 600, marginBottom: '8px', color: 'var(--page-fg)' }}>
+          {t('type')}
+        </legend>
         <label className="mr-4">
           <input
             type="radio"
@@ -54,8 +69,7 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
           required
           maxLength={TITLE_MAX_LENGTH}
           defaultValue={listing.title}
-          className="px-4 py-2 rounded-xl"
-          style={{ border: '2px solid black' }}
+          style={fieldStyle}
         />
       </label>
 
@@ -67,8 +81,7 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
           maxLength={DESCRIPTION_MAX_LENGTH}
           rows={5}
           defaultValue={listing.description}
-          className="px-4 py-2 rounded-xl"
-          style={{ border: '2px solid black' }}
+          style={fieldStyle}
         />
       </label>
 
@@ -78,8 +91,7 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
           name="tags"
           defaultValue={listing.tags.join(', ')}
           placeholder={t('custom_tags_placeholder')}
-          className="px-4 py-2 rounded-xl"
-          style={{ border: '2px solid black' }}
+          style={fieldStyle}
         />
       </label>
 
@@ -90,12 +102,12 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
           required
           defaultValue={listing.location}
           className="px-4 py-2 rounded-xl"
-          style={{ border: '2px solid black' }}
+          style={fieldStyle}
         />
       </label>
 
       {state && !state.ok && (
-        <ul role="alert" style={{ color: 'red', fontSize: 'var(--fs-sm)' }}>
+        <ul role="alert" style={{ color: '#f87171', fontSize: 'var(--fs-sm)' }}>
           {Object.entries(state.errors).flatMap(([field, codes]) =>
             codes.map((code, i) => (
               <li key={`${field}-${i}`}>
@@ -110,7 +122,14 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
         type="submit"
         disabled={pending}
         className="py-3 rounded-xl"
-        style={{ background: 'black', color: 'white', fontWeight: 600 }}
+        style={{
+          background: '#8DC63F',
+          color: '#1a3200',
+          fontWeight: 600,
+          border: 'none',
+          cursor: pending ? 'not-allowed' : 'pointer',
+          opacity: pending ? 0.65 : 1,
+        }}
       >
         {pending ? t('saving') : t('save_changes')}
       </button>
