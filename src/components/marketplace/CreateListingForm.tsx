@@ -163,13 +163,13 @@ export default function CreateListingForm({
   const inputStyle: React.CSSProperties = {
     width: '100%',
     padding: '14px 16px',
-    background: 'var(--page-bg)',
-    border: '1px solid rgba(47,47,47,0.2)',
+    background: 'var(--input-bg)',
+    border: '1px solid var(--control-border)',
     borderRadius: '8px',
     fontSize: 'var(--fs-control-input)',
     color: 'var(--page-fg)',
     outline: 'none',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+    boxShadow: 'var(--elevation-sm)',
   };
 
   return (
@@ -191,7 +191,7 @@ export default function CreateListingForm({
               height: '8px',
               flex: 1,
               borderRadius: '999px',
-              background: item <= step ? '#8DC63F' : '#dedede',
+              background: item <= step ? '#8DC63F' : 'var(--divider)',
             }}
           />
         ))}
@@ -233,16 +233,16 @@ export default function CreateListingForm({
                     onClick={() => setType(item)}
                     style={{
                       minHeight: '62px',
-                      background: active ? '#8DC63F' : 'var(--page-bg)',
-                      color: active ? '#1a3200' : 'var(--page-fg)',
+                      background: active ? '#8DC63F' : 'var(--input-bg)',
+                      color: active ? 'var(--on-accent)' : 'var(--page-fg)',
                       border: active
                         ? '1px solid #8DC63F'
-                        : '1px solid rgba(232,234,223,0.2)',
+                        : '1px solid var(--control-border)',
                       borderRadius: '9px',
                       fontSize: 'var(--fs-lg)',
                       fontWeight: 600,
                       cursor: 'pointer',
-                      boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                      boxShadow: 'var(--elevation-sm)',
                     }}
                   >
                     {item === 'need' ? t('mode_need') : t('mode_offer')}
@@ -270,7 +270,7 @@ export default function CreateListingForm({
             <p
               style={{
                 margin: '-6px 0 12px',
-                color: '#666',
+                color: 'var(--muted-fg)',
                 fontSize: 'var(--fs-xs)',
               }}
             >
@@ -293,17 +293,17 @@ export default function CreateListingForm({
                       minHeight: '50px',
                       padding: '0 16px',
                       textAlign: 'left',
-                      background: selected ? '#8DC63F' : 'var(--page-bg)',
-                      color: selected ? '#1a3200' : 'var(--page-fg)',
+                      background: selected ? '#8DC63F' : 'var(--input-bg)',
+                      color: selected ? 'var(--on-accent)' : 'var(--page-fg)',
                       border: selected
                         ? '1px solid #8DC63F'
-                        : '1px solid rgba(232,234,223,0.2)',
+                        : '1px solid var(--control-border)',
                       borderRadius: '8px',
                       fontSize: 'var(--fs-md)',
                       fontWeight: 500,
                       cursor: blocked ? 'not-allowed' : 'pointer',
                       opacity: blocked ? 0.55 : 1,
-                      boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                      boxShadow: 'var(--elevation-sm)',
                     }}
                   >
                     {categoryLabel(tag, t)}
@@ -322,7 +322,7 @@ export default function CreateListingForm({
               minHeight: '58px',
               marginTop: '30px',
               background: '#8DC63F',
-              color: '#1a3200',
+              color: 'var(--on-accent)',
               border: 'none',
               borderRadius: '8px',
               fontSize: 'var(--fs-lg)',
@@ -466,7 +466,7 @@ export default function CreateListingForm({
             <p
               style={{
                 margin: '7px 0 0',
-                color: '#666',
+                color: 'var(--muted-fg)',
                 fontSize: 'var(--fs-xs)',
               }}
             >
@@ -483,9 +483,9 @@ export default function CreateListingForm({
               onClick={() => setStep(1)}
               style={{
                 minHeight: '52px',
-                background: 'var(--page-bg)',
+                background: 'var(--input-bg)',
                 color: 'var(--page-fg)',
-                border: '1px solid rgba(232,234,223,0.2)',
+                border: '1px solid var(--control-border)',
                 borderRadius: '8px',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -500,7 +500,7 @@ export default function CreateListingForm({
               style={{
                 minHeight: '52px',
                 background: '#8DC63F',
-                color: '#1a3200',
+                color: 'var(--on-accent)',
                 border: 'none',
                 borderRadius: '8px',
                 fontWeight: 600,
@@ -543,14 +543,20 @@ export default function CreateListingForm({
               value={email}
               style={{
                 ...inputStyle,
-                    background: 'var(--page-bg)',
-                    color: 'var(--page-fg)',
+                /*
+                 * Deliberately not the editable field surface. The address
+                 * comes from the session and cannot be changed here, and the
+                 * only thing saying so is how it looks.
+                 */
+                background: 'var(--input-readonly-bg)',
+                color: 'var(--muted-fg)',
+                cursor: 'not-allowed',
               }}
             />
             <p
               style={{
                 margin: '6px 0 0',
-                color: '#666',
+                color: 'var(--muted-fg)',
                 fontSize: 'var(--fs-2xs)',
               }}
             >
@@ -561,12 +567,12 @@ export default function CreateListingForm({
           <div
             style={{
               padding: '20px',
-              background: 'var(--page-bg)',
-              border: '1px solid rgba(232,234,223,0.2)',
+              background: 'var(--card-bg)',
+              border: '1px solid var(--card-border)',
               borderRadius: '10px',
             }}
           >
-            <p style={{ margin: '0 0 10px', fontWeight: 600, color: 'var(--muted-fg)' }}>
+            <p style={{ margin: '0 0 10px', fontWeight: 600, color: 'var(--page-fg)' }}>
               {t('preview')}
             </p>
             <h3
@@ -617,7 +623,7 @@ export default function CreateListingForm({
             <p
               style={{
                 margin: 0,
-                color: '#666',
+                color: 'var(--muted-fg)',
                 fontSize: 'var(--fs-2xs)',
               }}
             >
@@ -630,7 +636,7 @@ export default function CreateListingForm({
               role="alert"
               style={{
                 marginTop: '18px',
-                color: '#dc2626',
+                color: 'var(--danger-fg)',
                 fontSize: 'var(--fs-xs)',
               }}
             >
@@ -659,8 +665,9 @@ export default function CreateListingForm({
               onClick={() => setStep(2)}
               style={{
                 minHeight: '52px',
-                background: 'var(--page-bg)',
-                border: '1px solid rgba(47,47,47,0.2)',
+                background: 'var(--input-bg)',
+                color: 'var(--page-fg)',
+                border: '1px solid var(--control-border)',
                 borderRadius: '8px',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -676,7 +683,7 @@ export default function CreateListingForm({
                 gap: '8px',
                 minHeight: '52px',
                 background: '#8DC63F',
-                color: '#1a3200',
+                color: 'var(--on-accent)',
                 border: 'none',
                 borderRadius: '8px',
                 fontWeight: 600,
@@ -734,7 +741,7 @@ export default function CreateListingForm({
             ))}
 
           <Image src="/happyfrog.png" alt="" width={160} height={107} />
-          <p style={{ fontWeight: 700, fontSize: 'var(--fs-xl)', color: '#1a3200' }}>
+          <p style={{ fontWeight: 700, fontSize: 'var(--fs-xl)', color: 'var(--on-accent)' }}>
             {t('listing_published')}
           </p>
         </div>

@@ -48,8 +48,23 @@ export default async function RootLayout({
     <html
       lang={language}
       className={`${jakarta.variable} ${dmSans.variable} h-full antialiased`}
+      // The theme script below writes to this element's class list before
+      // React hydrates, so the class the server rendered and the class in
+      // the document legitimately differ. Without this, React reports that
+      // as a mismatch on every page load.
+      suppressHydrationWarning
     >
-        <head>
+      <head>
+        {/*
+         * Blocking, inline, and first: the theme has to be on the document
+         * before the first paint or the reader sees a white flash before a
+         * dark page. That rules out an effect, a client component, and an
+         * external file -- all three run too late. `localStorage` first so an
+         * explicit choice wins, the media query second so a reader who has
+         * never chosen still gets the theme their system asks for, and the
+         * whole thing in a try/catch because reading storage throws outright
+         * in a private window.
+         */}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();`,

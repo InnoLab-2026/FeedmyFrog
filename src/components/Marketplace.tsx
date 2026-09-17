@@ -309,7 +309,7 @@ export default function Marketplace({
               <div
                 className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
                 style={{
-                  background: 'white',
+                  background: 'var(--card-bg)',
                   border: '2px solid black',
                 }}
               >

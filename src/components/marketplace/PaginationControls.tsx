@@ -22,7 +22,7 @@ export default function PaginationControls({
         value={itemsPerPage}
         onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
         className="px-4 py-2 cursor-pointer appearance-none rounded-xl"
-        style={{ background: 'white', color: 'black', border: '2px solid black', fontSize: 'var(--fs-control-input)', fontWeight: 500 }}
+        style={{ background: 'var(--card-bg)', color: 'var(--page-fg)', border: 'var(--card-border-strong)', fontSize: 'var(--fs-control-input)', fontWeight: 500 }}
       >
         <option value={15}>15</option>
         <option value={30}>30</option>
@@ -33,7 +33,7 @@ export default function PaginationControls({
         onClick={() => onPageChange(Math.max(1, currentPage - 1))}
         disabled={currentPage === 1}
         className="p-2 rounded-xl"
-        style={{ background: 'white', border: '2px solid black', opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
+        style={{ background: 'var(--card-bg)', color: 'var(--page-fg)', border: 'var(--card-border-strong)', opacity: currentPage === 1 ? 0.5 : 1, cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
       >
         <ChevronLeft className="w-5 h-5" />
       </button>
@@ -46,7 +46,7 @@ export default function PaginationControls({
         onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
         disabled={currentPage === totalPages}
         className="p-2 rounded-xl"
-        style={{ background: 'white', border: '2px solid black', opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}
+        style={{ background: 'var(--card-bg)', color: 'var(--page-fg)', border: 'var(--card-border-strong)', opacity: currentPage === totalPages ? 0.5 : 1, cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}
       >
         <ChevronRight className="w-5 h-5" />
       </button>

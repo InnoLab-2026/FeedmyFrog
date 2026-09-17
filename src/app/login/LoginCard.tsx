@@ -168,8 +168,8 @@ export default function LoginCard({
         {/* Login Card */}
         <div
           style={{
-            background: 'white',
-            border: '1px solid rgba(47,47,47,0.15)',
+            background: 'var(--card-bg)',
+            border: '1px solid var(--card-border)',
             borderRadius: '18px',
             padding: '34px',
             boxShadow: CARD_SHADOW,
@@ -210,7 +210,7 @@ export default function LoginCard({
           <div
             style={{
               height: '1px',
-              background: 'rgba(47,47,47,0.08)',
+              background: 'var(--divider)',
               margin: '28px 0 20px',
             }}
           />

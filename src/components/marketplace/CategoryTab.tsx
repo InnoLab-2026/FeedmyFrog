@@ -35,13 +35,13 @@ const CategoryTab = ({
     style={{
       minHeight: '44px',
       background: isSelected ? '#8DC63F' : 'var(--card-bg)',
-      color: isSelected ? '#1a3200' : 'var(--page-fg)',
-      borderTop: '1px solid rgba(47,47,47,0.15)',
-      borderBottom: '1px solid rgba(47,47,47,0.15)',
+      color: isSelected ? 'var(--on-accent)' : 'var(--page-fg)',
+      borderTop: '1px solid var(--card-border)',
+      borderBottom: '1px solid var(--card-border)',
       borderLeft: isFirst
-        ? '1px solid rgba(47,47,47,0.15)'
+        ? '1px solid var(--card-border)'
         : 'none',
-      borderRight: '1px solid rgba(47,47,47,0.15)',
+      borderRight: '1px solid var(--card-border)',
       borderTopLeftRadius: isFirst ? '8px' : '0',
       borderTopRightRadius: isLast ? '8px' : '0',
       fontWeight: 600,

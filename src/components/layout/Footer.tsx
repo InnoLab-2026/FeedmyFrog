@@ -8,7 +8,7 @@ export default function Footer() {
       className="py-6 mt-auto"
       style={{
         background: 'var(--card-bg)',
-        boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.08)',
+        boxShadow: 'var(--elevation-md-up)',
         minHeight: '120px',
       }}
     >
@@ -23,23 +23,22 @@ export default function Footer() {
             style={{ fontWeight: 700, color: 'var(--page-fg)' }}
           >
             {APP_NAME}
-          </a>
-          {' '}
+          </a>{' '}
           2026
         </div>
         <div className="inline-block px-6 py-2 rounded-full" style={{ background: 'var(--page-bg)' }}>
           <a href="https://github.com/mklemmingen" className="hover:underline" style={{ color: 'var(--page-fg)' }}>
             Lauterbach
           </a>
-          {' '}
+          {', '}
           <a href="https://github.com/MeinhardH0815" className="hover:underline" style={{ color: 'var(--page-fg)' }}>
             Holzknecht
           </a>
-          {' '}
+          {', '}
           <a href="https://github.com/KathrinNeu" className="hover:underline" style={{ color: 'var(--page-fg)' }}>
             Neu
           </a>
-          {' '}
+          {', '}
           <a href="https://github.com/BusraSunanur" className="hover:underline" style={{ color: 'var(--page-fg)' }}>
             Arpa
           </a>

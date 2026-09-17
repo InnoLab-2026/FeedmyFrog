@@ -61,7 +61,7 @@ export default function LanguageButton() {
       className="flex items-center justify-center rounded-xl select-none"
       style={{
         background: 'var(--card-bg)',
-        border: '1px solid rgba(232,234,223,0.2)',
+        border: '1px solid var(--control-border)',
         fontSize: 'var(--fs-xs)',
         fontWeight: 700,
         letterSpacing: '0.04em',

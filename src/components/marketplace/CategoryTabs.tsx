@@ -135,9 +135,9 @@ export default function CategoryTabs({
               <div
                 className="absolute top-full left-0 mt-2 w-48 bg-white overflow-hidden"
                 style={{
-                  border: '1px solid rgba(47, 47, 47, 0.15)',
+                  border: '1px solid var(--card-border)',
                   borderRadius: '10px',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04)',
+                  boxShadow: 'var(--elevation-lg)',
                   zIndex: 20,
                 }}
               >
@@ -162,9 +162,9 @@ export default function CategoryTabs({
                     className="flex items-center gap-2 py-3 px-4 w-full text-left transition-colors duration-150"
                     style={{
                       background: selectedCategory === cat.id ? '#8DC63F' : 'var(--card-bg)',
-                      color: selectedCategory === cat.id ? '#1a3200' : 'var(--page-fg)',
+                      color: selectedCategory === cat.id ? 'var(--on-accent)' : 'var(--page-fg)',
                       borderBottom:
-                        i < overflow.length - 1 ? '1px solid rgba(47, 47, 47, 0.06)' : 'none',
+                        i < overflow.length - 1 ? '1px solid var(--divider)' : 'none',
                       fontWeight: selectedCategory === cat.id ? 600 : 500,
                       fontSize: 'var(--fs-sm)',
                     }}

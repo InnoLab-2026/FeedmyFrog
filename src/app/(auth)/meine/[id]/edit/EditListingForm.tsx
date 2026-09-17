@@ -10,11 +10,16 @@ import {
   TITLE_MAX_LENGTH,
 } from '@/lib/listingLimits';
 
+/*
+ * One style for all four fields, so they cannot drift apart. Inline rather
+ * than Tailwind classes because the colours are theme tokens and the rest of
+ * this form is written the same way.
+ */
 const fieldStyle: React.CSSProperties = {
   padding: '12px 16px',
-  background: 'var(--page-bg)',
+  background: 'var(--input-bg)',
   color: 'var(--page-fg)',
-  border: '1px solid rgba(232,234,223,0.2)',
+  border: '1px solid var(--control-border)',
   borderRadius: '10px',
   fontSize: 'var(--fs-control-input)',
 };
@@ -33,7 +38,7 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
       style={{
         background: 'var(--card-bg)',
         color: 'var(--page-fg)',
-        border: '1px solid rgba(232,234,223,0.2)',
+        border: 'var(--card-border-strong)',
       }}
     >
       <input type="hidden" name="id" value={listing.id} />
@@ -101,13 +106,12 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
           name="location"
           required
           defaultValue={listing.location}
-          className="px-4 py-2 rounded-xl"
           style={fieldStyle}
         />
       </label>
 
       {state && !state.ok && (
-        <ul role="alert" style={{ color: '#f87171', fontSize: 'var(--fs-sm)' }}>
+        <ul role="alert" style={{ color: 'var(--danger-fg)', fontSize: 'var(--fs-sm)' }}>
           {Object.entries(state.errors).flatMap(([field, codes]) =>
             codes.map((code, i) => (
               <li key={`${field}-${i}`}>
@@ -124,7 +128,7 @@ export default function EditListingForm({ listing }: { listing: Listing }) {
         className="py-3 rounded-xl"
         style={{
           background: '#8DC63F',
-          color: '#1a3200',
+          color: 'var(--on-accent)',
           fontWeight: 600,
           border: 'none',
           cursor: pending ? 'not-allowed' : 'pointer',

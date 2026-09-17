@@ -77,7 +77,7 @@ export default function Header({
         className="relative"
         style={{
           background: 'var(--card-bg)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+          boxShadow: 'var(--elevation-md)',
         }}
       >
         <div
@@ -95,9 +95,9 @@ export default function Header({
                 width: '36px',
                 height: '36px',
                 borderRadius: '50%',
-                border: '1px solid rgba(47,47,47,0.15)',
+                border: '1px solid var(--card-border)',
                 background: '#8DC63F',
-                color: '#1a3200',
+                color: 'var(--on-accent)',
                 fontSize: 'var(--fs-sm)',
                 fontWeight: 700,
                 cursor: 'pointer',
@@ -115,9 +115,9 @@ export default function Header({
                   width: '280px',
                   color: 'var(--page-fg)',
                   background: 'var(--card-bg)',
-                  border: '1px solid rgba(47,47,47,0.15)',
+                  border: '1px solid var(--card-border)',
                   borderRadius: '14px',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                  boxShadow: 'var(--elevation-lg)',
                   overflow: 'hidden',
                   zIndex: 30,
                 }}
@@ -132,7 +132,7 @@ export default function Header({
                       height: '40px',
                       borderRadius: '50%',
                       background: '#8DC63F',
-                      color: 'var(--page-fg)',
+                      color: 'var(--on-accent)',
                       fontWeight: 700,
                       fontSize: 'var(--fs-xs)',
                       display: 'flex',
@@ -159,7 +159,7 @@ export default function Header({
                         display: 'flex',
                         alignItems: 'center',
                         gap: '6px',
-                        color: 'var(--page-fg)',
+                        color: 'var(--muted-fg)',
                         fontSize: 'var(--fs-2xs)',
                         textDecoration: 'none',
                       }}
@@ -178,7 +178,7 @@ export default function Header({
                   </div>
                 </div>
 
-                <div style={{ height: '1px', background: 'rgba(47,47,47,0.1)' }} />
+                <div style={{ height: '1px', background: 'var(--divider)' }} />
 
                 <Link
                   href="/meine"
@@ -193,14 +193,13 @@ export default function Header({
                     fontWeight: 600,
                     textDecoration: 'none',
                     background: 'var(--card-bg)',
-                    border: '1px solid rgba(232,234,223,0.2)',
                   }}
                 >
                   <List style={{ width: '16px', height: '16px' }} />
                   {t('my_entries')}
                 </Link>
 
-                <div style={{ height: '1px', background: 'rgba(47,47,47,0.1)' }} />
+                <div style={{ height: '1px', background: 'var(--divider)' }} />
 
                 <form action={logout}>
                   <button
@@ -212,7 +211,7 @@ export default function Header({
                       padding: '12px 16px',
                       background: 'var(--card-bg)',
                       border: 'none',
-                      color: '#f87171',
+                      color: 'var(--danger-fg)',
                       fontSize: 'var(--fs-sm)',
                       fontWeight: 600,
                       cursor: 'pointer',
@@ -238,7 +237,7 @@ export default function Header({
               alignItems: 'center',
               justifyContent: 'center',
               background: 'var(--card-bg)',
-              border: '1px solid rgba(232,234,223,0.2)',
+              border: '1px solid var(--control-border)',
               borderRadius: '8px',
               cursor: 'pointer',
               color: 'var(--page-fg)',
@@ -313,12 +312,11 @@ export default function Header({
                     height: '44px',
                     paddingLeft: '42px',
                     paddingRight: '16px',
-                  background: 'var(--card-bg)',
-                  color: 'var(--page-fg)',
-                  border: '1px solid rgba(232,234,223,0.2)',
+                    background: 'var(--input-bg)',
+                    color: 'var(--page-fg)',
+                    border: '1px solid var(--control-border)',
                     borderRadius: '9px',
                     fontSize: 'var(--fs-control-input)',
-                    
                   }}
                 />
               </div>
