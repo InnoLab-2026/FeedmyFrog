@@ -17,7 +17,7 @@ export default function DisclaimerOverlay({ onClose }: DisclaimerOverlayProps) {
   return (
     <div
       className="fixed inset-0 flex items-center justify-center px-5"
-      style={{ background: 'rgba(0, 0, 0, 0.55)', zIndex: 50, cursor: 'pointer' }}
+      style={{ background: 'var(--overlay-bg)', zIndex: 50, cursor: 'pointer' }}
       onClick={onClose}
       role="dialog" aria-modal="true" aria-label={t('disclaimer_title')}
     >
@@ -26,7 +26,7 @@ export default function DisclaimerOverlay({ onClose }: DisclaimerOverlayProps) {
         style={{
           background: 'var(--card-bg)',
           color: 'var(--page-fg)',
-          border: '1px solid rgba(232,234,223,0.2)',
+          border: 'var(--card-border-strong)',
           boxShadow: CARD_SHADOW,
           maxWidth: '400px',
           cursor: 'default',
@@ -41,7 +41,7 @@ export default function DisclaimerOverlay({ onClose }: DisclaimerOverlayProps) {
             onClick={onClose}
             className="w-7 h-7 flex items-center justify-center rounded-full"
             style={{
-              border: '1px solid rgba(232,234,223,0.25)',
+              border: '1px solid var(--control-border)',
               background: 'var(--page-bg)',
               color: 'var(--page-fg)',
               cursor: 'pointer',

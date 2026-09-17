@@ -20,7 +20,10 @@ export const dynamic = 'force-dynamic';
 // Der sichtbare Text steht — in allen fünf Sprachen — in ImpressumContent.tsx.
 export default function ImpressumPage() {
   return (
-      <main className="min-h-screen p-6 py-12" style={{ background: 'var(--page-bg)', color: 'var(--page-fg)' }}>
+    <main
+      className="min-h-screen p-6 py-12"
+      style={{ background: 'var(--page-bg)', color: 'var(--page-fg)' }}
+    >
       <div className="mx-auto w-full max-w-3xl">
         <LegalPageTopBar />
       </div>
@@ -29,7 +32,7 @@ export default function ImpressumPage() {
         style={{
           background: 'var(--card-bg)',
           color: 'var(--page-fg)',
-          border: '1px solid rgba(232,234,223,0.2)',
+          border: 'var(--card-border-strong)',
           boxShadow: CARD_SHADOW,
         }}
       >

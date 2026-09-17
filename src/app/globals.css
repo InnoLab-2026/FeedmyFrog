@@ -34,29 +34,35 @@
    holding four hundred characters, and a dialog capped at 90vh holding a
    two-step form whose publish button is below the fold, both depend on it.
    `scrollbar-width` is Firefox-only and `::-webkit-scrollbar` is Blink and
-   WebKit only, so both spellings are needed for one appearance. */
-html {
+   WebKit only, so both spellings are needed for one appearance.
+
+   `html` and `.slim-scrollbar` both, and for different reasons. The page's
+   own scrollbar wants the same restraint, and dark mode makes that visible
+   -- a light system scrollbar down the edge of a dark page is a seam of its
+   own. But styling `html` does not reach an inner scroll container, so the
+   class the two components above actually carry has to keep existing; moving
+   the rules to `html` alone left both of them on the platform default while
+   appearing to have fixed something. The thumb colour is a token, so it
+   follows the theme rather than needing a second copy of each rule. */
+html,
+.slim-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(47, 47, 47, 0.25) transparent;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 
-html.dark {
-  scrollbar-color: rgba(232, 234, 223, 0.25) transparent;
-}
-
-html::-webkit-scrollbar {
+html::-webkit-scrollbar,
+.slim-scrollbar::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 
-html::-webkit-scrollbar-thumb {
-  background: rgba(47, 47, 47, 0.25);
+html::-webkit-scrollbar-thumb,
+.slim-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
-html.dark::-webkit-scrollbar-thumb {
-  background: rgba(232, 234, 223, 0.25);
-}
-
-html::-webkit-scrollbar-track {
+html::-webkit-scrollbar-track,
+.slim-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }

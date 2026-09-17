@@ -74,7 +74,7 @@ export default function LoginForm({
       <div
         style={{
           padding: '20px',
-          background: '#F7FBF9',
+          background: 'var(--accent-tint)',
           border: '1px solid rgba(141,198,63,0.35)',
           borderRadius: '12px',
           fontSize: 'var(--fs-sm)',
@@ -83,7 +83,7 @@ export default function LoginForm({
         <p
           style={{
             margin: 0,
-            color: '#2F2F2F',
+            color: 'var(--page-fg)',
             fontWeight: 700,
             fontSize: 'var(--fs-base)',
           }}
@@ -106,7 +106,7 @@ export default function LoginForm({
         <p
           style={{
             margin: '8px 0 0',
-            color: '#2F2F2F',
+            color: 'var(--page-fg)',
             fontWeight: 700,
             lineHeight: 1.5,
             overflowWrap: 'anywhere',
@@ -143,7 +143,7 @@ export default function LoginForm({
         style={{
           fontSize: 'var(--fs-sm)',
           fontWeight: 600,
-          color: '#2F2F2F',
+          color: 'var(--page-fg)',
         }}
       >
         {t('email_address_label')}
@@ -160,10 +160,10 @@ export default function LoginForm({
           style={{
             height: '54px',
             padding: '0 16px',
-            background: '#F7FBF9',
-            border: '1px solid rgba(47,47,47,0.18)',
+            background: 'var(--input-bg)',
+            border: '1px solid var(--control-border)',
             borderRadius: '10px',
-            color: '#2F2F2F',
+            color: 'var(--page-fg)',
             fontSize: 'var(--fs-control-input)',
             transition:
               'border-color 150ms ease, box-shadow 150ms ease',
@@ -175,7 +175,7 @@ export default function LoginForm({
           }}
           onBlur={(e) => {
             e.currentTarget.style.borderColor =
-              'rgba(47,47,47,0.18)';
+              'var(--control-border)';
             e.currentTarget.style.boxShadow = 'none';
           }}
         />
@@ -187,12 +187,12 @@ export default function LoginForm({
           style={{
             margin: 0,
             padding: '12px 14px',
-            border: '1px solid rgba(220,38,38,0.25)',
+            border: '1px solid var(--danger-border)',
             borderRadius: '10px',
-            color: '#dc2626',
+            color: 'var(--danger-fg)',
             fontSize: 'var(--fs-xs)',
             fontWeight: 600,
-            background: '#fff7f7',
+            background: 'var(--danger-bg)',
           }}
         >
           {error}
@@ -206,7 +206,7 @@ export default function LoginForm({
           minHeight: '54px',
           width: '100%',
           background: '#8DC63F',
-          color: '#1a3200',
+          color: 'var(--on-accent)',
           border: '1px solid #8DC63F',
           borderRadius: '10px',
           fontSize: 'var(--fs-control-button)',

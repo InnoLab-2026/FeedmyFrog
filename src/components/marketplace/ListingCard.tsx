@@ -8,7 +8,6 @@ import type { Listing } from '@/types';
 interface ListingCardProps {
   listing: Listing;
   ownerActions?: ReactNode;
-  alternateBackground?: boolean;
 }
 
 export default function ListingCard({
@@ -26,6 +25,9 @@ export default function ListingCard({
     t('aria_location', { location: listing.location }),
   ].join('. ');
 
+  // The subject is one translated string with the title interpolated, not
+  // `t('contact') + ': ' + title` — the separator and its spacing are part of
+  // the sentence (French, for one, puts a space before the colon).
   const mailtoLink = `mailto:${listing.email}?subject=${encodeURIComponent(
     t('contact_subject', { title: listing.title }),
   )}`;
@@ -38,10 +40,9 @@ export default function ListingCard({
       aria-label={ariaLabel}
       style={{
         background: 'var(--card-bg)',
-        border: '1px solid rgba(47, 47, 47, 0.15)',
+        border: '1px solid var(--card-border)',
         borderRadius: '10px',
-        boxShadow:
-          '0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)',
+        boxShadow: 'var(--elevation-sm)',
       }}
       onFocus={(e) => {
         e.currentTarget.style.outline = '3px solid #8DC63F';
@@ -98,7 +99,7 @@ export default function ListingCard({
         style={{
           fontSize: 'var(--fs-xs)',
           fontWeight: 500,
-          borderTop: '1px solid rgba(47, 47, 47, 0.08)',
+          borderTop: '1px solid var(--divider)',
         }}
       >
         <div
@@ -114,7 +115,7 @@ export default function ListingCard({
           className="flex items-center gap-1.5 px-4 py-2 transition-all duration-200"
           style={{
             background: '#8DC63F',
-            color: '#1a3200',
+            color: 'var(--on-accent)',
             border: '1px solid #8DC63F',
             borderRadius: '7px',
             fontSize: 'var(--fs-xs)',

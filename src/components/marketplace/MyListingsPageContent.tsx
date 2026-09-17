@@ -88,8 +88,8 @@ export default function MyListingsPageContent({
           {data.length === 0 ? (
             <div
               style={{
-                background: 'white',
-                border: '1px solid rgba(47,47,47,0.14)',
+                background: 'var(--card-bg)',
+                border: '1px solid var(--card-border)',
                 borderRadius: '12px',
                 padding: '64px 30px',
                 textAlign: 'center',
@@ -125,7 +125,7 @@ export default function MyListingsPageContent({
                           padding: '0 18px',
                           background: 'var(--page-bg)',
                           color: 'var(--page-fg)',
-                          border: '1px solid rgba(232,234,223,0.25)',
+                          border: '1px solid var(--control-border)',
                           borderRadius: '7px',
                           fontSize: 'var(--fs-xs)',
                           fontWeight: 600,
@@ -141,7 +141,7 @@ export default function MyListingsPageContent({
                           style={{
                             minHeight: '42px',
                             padding: '0 18px',
-                            background: 'white',
+                            background: 'var(--card-bg)',
                             color: '#b42318',
                             border: '1px solid rgba(180,35,24,0.3)',
                             borderRadius: '7px',
