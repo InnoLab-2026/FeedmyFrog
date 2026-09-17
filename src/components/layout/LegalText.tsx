@@ -14,7 +14,7 @@ import { LEGAL_NS } from '@/i18n/legal';
  */
 
 const LINK_STYLE = {
-  color: 'black',
+  color: 'var(--page-fg)',
   fontWeight: 700,
   textDecoration: 'underline',
 } as const;
@@ -40,7 +40,7 @@ export function LegalTitle({ children }: { children: ReactNode }) {
         fontFamily: 'var(--font-family-display)',
         fontWeight: 700,
         fontSize: 'var(--fs-2xl)',
-        color: 'black',
+        color: 'var(--page-fg)',
       }}
     >
       {children}
@@ -52,7 +52,7 @@ export function LegalSection({ children }: { children: ReactNode }) {
   return (
     <section
       className="mt-6 space-y-4 leading-relaxed"
-      style={{ fontSize: 'var(--fs-sm)', fontWeight: 500, color: 'black' }}
+      style={{ fontSize: 'var(--fs-sm)', fontWeight: 500, color: 'var(--page-fg)' }}
     >
       {children}
     </section>
