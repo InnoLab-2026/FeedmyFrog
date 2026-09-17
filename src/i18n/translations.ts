@@ -20,6 +20,9 @@ export const resources = {
       language_switch_aria:
         'Language: {{current}}. Switch to {{next}}.',
 
+      // Theme switcher
+      theme_switch: 'Switch colour scheme',
+
       // Contact mail
       contact_subject: 'Listing: {{title}}',
 
@@ -205,6 +208,9 @@ export const resources = {
       language_switch_aria:
         'Sprache: {{current}}. Zu {{next}} wechseln.',
 
+      // Theme switcher
+      theme_switch: 'Farbschema umschalten',
+
       // Contact mail
       contact_subject: 'Anzeige: {{title}}',
 
@@ -387,6 +393,9 @@ export const resources = {
       language_switch_aria:
         'Langue : {{current}}. Passer en {{next}}.',
 
+      // Theme switcher
+      theme_switch: 'Changer de thème',
+
       // Contact mail
       contact_subject: 'Annonce : {{title}}',
 
@@ -556,6 +565,9 @@ export const resources = {
       language_switch_aria:
         'Dil: {{current}}. {{next}} diline geç.',
 
+      // Theme switcher
+      theme_switch: 'Renk şemasını değiştir',
+
       // Contact mail
       contact_subject: 'İlan: {{title}}',
 
@@ -724,6 +736,9 @@ export const resources = {
       language_switch_to: 'Cambiar a {{language}}',
       language_switch_aria:
         'Idioma: {{current}}. Cambiar a {{next}}.',
+
+      // Theme switcher
+      theme_switch: 'Cambiar el esquema de color',
 
       // Contact mail
       contact_subject: 'Anuncio: {{title}}',

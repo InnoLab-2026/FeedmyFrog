@@ -30,7 +30,7 @@ export default function EditListingPageHeader() {
           style={{
             background: 'var(--card-bg)',
             color: 'var(--page-fg)',
-            border: '1px solid rgba(232,234,223,0.25)',
+            border: '1px solid var(--control-border)',
             fontWeight: 600,
             textDecoration: 'none',
           }}

@@ -28,7 +28,6 @@
      exact same token. */
   --fs-control-input: var(--fs-sm);    /* 14px */
   --fs-control-button: var(--fs-base); /* 16px */
-  --muted-fg: #5a5a5a;
   --background: #FBF8F4;
   --foreground: #2D2821;
   --card: #ffffff;
@@ -66,17 +65,84 @@
   --sidebar-accent-foreground: #2D2821;
   --sidebar-border: rgba(141, 123, 104, 0.12);
   --sidebar-ring: #E87461;
+  /* --- Surfaces and themed colour ---------------------------------------
+     Every value a component paints with lives here in both themes, because
+     the alternative is what the first pass at dark mode actually did: token
+     the backgrounds, hardcode the borders, and ship a light mode whose cards
+     have no outline. If a colour differs between light and dark it needs a
+     name here -- borders and shadows included, they are not details. */
   --page-bg: #f5f5f5;
   --page-fg: #2F2F2F;
+  --muted-fg: #5a5a5a;
   --card-bg: #ffffff;
-}
 
+  /* Hairlines and elevation. `--card-border` is the ordinary outline; the
+     legal cards and the disclaimer use `--card-border-strong`, which is the
+     2px black frame those surfaces have always been drawn with. */
+  --card-border: rgba(47, 47, 47, 0.15);
+  --card-border-strong: 2px solid #000000;
+  --control-border: rgba(47, 47, 47, 0.2);
+  --divider: rgba(47, 47, 47, 0.08);
+  --elevation-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --elevation-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --elevation-md-up: 0 -2px 8px rgba(0, 0, 0, 0.08);
+  --elevation-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --elevation-xl: 0 20px 60px rgba(0, 0, 0, 0.25);
+  --elevation-card: 0 4px 12px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.15);
+
+  /* Inputs sit on a surface of their own so a read-only field can be told
+     apart from an editable one without reading its attributes. */
+  --input-bg: #ffffff;
+  --input-readonly-bg: #f5f5f5;
+
+  /* Text on the brand green. The green does not change between themes, so
+     what is legible on top of it does not either -- which is the whole point
+     of naming it: it stops --page-fg being reached for on a fixed
+     background, where it goes near-white in dark mode. Declared once, not
+     redeclared under .dark. */
+  --on-accent: #1a3200;
+  /* The faint green wash behind confirmations and the GPS affordance. */
+  --accent-tint: #F7FBF9;
+
+  --danger-fg: #dc2626;
+  --danger-bg: #fff7f7;
+  --danger-border: rgba(220, 38, 38, 0.25);
+  --overlay-bg: rgba(0, 0, 0, 0.55);
+  --scrollbar-thumb: rgba(47, 47, 47, 0.25);
+
+  color-scheme: light;
+}
 
 .dark {
   --page-bg: #1b1f18;
   --page-fg: #e8eadf;
   --card-bg: #242a20;
   --muted-fg: #b5b8ae;
+
+  --card-border: rgba(232, 234, 223, 0.2);
+  --card-border-strong: 1px solid rgba(232, 234, 223, 0.25);
+  --control-border: rgba(232, 234, 223, 0.2);
+  --divider: rgba(232, 234, 223, 0.12);
+  /* A shadow is the absence of light, so on a dark ground it has to be
+     darker still to read at all -- reusing the light alphas makes every
+     raised surface look flat. */
+  --elevation-sm: 0 1px 3px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.35);
+  --elevation-md: 0 2px 8px rgba(0, 0, 0, 0.5);
+  --elevation-md-up: 0 -2px 8px rgba(0, 0, 0, 0.5);
+  --elevation-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --elevation-xl: 0 20px 60px rgba(0, 0, 0, 0.7);
+  --elevation-card: 0 4px 12px rgba(0, 0, 0, 0.55), 0 2px 4px rgba(0, 0, 0, 0.45);
+
+  --input-bg: #1b1f18;
+  --input-readonly-bg: #171b15;
+  --accent-tint: #1f2a18;
+
+  --danger-fg: #f87171;
+  --danger-bg: #2a1c1c;
+  --danger-border: rgba(248, 113, 113, 0.35);
+  --overlay-bg: rgba(0, 0, 0, 0.7);
+  --scrollbar-thumb: rgba(232, 234, 223, 0.25);
+
   color-scheme: dark;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);

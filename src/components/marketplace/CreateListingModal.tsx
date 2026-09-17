@@ -151,7 +151,7 @@ export default function CreateListingModal({
           height: '40px',
           padding: '0 14px',
           background: '#8DC63F',
-          color: '#1a3200',
+          color: 'var(--on-accent)',
           border: 'none',
           borderRadius: '8px',
           fontSize: 'var(--fs-sm)',
@@ -169,6 +169,12 @@ export default function CreateListingModal({
           className="fixed inset-0 flex items-center justify-center"
           style={{
             padding: '24px',
+            /*
+             * The scrim. It dims the page behind the dialog and it is the
+             * click-outside-to-close target, so it is load-bearing twice
+             * over; a dialog with no backdrop reads as part of the page.
+             */
+            background: 'var(--overlay-bg)',
             color: 'var(--page-fg)',
             zIndex: 100,
           }}
@@ -193,10 +199,10 @@ export default function CreateListingModal({
               maxHeight: '90vh',
               overflowY: 'auto',
               background: 'var(--card-bg)',
-              border: '1px solid rgba(47,47,47,0.18)',
+              border: '1px solid var(--card-border)',
               borderRadius: '18px',
               padding: '32px',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+              boxShadow: 'var(--elevation-xl)',
               outline: 'none',
             }}
           >
@@ -231,7 +237,7 @@ export default function CreateListingModal({
                   flexShrink: 0,
                   background: 'var(--page-bg)',
                   color: 'var(--page-fg)',
-                  border: '1px solid rgba(47,47,47,0.2)',
+                  border: '1px solid var(--control-border)',
                   borderRadius: '10px',
                   cursor: 'pointer',
                 }}
