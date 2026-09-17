@@ -310,7 +310,7 @@ export default function Marketplace({
                 className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
                 style={{
                   background: 'var(--card-bg)',
-                  border: '2px solid black',
+                  border: 'var(--card-border-strong)',
                 }}
               >
                 <Search className="w-7 h-7" />
