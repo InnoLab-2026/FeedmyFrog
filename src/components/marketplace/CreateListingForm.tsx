@@ -66,7 +66,7 @@ const CONFETTI_COLORS = ['#FF3B30', '#007AFF', '#FFD60A', '#FF2D55', '#FF9F0A'];
  * confetti animation; without motion there is nothing to wait for beyond long
  * enough to read the line.
  */
-const CELEBRATION_MS = 1800;
+const CELEBRATION_MS = 2100;
 const CELEBRATION_REDUCED_MS = 700;
 
 export default function CreateListingForm({
