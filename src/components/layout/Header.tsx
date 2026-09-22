@@ -201,7 +201,13 @@ export default function Header({
 
                 <div style={{ height: '1px', background: 'var(--divider)' }} />
 
-                <form action={logout}>
+                <form
+                  action={logout}
+                  onSubmit={() => {
+                    window.sessionStorage.removeItem('theme');
+                    document.documentElement.classList.remove('dark');
+                  }}
+                >
                   <button
                     type="submit"
                     role="menuitem"

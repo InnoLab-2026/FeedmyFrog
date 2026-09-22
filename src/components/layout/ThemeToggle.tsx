@@ -25,7 +25,7 @@ export default function ThemeToggle() {
       : 'dark';
     applyTheme(next);
     try {
-      window.localStorage.setItem('theme', next);
+      window.sessionStorage.setItem('theme', next);
     } catch {
       /*
        * Private browsing and blocked site data both throw here. The theme
