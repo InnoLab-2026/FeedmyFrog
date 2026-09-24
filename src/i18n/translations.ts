@@ -74,6 +74,17 @@ export const resources = {
       no_own_listings: 'You have not created any listings yet.',
       create_first_listing: 'Create your first listing',
 
+      // Saved listings
+      saved_entries: 'Saved listings',
+      saved_listings_title: 'My saved listings',
+      saved_listings_description:
+        'Kept in this browser only and removed automatically {{days}} days after saving.',
+      saved_listings_partial:
+        'Some saved listings only appear here once they have come up in the overview during this visit.',
+      no_saved_listings: 'You have not saved any listings yet.',
+      save_listing: 'Save listing',
+      unsave_listing: 'Remove from saved listings',
+
       // Create listing modal
       create_listing_title: 'Create listing',
       type_and_tags: 'Type & categories',
@@ -262,6 +273,18 @@ export const resources = {
       no_own_listings: 'Sie haben noch keine Anzeigen erstellt.',
       create_first_listing: 'Jetzt erste Anzeige erstellen',
 
+      // Saved listings
+      saved_entries: 'Gespeicherte Anzeigen',
+      saved_listings_title: 'Meine gespeicherten Anzeigen',
+      saved_listings_description:
+        'Nur in diesem Browser gespeichert und {{days}} Tage nach dem Speichern automatisch entfernt.',
+      saved_listings_partial:
+        'Manche gespeicherten Anzeigen erscheinen hier erst, wenn sie bei diesem Besuch in der Übersicht aufgetaucht sind.',
+      no_saved_listings:
+        'Sie haben noch keine Anzeigen gespeichert.',
+      save_listing: 'Anzeige speichern',
+      unsave_listing: 'Aus gespeicherten Anzeigen entfernen',
+
       // Create listing modal
       create_listing_title: 'Anzeige erstellen',
       type_and_tags: 'Art & Kategorien',
@@ -441,6 +464,18 @@ export const resources = {
       no_own_listings: "Vous n'avez encore créé aucune annonce.",
       create_first_listing: 'Créer la première annonce',
 
+      // Saved listings
+      saved_entries: 'Annonces enregistrées',
+      saved_listings_title: 'Mes annonces enregistrées',
+      saved_listings_description:
+        'Conservées uniquement dans ce navigateur et supprimées automatiquement {{days}} jours après leur enregistrement.',
+      saved_listings_partial:
+        "Certaines annonces enregistrées n'apparaissent ici qu'une fois affichées dans l'aperçu au cours de cette visite.",
+      no_saved_listings:
+        "Vous n'avez encore enregistré aucune annonce.",
+      save_listing: "Enregistrer l'annonce",
+      unsave_listing: 'Retirer des annonces enregistrées',
+
       create_listing_title: 'Créer une annonce',
       type_and_tags: 'Type et catégories',
       type: 'Type',
@@ -612,6 +647,17 @@ export const resources = {
       create_listing: 'İlan oluştur',
       no_own_listings: 'Henüz bir ilan oluşturmadınız.',
       create_first_listing: 'İlk ilanı oluştur',
+
+      // Saved listings
+      saved_entries: 'Kaydedilen ilanlar',
+      saved_listings_title: 'Kaydettiğim ilanlar',
+      saved_listings_description:
+        'Yalnızca bu tarayıcıda saklanır ve kaydedildikten {{days}} gün sonra otomatik olarak kaldırılır.',
+      saved_listings_partial:
+        'Kaydedilen bazı ilanlar, bu ziyarette genel bakışta göründükten sonra burada listelenir.',
+      no_saved_listings: 'Henüz bir ilan kaydetmediniz.',
+      save_listing: 'İlanı kaydet',
+      unsave_listing: 'Kaydedilen ilanlardan çıkar',
 
       create_listing_title: 'İlan oluştur',
       type_and_tags: 'Tür ve kategoriler',
@@ -785,6 +831,17 @@ export const resources = {
       create_listing: 'Crear anuncio',
       no_own_listings: 'Aún no has creado ningún anuncio.',
       create_first_listing: 'Crear el primer anuncio',
+
+      // Saved listings
+      saved_entries: 'Anuncios guardados',
+      saved_listings_title: 'Mis anuncios guardados',
+      saved_listings_description:
+        'Se guardan solo en este navegador y se eliminan automáticamente {{days}} días después de guardarlos.',
+      saved_listings_partial:
+        'Algunos anuncios guardados solo aparecen aquí cuando se han mostrado en el resumen durante esta visita.',
+      no_saved_listings: 'Aún no has guardado ningún anuncio.',
+      save_listing: 'Guardar anuncio',
+      unsave_listing: 'Quitar de los anuncios guardados',
 
       create_listing_title: 'Crear anuncio',
       type_and_tags: 'Tipo y categorías',

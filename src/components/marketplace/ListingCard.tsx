@@ -2,95 +2,26 @@
 
 import { MapPin, Mail, Bookmark } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useSyncExternalStore, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { Listing } from '@/types';
+import { useSavedListings } from '@/components/marketplace/SavedListingsProvider';
 
 interface ListingCardProps {
   listing: Listing;
   ownerActions?: ReactNode;
-  onSavedChange?: (listingId: string, saved: boolean) => void;
-}
-
-const SAVED_LISTINGS_KEY = 'savedListings';
-
-const SAVED_LISTINGS_EVENT = 'saved-listings-change';
-
-function subscribeToSavedListings(callback: () => void) {
-  window.addEventListener('storage', callback);
-  window.addEventListener(SAVED_LISTINGS_EVENT, callback);
-
-  return () => {
-    window.removeEventListener('storage', callback);
-    window.removeEventListener(SAVED_LISTINGS_EVENT, callback);
-  };
-}
-
-function getSavedListingsSnapshot() {
-  return window.localStorage.getItem(SAVED_LISTINGS_KEY) ?? '{}';
-}
-
-function getSavedListingsServerSnapshot() {
-  return '{}';
 }
 
 export default function ListingCard({
   listing,
   ownerActions,
-  onSavedChange,
 }: ListingCardProps) {
   const { t } = useTranslation();
+  const saved = useSavedListings();
 
-  const savedListingsSnapshot = useSyncExternalStore(
-    subscribeToSavedListings,
-    getSavedListingsSnapshot,
-    getSavedListingsServerSnapshot,
-  );
-
-  let stored: Record<string, number> = {};
-
-  try {
-    stored = JSON.parse(savedListingsSnapshot) as Record<string, number>;
-  } catch {
-    stored = {};
-  }
-
-  const savedAt = stored[listing.id];
-
-const isSaved =
-  typeof savedAt === 'number' &&
-  savedAt > new Date().getTime() - 7 * 24 * 60 * 60 * 1000;
-
-  const toggleSaved = () => {
-    try {
-      const currentStored = JSON.parse(
-        window.localStorage.getItem(SAVED_LISTINGS_KEY) ?? '{}',
-      ) as Record<string, number>;
-
-      if (isSaved) {
-        delete currentStored[listing.id];
-
-        window.localStorage.setItem(
-          SAVED_LISTINGS_KEY,
-          JSON.stringify(currentStored),
-        );
-
-        window.dispatchEvent(new Event(SAVED_LISTINGS_EVENT));
-        onSavedChange?.(listing.id, false);
-      } else {
-        currentStored[listing.id] = Date.now();
-
-        window.localStorage.setItem(
-          SAVED_LISTINGS_KEY,
-          JSON.stringify(currentStored),
-        );
-
-        window.dispatchEvent(new Event(SAVED_LISTINGS_EVENT));
-        onSavedChange?.(listing.id, true);
-      }
-    } catch {
-      // localStorage may be unavailable.
-    }
-  };
+  // Bookmarking your own listing is pointless, so owner cards go without.
+  const canSave = saved !== null && !ownerActions;
+  const isSaved = canSave && saved.isSaved(listing.id);
+  const saveLabel = t(isSaved ? 'unsave_listing' : 'save_listing');
 
   const ariaLabel = [
     listing.title,
@@ -101,6 +32,9 @@ const isSaved =
     t('aria_location', { location: listing.location }),
   ].join('. ');
 
+  // The subject is one translated string with the title interpolated, not
+  // `t('contact') + ': ' + title` — the separator and its spacing are part of
+  // the sentence (French, for one, puts a space before the colon).
   const mailtoLink = `mailto:${listing.email}?subject=${encodeURIComponent(
     t('contact_subject', { title: listing.title }),
   )}`;
@@ -138,36 +72,28 @@ const isSaved =
           {listing.title}
         </h3>
 
-        <button
-          type="button"
-          aria-label={
-            isSaved
-              ? 'Anzeige nicht mehr speichern'
-              : 'Anzeige speichern'
-          }
-          title={
-            isSaved
-              ? 'Nicht mehr speichern'
-              : 'Anzeige speichern'
-          }
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleSaved();
-          }}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            cursor: 'pointer',
-            color: isSaved ? '#8DC63F' : 'var(--muted-fg)',
-            padding: '2px',
-            flexShrink: 0,
-          }}
-        >
-          <Bookmark
-            className="w-5 h-5"
-            fill={isSaved ? 'currentColor' : 'none'}
-          />
-        </button>
+        {canSave && (
+          <button
+            type="button"
+            aria-label={saveLabel}
+            title={saveLabel}
+            onClick={() => saved.toggleSaved(listing)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: isSaved ? '#8DC63F' : 'var(--muted-fg)',
+              padding: '2px',
+              flexShrink: 0,
+            }}
+          >
+            <Bookmark
+              aria-hidden="true"
+              className="w-5 h-5"
+              fill={isSaved ? 'currentColor' : 'none'}
+            />
+          </button>
+        )}
       </div>
 
       <p

@@ -37,6 +37,7 @@ export default async function HomePage({
     loc?: string;
     r?: string;
     near?: string;
+    saved?: string;
   }>;
 }) {
   const session = await requireSession();
@@ -176,6 +177,7 @@ export default async function HomePage({
       place={place}
       radiusKm={radiusKm}
       approximate={approximate}
+      showSaved={params.saved === '1'}
     />
   );
 }

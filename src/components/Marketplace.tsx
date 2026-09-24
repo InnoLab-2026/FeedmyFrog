@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +21,8 @@ import ModeToggle from '@/components/marketplace/ModeToggle';
 import CategoryTabs from '@/components/marketplace/CategoryTabs';
 import PaginationControls from '@/components/marketplace/PaginationControls';
 import ListingCard from '@/components/marketplace/ListingCard';
+import SavedListingsView from '@/components/marketplace/SavedListingsView';
+import { useSavedListings } from '@/components/marketplace/SavedListingsProvider';
 
 interface MarketplaceProps {
   /** The current page slice — filtering and pagination happen in SQL. */
@@ -43,7 +45,20 @@ interface MarketplaceProps {
   radiusKm: number;
   /** The place came from a GPS fix, so the control says "Near X". */
   approximate: boolean;
+  /** `?saved=1`: show the saved listings instead of the result page. */
+  showSaved: boolean;
 }
+
+type NavigationState = Partial<{
+  mode: Mode;
+  category: string;
+  q: string;
+  page: number;
+  per: number;
+  place: string | null;
+  radiusKm: number;
+  approximate: boolean;
+}>;
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -60,10 +75,19 @@ export default function Marketplace({
   place,
   radiusKm,
   approximate,
+  showSaved,
 }: MarketplaceProps) {
   const { t } = useTranslation();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+
+  // Every page of results feeds the saved view, so it needs no query of its
+  // own; see SavedListingsProvider.
+  const rememberListings = useSavedListings()?.rememberListings;
+
+  useEffect(() => {
+    rememberListings?.(listings);
+  }, [listings, rememberListings]);
 
   const [searchInput, setSearchInput] = useState(query);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -78,19 +102,12 @@ export default function Marketplace({
     );
   }
 
-  function navigate(
-    next: Partial<{
-      mode: Mode;
-      category: string;
-      q: string;
-      page: number;
-      per: number;
-      place: string | null;
-      radiusKm: number;
-      approximate: boolean;
-    }>,
-    replace = false,
-  ) {
+  /*
+   * The browse URL for the current filters with `next` applied. It never
+   * carries `saved`, so any filter change -- and the saved view's back
+   * link -- lands on the result list.
+   */
+  function urlFor(next: NavigationState): string {
     const merged = {
       mode,
       category,
@@ -143,7 +160,11 @@ export default function Marketplace({
     }
 
     const qs = params.toString();
-    const url = qs ? `/?${qs}` : '/';
+    return qs ? `/?${qs}` : '/';
+  }
+
+  function navigate(next: NavigationState, replace = false) {
+    const url = urlFor(next);
 
     startTransition(() => {
       if (replace) {
@@ -256,111 +277,117 @@ export default function Marketplace({
       />
 
       <main className="max-w-[1400px] w-full mx-auto px-5 flex-grow pb-8">
-        <ModeToggle
-          mode={mode}
-          onChange={(m) =>
-            navigate({
-              mode: m,
-              category: 'All',
-              page: 1,
-            })
-          }
-        />
-
-        <CategoryTabs
-          categories={categories}
-          selectedCategory={category}
-          onSelectCategory={(c) =>
-            navigate({
-              category: c,
-              page: 1,
-            })
-          }
-        />
-
-        {showPagination && (
-          <div className="mb-6">
-            <PaginationControls
-              currentPage={page}
-              totalPages={totalPages}
-              itemsPerPage={perPage}
-              onPageChange={(p) =>
-                navigate({ page: p })
-              }
-              onItemsPerPageChange={(n) =>
+        {showSaved ? (
+          <SavedListingsView backHref={urlFor({})} />
+        ) : (
+          <>
+            <ModeToggle
+              mode={mode}
+              onChange={(m) =>
                 navigate({
-                  per: n,
+                  mode: m,
+                  category: 'All',
                   page: 1,
                 })
               }
             />
-          </div>
-        )}
 
-        <div
-          className="space-y-4"
-          style={{
-            opacity: isPending ? 0.6 : 1,
-            transition: 'opacity 150ms',
-          }}
-        >
-          {totalCount === 0 ? (
-            <div className="text-center py-12">
-              <div
-                className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
-                style={{
-                  background: 'var(--card-bg)',
-                  border: 'var(--card-border-strong)',
-                }}
-              >
-                <Search className="w-7 h-7" />
+            <CategoryTabs
+              categories={categories}
+              selectedCategory={category}
+              onSelectCategory={(c) =>
+                navigate({
+                  category: c,
+                  page: 1,
+                })
+              }
+            />
+
+            {showPagination && (
+              <div className="mb-6">
+                <PaginationControls
+                  currentPage={page}
+                  totalPages={totalPages}
+                  itemsPerPage={perPage}
+                  onPageChange={(p) =>
+                    navigate({ page: p })
+                  }
+                  onItemsPerPageChange={(n) =>
+                    navigate({
+                      per: n,
+                      page: 1,
+                    })
+                  }
+                />
               </div>
+            )}
 
-              <p
-                style={{
-                  fontSize: 'var(--fs-base)',
-                  fontWeight: 500,
-                }}
-              >
-                {t('no_results')}
-              </p>
+            <div
+              className="space-y-4"
+              style={{
+                opacity: isPending ? 0.6 : 1,
+                transition: 'opacity 150ms',
+              }}
+            >
+              {totalCount === 0 ? (
+                <div className="text-center py-12">
+                  <div
+                    className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+                    style={{
+                      background: 'var(--card-bg)',
+                      border: 'var(--card-border-strong)',
+                    }}
+                  >
+                    <Search className="w-7 h-7" />
+                  </div>
 
-              <p
-                style={{
-                  fontSize: 'var(--fs-sm)',
-                  marginTop: '8px',
-                }}
-              >
-                {t('try_different')}
-              </p>
+                  <p
+                    style={{
+                      fontSize: 'var(--fs-base)',
+                      fontWeight: 500,
+                    }}
+                  >
+                    {t('no_results')}
+                  </p>
+
+                  <p
+                    style={{
+                      fontSize: 'var(--fs-sm)',
+                      marginTop: '8px',
+                    }}
+                  >
+                    {t('try_different')}
+                  </p>
+                </div>
+              ) : (
+                listings.map((listing) => (
+                  <ListingCard
+                    key={listing.id}
+                    listing={listing}
+                  />
+                ))
+              )}
             </div>
-          ) : (
-            listings.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-              />
-            ))
-          )}
-        </div>
 
-        {showPagination && (
-          <div className="mt-6">
-            <PaginationControls
-              currentPage={page}
-              totalPages={totalPages}
-              itemsPerPage={perPage}
-              onPageChange={(p) =>
-                navigate({ page: p })
-              }
-              onItemsPerPageChange={(n) =>
-                navigate({
-                  per: n,
-                  page: 1,
-                })
-              }
-            />
-          </div>
+            {showPagination && (
+              <div className="mt-6">
+                <PaginationControls
+                  currentPage={page}
+                  totalPages={totalPages}
+                  itemsPerPage={perPage}
+                  onPageChange={(p) =>
+                    navigate({ page: p })
+                  }
+                  onItemsPerPageChange={(n) =>
+                    navigate({
+                      per: n,
+                      page: 1,
+                    })
+                  }
+                />
+              </div>
+            )}
+          </>
         )}
       </main>
       <ScrollToTop />
