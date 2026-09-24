@@ -25,9 +25,17 @@ import {
  * the named supervisory authority from section 7.
  */
 
-const DATA_ITEMS = ['email', 'listing', 'ip', 'cookie', 'logs'] as const;
+const DATA_ITEMS = ['email', 'listing', 'ip', 'cookie', 'device', 'logs'] as const;
 const PROCESSORS = ['vercel', 'neon', 'brevo'] as const;
-const RETENTION_ROWS = ['token', 'session', 'ip', 'listings'] as const;
+const RETENTION_ROWS = [
+  'token',
+  'session',
+  'ip',
+  'listings',
+  'saved',
+  'language',
+  'theme',
+] as const;
 
 export default function DatenschutzContent() {
   const { t, i18n } = useTranslation(LEGAL_NS);
