@@ -1,9 +1,10 @@
 'use client';
 
-import { MapPin, Mail } from 'lucide-react';
+import { MapPin, Mail, Bookmark } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { ReactNode } from 'react';
 import type { Listing } from '@/types';
+import { useSavedListings } from '@/components/marketplace/SavedListingsProvider';
 
 interface ListingCardProps {
   listing: Listing;
@@ -15,6 +16,12 @@ export default function ListingCard({
   ownerActions,
 }: ListingCardProps) {
   const { t } = useTranslation();
+  const saved = useSavedListings();
+
+  // Bookmarking your own listing is pointless, so owner cards go without.
+  const canSave = saved !== null && !ownerActions;
+  const isSaved = canSave && saved.isSaved(listing.id);
+  const saveLabel = t(isSaved ? 'unsave_listing' : 'save_listing');
 
   const ariaLabel = [
     listing.title,
@@ -52,18 +59,42 @@ export default function ListingCard({
         e.currentTarget.style.outline = 'none';
       }}
     >
-      <h3
-        className="mb-3"
-        style={{
-          fontFamily: 'var(--font-family-display)',
-          fontWeight: 600,
-          fontSize: 'var(--fs-lg)',
-          lineHeight: 1.3,
-          color: 'var(--page-fg)',
-        }}
-      >
-        {listing.title}
-      </h3>
+      <div className="flex items-start justify-between gap-4 mb-3">
+        <h3
+          style={{
+            fontFamily: 'var(--font-family-display)',
+            fontWeight: 600,
+            fontSize: 'var(--fs-lg)',
+            lineHeight: 1.3,
+            color: 'var(--page-fg)',
+          }}
+        >
+          {listing.title}
+        </h3>
+
+        {canSave && (
+          <button
+            type="button"
+            aria-label={saveLabel}
+            title={saveLabel}
+            onClick={() => saved.toggleSaved(listing)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: isSaved ? '#8DC63F' : 'var(--muted-fg)',
+              padding: '2px',
+              flexShrink: 0,
+            }}
+          >
+            <Bookmark
+              aria-hidden="true"
+              className="w-5 h-5"
+              fill={isSaved ? 'currentColor' : 'none'}
+            />
+          </button>
+        )}
+      </div>
 
       <p
         className="mb-4"
