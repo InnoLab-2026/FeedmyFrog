@@ -49,8 +49,10 @@ export async function hashListingId(id: string): Promise<string> {
 /*
  * localStorage is input like any other: another script, an older build or a
  * hand edit may have put anything there. Only well-formed, unexpired entries
- * survive, so expiry needs no separate sweep -- the next write drops them.
- * The pattern check also keeps a `__proto__` key out of the plain object.
+ * survive; SavedListingsProvider writes the result back on every load, so an
+ * expired entry does not stay on disk past the next visit (localStorage has
+ * no expiry of its own; see sweepSavedListings). The pattern check also
+ * keeps a `__proto__` key out of the plain object.
  */
 export function parseSavedListings(
   raw: string | null,
@@ -124,6 +126,23 @@ export function writeSavedListings(store: SavedListingStore): void {
   } catch {
     // Storage unavailable: the toggle simply does not stick.
   }
+}
+
+/*
+ * Deletes expired or malformed entries from disk, not just from view.
+ *
+ * DSK OH Digitale Dienste Rn. 143 asks for storage with a lifetime the
+ * operator's own code enforces. Web storage cannot expire by itself, so the
+ * closest a browser-only list gets is: prune on every visit, clear on logout.
+ * Writes nothing when nothing changed, and never creates the key.
+ */
+export function sweepSavedListings(now: number): void {
+  const raw = readSavedListingsRaw();
+  if (raw === null) return;
+
+  const store = parseSavedListings(raw, now);
+
+  if (JSON.stringify(store) !== raw) writeSavedListings(store);
 }
 
 /** Called on logout, so the next person at a shared machine starts clean. */

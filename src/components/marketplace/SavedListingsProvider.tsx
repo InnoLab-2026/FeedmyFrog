@@ -19,6 +19,7 @@ import {
   hashListingId,
   parseSavedListings,
   readSavedListingsRaw,
+  sweepSavedListings,
   toggleSavedListing,
   writeSavedListings,
 } from '@/lib/savedListings';
@@ -149,6 +150,8 @@ export function SavedListingsProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
+    sweepSavedListings(Date.now());
+
     // The first draft kept plain row ids; they are not migrated, just gone.
     try {
       window.localStorage.removeItem(LEGACY_SAVED_LISTINGS_KEY);

@@ -1,9 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  SAVED_LISTINGS_KEY,
   SAVED_LISTING_TTL_MS,
+  clearSavedListings,
   hashListingId,
   parseSavedListings,
+  sweepSavedListings,
   toggleSavedListing,
 } from './savedListings';
 
@@ -74,5 +77,61 @@ describe('toggleSavedListing', () => {
 
     expect(toggleSavedListing(saved, hash, NOW + 1)).toEqual({});
     expect(saved).toEqual({ [hash]: NOW });
+  });
+});
+
+describe('on-disk lifetime', () => {
+  const disk = new Map<string, string>();
+
+  beforeEach(() => {
+    disk.clear();
+    vi.stubGlobal('window', {
+      localStorage: {
+        getItem: (k: string) => disk.get(k) ?? null,
+        setItem: (k: string, v: string) => void disk.set(k, v),
+        removeItem: (k: string) => void disk.delete(k),
+      },
+      dispatchEvent: () => true,
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('sweeps expired entries off disk, keeping live ones', async () => {
+    const live = await hashListingId('live');
+    const stale = await hashListingId('stale');
+
+    disk.set(
+      SAVED_LISTINGS_KEY,
+      JSON.stringify({ [live]: NOW - 1000, [stale]: NOW - SAVED_LISTING_TTL_MS }),
+    );
+    sweepSavedListings(NOW);
+
+    expect(JSON.parse(disk.get(SAVED_LISTINGS_KEY)!)).toEqual({ [live]: NOW - 1000 });
+  });
+
+  it('removes the key once nothing is left', async () => {
+    const stale = await hashListingId('stale');
+
+    disk.set(SAVED_LISTINGS_KEY, JSON.stringify({ [stale]: 0 }));
+    sweepSavedListings(NOW);
+
+    expect(disk.has(SAVED_LISTINGS_KEY)).toBe(false);
+  });
+
+  it('never creates the key for someone who has not saved anything', () => {
+    sweepSavedListings(NOW);
+
+    expect(disk.size).toBe(0);
+  });
+
+  it('clears everything on logout, the legacy plaintext key included', () => {
+    disk.set(SAVED_LISTINGS_KEY, '{}');
+    disk.set('savedListings', JSON.stringify({ [ID]: NOW }));
+    clearSavedListings();
+
+    expect(disk.size).toBe(0);
   });
 });
