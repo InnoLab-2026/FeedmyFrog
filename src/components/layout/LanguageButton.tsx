@@ -37,9 +37,6 @@ export default function LanguageButton() {
       const secure = window.location.protocol === 'https:' ? '; secure' : '';
       document.cookie =
         `${LANG_COOKIE}=${next.code}; path=/; max-age=${LANG_COOKIE_MAX_AGE}; samesite=lax${secure}`;
-
-      // Kept in sync for anyone still running a tab from before the cookie.
-      window.localStorage.setItem('i18nextLng', next.code);
     } catch {
       // Cookies or storage may be blocked; the language still applies to
       // this session via changeLanguage above.

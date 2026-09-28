@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, Info, List, LogOut, Mail } from 'lucide-react';
+import { Search, Info, List, LogOut, Mail, Bookmark } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { logout } from '@/actions/auth';
 import { getInitials, displayNameFromEmail } from '@/lib/initials';
+import { clearSavedListings } from '@/lib/savedListings';
 import DisclaimerOverlay from '@/components/marketplace/DisclaimerOverlay';
 import LanguageButton from '@/components/layout/LanguageButton';
 
@@ -199,12 +200,32 @@ export default function Header({
                   {t('my_entries')}
                 </Link>
 
+                <Link
+                  href="/?saved=1"
+                  role="menuitem"
+                  onClick={() => setShowAccountMenu(false)}
+                  className="flex items-center"
+                  style={{
+                    gap: '10px',
+                    padding: '12px 16px',
+                    color: 'var(--page-fg)',
+                    fontSize: 'var(--fs-sm)',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    background: 'var(--card-bg)',
+                  }}
+                >
+                  <Bookmark style={{ width: '16px', height: '16px' }} />
+                  {t('saved_entries')}
+                </Link>
+
                 <div style={{ height: '1px', background: 'var(--divider)' }} />
 
                 <form
                   action={logout}
                   onSubmit={() => {
                     window.sessionStorage.removeItem('theme');
+                    clearSavedListings();
                     document.documentElement.classList.remove('dark');
                   }}
                 >

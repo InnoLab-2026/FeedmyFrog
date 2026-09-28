@@ -39,6 +39,7 @@ interface LegalBundle {
       listing: string;
       ip: string;
       cookie: string;
+      device: string;
       logs: string;
     };
     visibility: { heading: string; body: string };
@@ -50,6 +51,9 @@ interface LegalBundle {
         session: RetentionRow;
         ip: RetentionRow;
         listings: RetentionRow;
+        saved: RetentionRow;
+        language: RetentionRow;
+        theme: RetentionRow;
       };
     };
     processors: {
@@ -97,7 +101,9 @@ export const legalResources: Record<LangCode, LegalBundle> = {
         ip:
           '<strong>IP-Adresse</strong> — kurzzeitig zur Begrenzung von Missbrauch des Anmeldelink-Versands (Rate-Limiting). Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (Betriebssicherheit).',
         cookie:
-          '<strong>Sitzungs-Cookie</strong> — ein einzelnes, technisch notwendiges HttpOnly-Cookie hält Ihre Anmeldung aufrecht. Es findet kein Tracking statt; Analyse- oder Marketing-Cookies werden nicht gesetzt. Das Cookie ist nach § 25 Abs. 2 Nr. 2 TDDDG einwilligungsfrei; ein Cookie-Banner ist daher nicht erforderlich.',
+          '<strong>Sitzungs-Cookie</strong> — ein technisch notwendiges HttpOnly-Cookie hält Ihre Anmeldung aufrecht. Es findet kein Tracking statt; Analyse- oder Marketing-Cookies werden nicht gesetzt. Das Cookie ist nach § 25 Abs. 2 Nr. 2 TDDDG einwilligungsfrei; ein Cookie-Banner ist daher nicht erforderlich.',
+        device:
+          '<strong>Speicherung auf Ihrem Gerät</strong> — nur, wenn Sie die jeweilige Funktion selbst nutzen: die gewählte Sprache (Cookie <code>lang</code>, damit die Seite gleich in dieser Sprache ausgeliefert wird), das gewählte Farbschema (Session Storage) und gemerkte Inserate (Local Storage). Für gemerkte Inserate wird nur ein SHA-256-Fingerabdruck der Inserats-ID mit dem Zeitpunkt des Merkens abgelegt — keine Inseratsinhalte, Namen oder E-Mail-Adressen. Diese Liste verlässt Ihr Gerät nicht und wird nicht an uns übertragen. Alle drei Speicherungen sind für die von Ihnen ausdrücklich gewünschte Funktion unbedingt erforderlich und daher nach § 25 Abs. 2 Nr. 2 TDDDG einwilligungsfrei. Sie können sie jederzeit in Ihren Browsereinstellungen löschen.',
         logs:
           '<strong>Server-Logdaten</strong> — beim Aufruf der Plattform verarbeitet unser Hosting-Anbieter Vercel automatisch technische Zugriffsdaten (insbesondere IP-Adresse, Zeitpunkt des Zugriffs, aufgerufene URL, User-Agent), soweit dies für die Auslieferung der Seiten und die Sicherheit des Betriebs erforderlich ist. Eine Zusammenführung mit anderen Daten oder eine Profilbildung findet nicht statt. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (technischer Betrieb und Absicherung der Plattform).',
       },
@@ -126,6 +132,21 @@ export const legalResources: Record<LangCode, LegalBundle> = {
           listings: {
             data: 'Inserate (Titel, Beschreibung, Tags, Ort, E-Mail-Adresse)',
             period: 'Bis zur Löschung durch die inserierende Person',
+          },
+          saved: {
+            data: 'Gemerkte Inserate (nur SHA-256-Fingerabdruck, lokal in Ihrem Browser)',
+            period:
+              '7 Tage je Eintrag; abgelaufene Einträge werden beim nächsten Aufruf gelöscht, Abmelden löscht die Liste sofort',
+          },
+          language: {
+            data: 'Sprachwahl (Cookie lang)',
+            period:
+              '1 Jahr ab der letzten Änderung',
+          },
+          theme: {
+            data: 'Farbschema (Session Storage)',
+            period:
+              'Bis zum Schließen des Tabs; Abmelden löscht es sofort',
           },
         },
       },
@@ -200,7 +221,9 @@ export const legalResources: Record<LangCode, LegalBundle> = {
         ip:
           '<strong>IP address</strong> — briefly, to limit abuse of login link sending (rate limiting). Legal basis: Art. 6(1)(f) GDPR (operational security).',
         cookie:
-          '<strong>Session cookie</strong> — a single technically necessary HttpOnly cookie keeps you signed in. There is no tracking; no analytics or marketing cookies are set. The cookie is exempt from consent under § 25(2) no. 2 TDDDG; a cookie banner is therefore not required.',
+          '<strong>Session cookie</strong> — a technically necessary HttpOnly cookie keeps you signed in. There is no tracking; no analytics or marketing cookies are set. The cookie is exempt from consent under § 25(2) no. 2 TDDDG; a cookie banner is therefore not required.',
+        device:
+          '<strong>Storage on your device</strong> — only when you use the feature in question yourself: your chosen language (cookie <code>lang</code>, so the page is delivered in that language straight away), your chosen colour scheme (session storage) and saved listings (local storage). For saved listings only a SHA-256 fingerprint of the listing ID and the time you saved it are stored — no listing content, names or email addresses. This list never leaves your device and is not transmitted to us. All three are strictly necessary for a feature you explicitly asked for and are therefore exempt from consent under § 25(2) no. 2 TDDDG. You can delete them at any time in your browser settings.',
         logs:
           '<strong>Server logs</strong> — when you visit the platform, our hosting provider Vercel automatically processes technical access data (in particular IP address, time of access, requested URL, user agent) as far as needed to deliver pages and keep the service secure. Data is not combined with other data and no profiling takes place. Legal basis: Art. 6(1)(f) GDPR (technical operation and security of the platform).',
       },
@@ -229,6 +252,21 @@ export const legalResources: Record<LangCode, LegalBundle> = {
           listings: {
             data: 'Listings (title, description, tags, location, email address)',
             period: 'Until deleted by the person who created the listing',
+          },
+          saved: {
+            data: 'Saved listings (SHA-256 fingerprint only, locally in your browser)',
+            period:
+              '7 days per entry; expired entries are deleted on your next visit, logging out deletes the list immediately',
+          },
+          language: {
+            data: 'Language choice (cookie lang)',
+            period:
+              '1 year from the last change',
+          },
+          theme: {
+            data: 'Colour scheme (session storage)',
+            period:
+              'Until the tab is closed; logging out deletes it immediately',
           },
         },
       },
@@ -303,7 +341,9 @@ export const legalResources: Record<LangCode, LegalBundle> = {
         ip:
           '<strong>Adresse IP</strong> — brièvement, afin de limiter les abus lors de l’envoi des liens de connexion (limitation du débit). Base juridique : art. 6, § 1, f) RGPD (sécurité d’exploitation).',
         cookie:
-          '<strong>Cookie de session</strong> — un unique cookie HttpOnly techniquement nécessaire maintient votre connexion. Aucun suivi n’est effectué ; aucun cookie d’analyse ou de marketing n’est déposé. Ce cookie est dispensé de consentement au titre du § 25, al. 2, n° 2 TDDDG ; aucune bannière de cookies n’est donc requise.',
+          '<strong>Cookie de session</strong> — un cookie HttpOnly techniquement nécessaire maintient votre connexion. Aucun suivi n’est effectué ; aucun cookie d’analyse ou de marketing n’est déposé. Ce cookie est dispensé de consentement au titre du § 25, al. 2, n° 2 TDDDG ; aucune bannière de cookies n’est donc requise.',
+        device:
+          '<strong>Stockage sur votre appareil</strong> — uniquement lorsque vous utilisez vous-même la fonction concernée : la langue choisie (cookie <code>lang</code>, pour que la page soit livrée directement dans cette langue), le thème de couleurs choisi (session storage) et les annonces enregistrées (local storage). Pour les annonces enregistrées, seule une empreinte SHA-256 de l’identifiant de l’annonce et le moment de l’enregistrement sont conservés — aucun contenu d’annonce, nom ou adresse e-mail. Cette liste ne quitte pas votre appareil et ne nous est pas transmise. Ces trois stockages sont strictement nécessaires à une fonction que vous avez expressément demandée et sont donc dispensés de consentement au titre du § 25, al. 2, n° 2 TDDDG. Vous pouvez les supprimer à tout moment dans les paramètres de votre navigateur.',
         logs:
           '<strong>Journaux serveur</strong> — lors de la consultation de la plateforme, notre hébergeur Vercel traite automatiquement des données d’accès techniques (notamment adresse IP, date et heure de l’accès, URL appelée, agent utilisateur), dans la mesure nécessaire à la diffusion des pages et à la sécurité de l’exploitation. Aucun recoupement avec d’autres données ni profilage n’a lieu. Base juridique : art. 6, § 1, f) RGPD (exploitation technique et sécurisation de la plateforme).',
       },
@@ -332,6 +372,21 @@ export const legalResources: Record<LangCode, LegalBundle> = {
           listings: {
             data: 'Annonces (titre, description, tags, lieu, e-mail)',
             period: 'Jusqu’à suppression par la personne qui a créé l’annonce',
+          },
+          saved: {
+            data: 'Annonces enregistrées (empreinte SHA-256 uniquement, localement dans votre navigateur)',
+            period:
+              '7 jours par entrée ; les entrées expirées sont supprimées lors de votre prochaine visite, la déconnexion supprime la liste immédiatement',
+          },
+          language: {
+            data: 'Choix de la langue (cookie lang)',
+            period:
+              '1 an à compter de la dernière modification',
+          },
+          theme: {
+            data: 'Thème de couleurs (session storage)',
+            period:
+              'Jusqu’à la fermeture de l’onglet ; la déconnexion le supprime immédiatement',
           },
         },
       },
@@ -406,7 +461,9 @@ export const legalResources: Record<LangCode, LegalBundle> = {
         ip:
           '<strong>IP adresi</strong> — giriş bağlantısı gönderiminin kötüye kullanılmasını sınırlamak amacıyla kısa süreli (hız sınırlama). Hukuki dayanak: GDPR md. 6/1/f (işletme güvenliği).',
         cookie:
-          '<strong>Oturum çerezi</strong> — oturumunuzu açık tutan, teknik olarak zorunlu tek bir HttpOnly çerezi. İzleme yapılmaz; analiz veya pazarlama çerezi yerleştirilmez. Çerez, TDDDG § 25/2 no. 2 uyarınca onaydan muaftır; bu nedenle çerez bandına gerek yoktur.',
+          '<strong>Oturum çerezi</strong> — oturumunuzu açık tutan, teknik olarak zorunlu bir HttpOnly çerezi. İzleme yapılmaz; analiz veya pazarlama çerezi yerleştirilmez. Çerez, TDDDG § 25/2 no. 2 uyarınca onaydan muaftır; bu nedenle çerez bandına gerek yoktur.',
+        device:
+          '<strong>Cihazınızda saklama</strong> — yalnızca ilgili işlevi kendiniz kullandığınızda: seçtiğiniz dil (sayfanın doğrudan bu dilde sunulması için <code>lang</code> çerezi), seçtiğiniz renk şeması (session storage) ve kaydettiğiniz ilanlar (local storage). Kaydedilen ilanlar için yalnızca ilan kimliğinin SHA-256 parmak izi ve kaydetme zamanı saklanır — ilan içeriği, ad veya e-posta adresi saklanmaz. Bu liste cihazınızdan çıkmaz ve bize iletilmez. Bu üç saklama, açıkça talep ettiğiniz bir işlev için kesinlikle gereklidir ve bu nedenle TDDDG § 25/2 no. 2 uyarınca onaydan muaftır. Bunları istediğiniz zaman tarayıcı ayarlarınızdan silebilirsiniz.',
         logs:
           '<strong>Sunucu günlükleri</strong> — platform açıldığında barındırma sağlayıcımız Vercel, sayfaların sunulması ve işletme güvenliği için gerekli olduğu ölçüde teknik erişim verilerini (özellikle IP adresi, erişim zamanı, çağrılan URL, kullanıcı aracısı) otomatik olarak işler. Başka verilerle birleştirme veya profil oluşturma yapılmaz. Hukuki dayanak: GDPR md. 6/1/f (platformun teknik işletimi ve güvenliği).',
       },
@@ -435,6 +492,21 @@ export const legalResources: Record<LangCode, LegalBundle> = {
           listings: {
             data: 'İlanlar (başlık, açıklama, etiketler, konum, e-posta)',
             period: 'İlanı oluşturan kişi silene kadar',
+          },
+          saved: {
+            data: 'Kaydedilen ilanlar (yalnızca SHA-256 parmak izi, tarayıcınızda yerel olarak)',
+            period:
+              'Her kayıt için 7 gün; süresi dolan kayıtlar bir sonraki ziyaretinizde silinir, oturumu kapatmak listeyi hemen siler',
+          },
+          language: {
+            data: 'Dil seçimi (lang çerezi)',
+            period:
+              'Son değişiklikten itibaren 1 yıl',
+          },
+          theme: {
+            data: 'Renk şeması (session storage)',
+            period:
+              'Sekme kapatılana kadar; oturumu kapatmak onu hemen siler',
           },
         },
       },
@@ -509,7 +581,9 @@ export const legalResources: Record<LangCode, LegalBundle> = {
         ip:
           '<strong>Dirección IP</strong> — de forma breve, para limitar el abuso en el envío de enlaces de acceso (limitación de frecuencia). Base jurídica: art. 6.1.f RGPD (seguridad operativa).',
         cookie:
-          '<strong>Cookie de sesión</strong> — una única cookie HttpOnly técnicamente necesaria mantiene tu sesión iniciada. No se realiza seguimiento; no se instalan cookies de análisis ni de marketing. La cookie está exenta de consentimiento conforme al § 25.2 n.º 2 TDDDG; por tanto no se requiere un aviso de cookies.',
+          '<strong>Cookie de sesión</strong> — una cookie HttpOnly técnicamente necesaria mantiene tu sesión iniciada. No se realiza seguimiento; no se instalan cookies de análisis ni de marketing. La cookie está exenta de consentimiento conforme al § 25.2 n.º 2 TDDDG; por tanto no se requiere un aviso de cookies.',
+        device:
+          '<strong>Almacenamiento en tu dispositivo</strong> — solo cuando tú mismo utilizas la función correspondiente: el idioma elegido (cookie <code>lang</code>, para que la página se sirva directamente en ese idioma), el esquema de colores elegido (session storage) y los anuncios guardados (local storage). De los anuncios guardados solo se almacena una huella SHA-256 del identificador del anuncio y el momento en que lo guardaste — ningún contenido del anuncio, nombre ni dirección de correo. Esta lista no sale de tu dispositivo ni se nos transmite. Los tres almacenamientos son estrictamente necesarios para una función que has solicitado expresamente y, por tanto, están exentos de consentimiento conforme al § 25.2 n.º 2 TDDDG. Puedes eliminarlos en cualquier momento desde los ajustes de tu navegador.',
         logs:
           '<strong>Registros del servidor</strong> — al acceder a la plataforma, nuestro proveedor de alojamiento Vercel trata automáticamente datos técnicos de acceso (en particular dirección IP, momento del acceso, URL solicitada y agente de usuario), en la medida necesaria para servir las páginas y garantizar la seguridad del servicio. No se combinan con otros datos ni se elaboran perfiles. Base jurídica: art. 6.1.f RGPD (funcionamiento técnico y protección de la plataforma).',
       },
@@ -538,6 +612,21 @@ export const legalResources: Record<LangCode, LegalBundle> = {
           listings: {
             data: 'Anuncios (título, descripción, etiquetas, lugar, correo)',
             period: 'Hasta que la persona que lo creó lo elimine',
+          },
+          saved: {
+            data: 'Anuncios guardados (solo huella SHA-256, localmente en tu navegador)',
+            period:
+              '7 días por entrada; las entradas caducadas se eliminan en tu próxima visita, cerrar sesión elimina la lista de inmediato',
+          },
+          language: {
+            data: 'Elección de idioma (cookie lang)',
+            period:
+              '1 año desde el último cambio',
+          },
+          theme: {
+            data: 'Esquema de colores (session storage)',
+            period:
+              'Hasta cerrar la pestaña; cerrar sesión lo elimina de inmediato',
           },
         },
       },

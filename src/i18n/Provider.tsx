@@ -29,6 +29,10 @@ export default function I18nProvider({
      * in a cookie. Without this their stored preference would be silently
      * dropped the next time they visited, because the server cannot see
      * localStorage.
+     *
+     * The localStorage copy is then deleted: unlike the cookie it has no
+     * expiry, and the privacy notice promises every stored preference one
+     * (DSK OH Digitale Dienste Rn. 143).
      */
     try {
       const hasCookie = document.cookie
@@ -38,10 +42,13 @@ export default function I18nProvider({
       if (!hasCookie) {
         const stored = normalizeLanguage(window.localStorage.getItem('i18nextLng'));
         if (stored) {
-          document.cookie = `${LANG_COOKIE}=${stored}; path=/; max-age=${LANG_COOKIE_MAX_AGE}; samesite=lax`;
+          const secure = window.location.protocol === 'https:' ? '; secure' : '';
+          document.cookie = `${LANG_COOKIE}=${stored}; path=/; max-age=${LANG_COOKIE_MAX_AGE}; samesite=lax${secure}`;
           if (stored !== i18n.language) i18n.changeLanguage(stored);
         }
       }
+
+      window.localStorage.removeItem('i18nextLng');
     } catch {
       // Storage can be unavailable (private browsing, blocked cookies); the
       // server-resolved language still applies.
