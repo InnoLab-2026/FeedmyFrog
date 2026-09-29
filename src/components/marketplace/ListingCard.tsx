@@ -1,10 +1,11 @@
 'use client';
 
-import { MapPin, Mail, Bookmark } from 'lucide-react';
+import { MapPin, Bookmark } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { ReactNode } from 'react';
 import type { Listing } from '@/types';
 import { useSavedListings } from '@/components/marketplace/SavedListingsProvider';
+import ContactButton from '@/components/marketplace/ContactButton';
 
 interface ListingCardProps {
   listing: Listing;
@@ -149,46 +150,25 @@ export default function ListingCard({
       </div>
 
       <div
-        className="flex items-center justify-between gap-3 pt-3"
+        className="flex flex-wrap items-center justify-between gap-3 pt-3"
         style={{
           fontSize: 'var(--fs-xs)',
           fontWeight: 500,
           borderTop: '1px solid var(--divider)',
         }}
       >
+        {/* A place name from a closed list, never long: it keeps its line
+            and the row wraps the button under it instead of breaking it
+            mid-word. */}
         <div
           className="flex items-center gap-1.5"
-          style={{ minWidth: 0, color: 'var(--muted-fg)' }}
+          style={{ whiteSpace: 'nowrap', color: 'var(--muted-fg)' }}
         >
           <MapPin className="w-3.5 h-3.5 shrink-0" />
           <span>{listing.location}</span>
         </div>
 
-        <a
-          href={mailtoLink}
-          className="flex shrink-0 items-center gap-1.5 px-4 py-2 transition-all duration-200"
-          style={{
-            background: '#8DC63F',
-            color: 'var(--on-accent)',
-            border: '1px solid #8DC63F',
-            borderRadius: '7px',
-            fontSize: 'var(--fs-xs)',
-            fontWeight: 600,
-            textDecoration: 'none',
-          }}
-          onClick={(e) => e.stopPropagation()}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#72a830';
-            e.currentTarget.style.borderColor = '#72a830';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#8DC63F';
-            e.currentTarget.style.borderColor = '#8DC63F';
-          }}
-        >
-          <Mail className="w-3.5 h-3.5" />
-          <span>{t('contact')}</span>
-        </a>
+        <ContactButton email={listing.email} href={mailtoLink} />
       </div>
 
       {ownerActions && (
