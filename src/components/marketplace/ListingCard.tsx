@@ -50,6 +50,17 @@ export default function ListingCard({
         border: '1px solid var(--card-border)',
         borderRadius: '10px',
         boxShadow: 'var(--elevation-sm)',
+        /*
+         * Titles, descriptions and hashtags are free text, and one unbroken
+         * 120-character "word" (a URL, a keyboard mash) would otherwise run
+         * straight out of the card. Inherited by everything inside; `anywhere`
+         * rather than `break-word` because only it also lowers the min-content
+         * width, which is what lets the flex rows below shrink around it.
+         * word-break is the fallback for Safari before 15.4.
+         */
+        overflowWrap: 'anywhere',
+        wordBreak: 'break-word',
+        minWidth: 0,
       }}
       onFocus={(e) => {
         e.currentTarget.style.outline = '3px solid #8DC63F';
@@ -62,6 +73,7 @@ export default function ListingCard({
       <div className="flex items-start justify-between gap-4 mb-3">
         <h3
           style={{
+            minWidth: 0,
             fontFamily: 'var(--font-family-display)',
             fontWeight: 600,
             fontSize: 'var(--fs-lg)',
@@ -123,6 +135,7 @@ export default function ListingCard({
             key={tag}
             className="px-3 py-1.5 text-xs"
             style={{
+              maxWidth: '100%',
               background: 'rgba(141, 198, 63, 0.08)',
               color: '#8DC63F',
               border: '1px solid rgba(141, 198, 63, 0.2)',
@@ -136,7 +149,7 @@ export default function ListingCard({
       </div>
 
       <div
-        className="flex items-center justify-between pt-3"
+        className="flex items-center justify-between gap-3 pt-3"
         style={{
           fontSize: 'var(--fs-xs)',
           fontWeight: 500,
@@ -145,15 +158,15 @@ export default function ListingCard({
       >
         <div
           className="flex items-center gap-1.5"
-          style={{ color: 'var(--muted-fg)' }}
+          style={{ minWidth: 0, color: 'var(--muted-fg)' }}
         >
-          <MapPin className="w-3.5 h-3.5" />
+          <MapPin className="w-3.5 h-3.5 shrink-0" />
           <span>{listing.location}</span>
         </div>
 
         <a
           href={mailtoLink}
-          className="flex items-center gap-1.5 px-4 py-2 transition-all duration-200"
+          className="flex shrink-0 items-center gap-1.5 px-4 py-2 transition-all duration-200"
           style={{
             background: '#8DC63F',
             color: 'var(--on-accent)',

@@ -576,6 +576,9 @@ export default function CreateListingForm({
               background: 'var(--accent-tint)',
               border: '1px solid var(--card-border)',
               borderRadius: '10px',
+              // Same as ListingCard: one unbroken word must wrap, not overflow.
+              overflowWrap: 'anywhere',
+              wordBreak: 'break-word',
             }}
           >
             <p style={{ margin: '0 0 10px', fontWeight: 600, color: 'var(--page-fg)' }}>
@@ -612,6 +615,7 @@ export default function CreateListingForm({
                   <span
                     key={tag}
                     style={{
+                      maxWidth: '100%',
                       padding: '5px 9px',
                       background: 'rgba(141,198,63,0.08)',
                       color: '#8DC63F',
@@ -631,8 +635,6 @@ export default function CreateListingForm({
                 margin: 0,
                 color: 'var(--muted-fg)',
                 fontSize: 'var(--fs-2xs)',
-                overflowWrap: 'anywhere',
-                wordBreak: 'break-word',
               }}
             >
               {location} • {email}
