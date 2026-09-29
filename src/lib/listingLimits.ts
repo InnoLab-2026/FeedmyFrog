@@ -20,6 +20,13 @@ export const DESCRIPTION_MAX_LENGTH = 400;
 export const TAG_MAX_LENGTH = 40;
 export const TAGS_MAX_COUNT = 8;
 
+/*
+ * How many of the built-in categories one listing may carry. Kept well under
+ * TAGS_MAX_COUNT so there is room left for free-form hashtags. Shared by the
+ * create and edit forms, which must agree on it.
+ */
+export const MAX_CATEGORIES = 2;
+
 /**
  * Interpolation values for the `error_*` strings that quote a limit.
  *

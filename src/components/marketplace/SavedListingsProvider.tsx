@@ -15,7 +15,6 @@ import {
 import type { Listing } from '@/types';
 import {
   LEGACY_SAVED_LISTINGS_KEY,
-  SAVED_LISTINGS_KEY,
   SAVED_LISTINGS_EVENT,
   hashListingId,
   parseSavedListings,
@@ -31,8 +30,10 @@ interface KnownListing {
 }
 
 interface SavedListingsContextValue {
+  /** False where Web Crypto is missing; cards then show no bookmark. */
+  available: boolean;
   isSaved: (id: string) => boolean;
-  toggleSaved: (listing: Listing) => Promise<void>;
+  toggleSaved: (listing: Listing) => void;
   /** Hands the listings a page received to the saved view. */
   rememberListings: (listings: Listing[]) => void;
   /** Saved listings this tab has seen, most recently saved first. */
@@ -57,6 +58,22 @@ function subscribe(callback: () => void) {
   };
 }
 
+function subscribeNever() {
+  return () => {};
+}
+
+/*
+ * SHA-256 comes from Web Crypto, which browsers only expose in secure
+ * contexts: HTTPS and localhost. A phone opening the dev server over a plain
+ * http:// LAN address has none, and there the feature is switched off rather
+ * than given a weaker home-made hash -- a bookmark that stores something we
+ * would not ship is worse than no bookmark. Test on the Vercel preview (HTTPS)
+ * instead. The server snapshot is `true` because production is always HTTPS.
+ */
+function hasWebCrypto() {
+  return typeof globalThis.crypto?.subtle?.digest === 'function';
+}
+
 /*
  * Lives in the (auth) layout, so it outlasts client-side navigation between
  * the marketplace and "my listings".
@@ -69,6 +86,7 @@ function subscribe(callback: () => void) {
  */
 export function SavedListingsProvider({ children }: { children: ReactNode }) {
   const raw = useSyncExternalStore(subscribe, readSavedListingsRaw, () => null);
+  const available = useSyncExternalStore(subscribeNever, hasWebCrypto, () => true);
 
   // Expiry is judged against the time the tab opened; anything that expires
   // while it stays open is dropped on the next write.
@@ -124,31 +142,28 @@ export function SavedListingsProvider({ children }: { children: ReactNode }) {
   );
 
   const toggleSaved = useCallback(
-    async (listing: Listing) => {
-      if (typeof listing.id !== 'string' || listing.id.length === 0) {
-        throw new Error('Cannot toggle a saved listing without listing.id.');
-      }
+    (listing: Listing) => {
+      hashOf(listing.id)
+        .then((hash) => {
+          setKnown((prev) =>
+            prev.has(listing.id)
+              ? prev
+              : new Map(prev).set(listing.id, { listing, hash }),
+          );
 
-      const hash = await hashOf(listing.id);
-      const now = Date.now();
-      const next = toggleSavedListing(
-        parseSavedListings(readSavedListingsRaw(), now),
-        hash,
-        now,
-      );
+          // Re-read rather than use `store`: another tab may have written
+          // since this one rendered.
+          const now = Date.now();
 
-      // Fingerprints are stored at localStorage key `savedListings.v2`.
-      if (!writeSavedListings(next)) {
-        throw new Error(
-          `Could not persist listing in localStorage key "${SAVED_LISTINGS_KEY}".`,
-        );
-      }
-
-      setKnown((prev) =>
-        prev.has(listing.id)
-          ? prev
-          : new Map(prev).set(listing.id, { listing, hash }),
-      );
+          writeSavedListings(
+            toggleSavedListing(
+              parseSavedListings(readSavedListingsRaw(), now),
+              hash,
+              now,
+            ),
+          );
+        })
+        .catch(() => {});
     },
     [hashOf],
   );
@@ -171,6 +186,7 @@ export function SavedListingsProvider({ children }: { children: ReactNode }) {
       .map(({ listing }) => listing);
 
     return {
+      available,
       isSaved: (id) => {
         const entry = known.get(id);
         return entry !== undefined && entry.hash in store;
@@ -180,7 +196,7 @@ export function SavedListingsProvider({ children }: { children: ReactNode }) {
       savedListings,
       hasUnresolved: Object.keys(store).length > savedListings.length,
     };
-  }, [known, store, toggleSaved, rememberListings]);
+  }, [available, known, store, toggleSaved, rememberListings]);
 
   return (
     <SavedListingsContext.Provider value={value}>

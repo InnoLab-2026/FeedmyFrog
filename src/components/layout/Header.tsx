@@ -67,8 +67,16 @@ export default function Header({
         setShowAccountMenu(false);
       }
     };
+    // The menu is position: fixed, measured from the button when it opened;
+    // once the page scrolls it would float free of the header, so it closes.
+    const close = () => setShowAccountMenu(false);
+
     document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    window.addEventListener('scroll', close, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      window.removeEventListener('scroll', close);
+    };
   }, [showAccountMenu]);
 
   const [localLocationFilter, setLocalLocationFilter] =
@@ -97,12 +105,11 @@ export default function Header({
         }}
       >
         <div
-          className="relative flex items-center justify-end gap-2 px-3 pt-[calc(12px+env(safe-area-inset-top))] md:absolute md:justify-start md:px-0 md:pt-0 [&_button]:min-w-11 [&_button]:min-h-11"
-          style={{
-            top: 'calc(14px + env(safe-area-inset-top))',
-            right: 'calc(20px + env(safe-area-inset-right))',
-            zIndex: 20,
-          }}
+          className="relative flex items-center justify-end gap-2 px-3 pt-[calc(12px+env(safe-area-inset-top))] md:absolute md:top-[calc(14px+env(safe-area-inset-top))] md:right-[calc(20px+env(safe-area-inset-right))] md:justify-start md:px-0 md:pt-0 [&_button]:min-w-11 [&_button]:min-h-11"
+          // top/right only apply once the cluster is absolute (md:). As inline
+          // style they also shifted the relative mobile row 20px left and
+          // 14px down.
+          style={{ zIndex: 20 }}
         >
           <div className="relative order-last md:order-none" ref={accountMenuRef}>
             <button
@@ -310,11 +317,14 @@ export default function Header({
         </div>
 
         {/* The controls stay in this flow on mobile. From md up they are
-          absolutely positioned, so right padding reserves room for the
-          cluster before the search+location row reaches its 1100px
-          max-width. */}
+            absolutely positioned, so right padding reserves room for the
+            cluster before the search+location row reaches its 1100px
+            max-width: four 44px buttons + three 8px gaps + 20px inset = 220px,
+            plus a 16px gap. Change the buttons, change this. Inline `style`
+            always beats a plain class, so the md: overrides have to live in
+            className. */}
         <div
-          className="flex flex-col gap-3 md:flex-row md:items-center md:gap-5 pt-3 md:pt-7 pl-5 pr-5 md:pl-8 md:pr-[210px]"
+          className="flex flex-col gap-3 md:flex-row md:items-center md:gap-5 pt-3 md:pt-7 pl-5 pr-5 md:pl-8 md:pr-[236px]"
           style={{
             paddingBottom: '22px',
           }}
@@ -372,6 +382,9 @@ export default function Header({
                     color: 'var(--page-fg)',
                     border: '1px solid var(--control-border)',
                     borderRadius: '9px',
+                    // Phones get 16px from max-md:!text-base above: iOS zooms
+                    // into any focused field smaller than that.
+                    fontSize: 'var(--fs-control-input)',
                   }}
                 />
               </div>

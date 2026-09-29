@@ -20,6 +20,7 @@ import { usePrefersReducedMotion } from '@/lib/useReducedMotion';
 import {
   DESCRIPTION_MAX_LENGTH,
   LISTING_LIMIT_VALUES,
+  MAX_CATEGORIES,
   TITLE_MAX_LENGTH,
 } from '@/lib/listingLimits';
 
@@ -35,14 +36,6 @@ interface CreateListingFormProps {
    */
   onPublished: () => void;
 }
-
-/*
- * How many of the built-in categories one listing may carry. Kept well under
- * the server's overall cap of TAGS_MAX_COUNT tags (ListingInput in
- * src/lib/validators.ts) so there is room left for the free-form hashtags
- * added in step 2.
- */
-const MAX_CATEGORIES = 2;
 
 /*
  * The confetti fountain: one [dx, dy] end point per piece, in pixels from the
@@ -152,7 +145,6 @@ export default function CreateListingForm({
    */
   const titleFieldId = useId();
   const descriptionFieldId = useId();
-  const emailFieldId = useId();
 
   const counterStyle: React.CSSProperties = {
     margin: '6px 0 0',
@@ -530,7 +522,6 @@ export default function CreateListingForm({
 
           <div style={{ marginBottom: '24px' }}>
             <label
-              htmlFor={emailFieldId}
               style={{
                 display: 'block',
                 marginBottom: '9px',
@@ -539,8 +530,12 @@ export default function CreateListingForm({
             >
               {t('email')}
             </label>
+            {/*
+              * Not an <input>: a long address has to wrap on a phone, which
+              * an input cannot. Named by aria-label, since a <label> can only
+              * point at a form control.
+              */}
             <div
-              id={emailFieldId}
               role="textbox"
               aria-readonly="true"
               aria-disabled="true"
@@ -552,6 +547,11 @@ export default function CreateListingForm({
                 alignItems: 'center',
                 overflowWrap: 'anywhere',
                 wordBreak: 'break-word',
+                /*
+                 * Deliberately not the editable field surface. The address
+                 * comes from the session and cannot be changed here, and the
+                 * only thing saying so is how it looks.
+                 */
                 background: 'var(--input-readonly-bg)',
                 color: 'var(--muted-fg)',
                 cursor: 'not-allowed',

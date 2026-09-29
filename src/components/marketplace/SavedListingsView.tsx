@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Info } from 'lucide-react';
+import { ArrowLeft, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import ListingCard from '@/components/marketplace/ListingCard';
@@ -29,17 +29,18 @@ export default function SavedListingsView({ backHref }: SavedListingsViewProps) 
       <Link
         href={backHref}
         scroll={false}
-        className="inline-flex items-center"
+        aria-label={t('back_to_overview')}
+        className="inline-flex h-11 w-11 items-center justify-center"
         style={{
-          gap: '8px',
           margin: '20px 0 12px',
-          color: '#659629',
-          fontSize: 'var(--fs-sm)',
-          fontWeight: 600,
+          color: 'var(--page-fg)',
+          background: 'var(--card-bg)',
+          border: '1px solid var(--control-border)',
+          borderRadius: '10px',
           textDecoration: 'none',
         }}
       >
-        <span aria-hidden="true">←</span> {t('back_to_overview')}
+        <ArrowLeft aria-hidden="true" size={18} />
       </Link>
 
       <div style={{ marginBottom: '24px' }}>

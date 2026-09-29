@@ -124,7 +124,13 @@ export default function LoginCard({
 
   return (
     <main
-      className="relative flex items-center justify-center"
+      className="relative flex min-h-dvh items-center justify-center"
+      /*
+       * min-h-dvh keeps the card vertically centred (dvh, not vh: iOS counts
+       * the collapsing toolbar into 100vh and scrolls). `safe center` on the
+       * cross axis falls back to the top when the card is taller than the
+       * screen, so its top -- the logo -- can never be pushed out of reach.
+       */
       style={{
         overflow: 'visible',
         overscrollBehavior: 'none',
@@ -132,6 +138,7 @@ export default function LoginCard({
         paddingRight: 'max(24px, env(safe-area-inset-right))',
         paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
         paddingLeft: 'max(24px, env(safe-area-inset-left))',
+        alignItems: 'safe center',
         justifyContent: 'safe center',
         background: '#FFFFFF',
       }}
@@ -163,7 +170,7 @@ export default function LoginCard({
             minHeight: '156px',
           }}
         >
-          {/* Same 480x373 source as the header, painted at 220px here -- the
+          {/* Same 480x373 source as the header, painted at 200px here -- the
               largest anything paints it, which is what sizes the file.
               `priority` because this logo is the login page's LCP element:
               it sits at the top of the only card on the page.

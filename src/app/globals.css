@@ -3,11 +3,13 @@
 @import "./fonts.css";
 @import "./theme.css";
 
+/* Safety net against sideways scrolling on phones. `clip`, not `hidden`:
+   hidden turns <body> into a scroll container of its own, which breaks
+   position: sticky and fights the modal's scroll lock. overscroll-behavior
+   is left alone so pull-to-refresh keeps working. */
 html,
 body {
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: none;
+  overflow-x: clip;
 }
 
 /* --- Animations --------------------------------------------------------

@@ -12,7 +12,11 @@ interface CategoryTabsProps {
 }
 
 /*
- * Estimated width of one tab: icon + gap + label + horizontal padding.
+ * Estimated width of one tab: icon + gap + label + horizontal padding. It has
+ * to be an estimate rather than a measurement, because CategoryTab lays its
+ * children out with flex-1 on desktop — a rendered tab is as wide as the row
+ * lets it be, which says nothing about how much room the label actually needs.
+ * (Phones skip the estimate: they always show "All" plus the menu.)
  */
 const ICON_WIDTH = 20;
 const LABEL_GAP = 8;
@@ -140,7 +144,7 @@ export default function CategoryTabs({
 
       {showDropdown && overflow.length > 0 && (
         <div
-          className="absolute left-0 right-0 top-full mt-2 overflow-hidden"
+          className="absolute left-0 right-0 top-full mt-2 overflow-hidden md:left-auto md:w-56"
           style={{
             background: 'var(--card-bg)',
             border: '1px solid var(--card-border)',

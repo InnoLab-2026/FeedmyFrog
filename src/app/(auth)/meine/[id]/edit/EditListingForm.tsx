@@ -12,6 +12,7 @@ import {
 import {
   DESCRIPTION_MAX_LENGTH,
   LISTING_LIMIT_VALUES,
+  MAX_CATEGORIES,
   TITLE_MAX_LENGTH,
 } from '@/lib/listingLimits';
 
@@ -28,8 +29,6 @@ const fieldStyle: React.CSSProperties = {
   borderRadius: '10px',
   fontSize: 'var(--fs-control-input)',
 };
-
-const MAX_CATEGORIES = 2;
 
 export default function EditListingForm({ listing }: { listing: Listing }) {
   const { t } = useTranslation();

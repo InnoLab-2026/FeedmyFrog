@@ -32,7 +32,9 @@ const CategoryTab = ({
     aria-haspopup={ariaHasPopup}
     aria-expanded={ariaExpanded}
     className={`flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-200 ${
-      fullWidth ? 'w-full h-full' : 'flex-none'
+      // Separated (mobile) tabs size to their label; the joined desktop
+      // strip shares the row.
+      fullWidth ? 'w-full h-full' : separated ? 'flex-none' : 'flex-1'
     }`}
     style={{
       minHeight: '44px',
