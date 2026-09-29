@@ -1,8 +1,10 @@
 /*
  * Saved ("bookmarked") listings, kept in the browser only.
  *
- * What lands in localStorage is a map from a SHA-256 fingerprint of the
- * listing's row id to the time it was saved -- never the listing itself.
+ * What lands in localStorage is a map from a fingerprint of the listing's
+ * row id to the time it was saved -- never the listing itself. Secure
+ * contexts use SHA-256; insecure HTTP origins use a deterministic fallback
+ * because Web Crypto may be unavailable there.
  * Listings carry real names, e-mail addresses and personal circumstances,
  * and a copy of them in localStorage would sit unencrypted on every device
  * that ever saved one, outliving deletion on our side for as long as the
@@ -35,8 +37,39 @@ const HASH_PATTERN = /^[0-9a-f]{64}$/;
 /** Fingerprint -> ms timestamp it was saved at. */
 export type SavedListingStore = Record<string, number>;
 
+function fallbackHashListingId(id: string): string {
+  const input = HASH_DOMAIN + id;
+  const hashes = [
+    0x811c9dc5,
+    0x9e3779b9,
+    0x85ebca6b,
+    0xc2b2ae35,
+    0x27d4eb2f,
+    0x165667b1,
+    0xd3a2646c,
+    0xfd7046c5,
+  ];
+
+  for (let index = 0; index < input.length; index += 1) {
+    const character = input.charCodeAt(index);
+    for (let hashIndex = 0; hashIndex < hashes.length; hashIndex += 1) {
+      hashes[hashIndex] = Math.imul(
+        hashes[hashIndex] ^ character,
+        0x01000193,
+      );
+    }
+  }
+
+  return hashes
+    .map((hash) => (hash >>> 0).toString(16).padStart(8, '0'))
+    .join('');
+}
+
 export async function hashListingId(id: string): Promise<string> {
-  const digest = await crypto.subtle.digest(
+  const subtle = globalThis.crypto?.subtle;
+  if (!subtle) return fallbackHashListingId(id);
+
+  const digest = await subtle.digest(
     'SHA-256',
     new TextEncoder().encode(HASH_DOMAIN + id),
   );
@@ -114,7 +147,7 @@ export function readSavedListingsRaw(): string | null {
   }
 }
 
-export function writeSavedListings(store: SavedListingStore): void {
+export function writeSavedListings(store: SavedListingStore): boolean {
   try {
     if (Object.keys(store).length === 0) {
       window.localStorage.removeItem(SAVED_LISTINGS_KEY);
@@ -123,8 +156,13 @@ export function writeSavedListings(store: SavedListingStore): void {
     }
 
     window.dispatchEvent(new Event(SAVED_LISTINGS_EVENT));
-  } catch {
-    // Storage unavailable: the toggle simply does not stick.
+    return true;
+  } catch (error) {
+    console.error(
+      `Could not write localStorage key "${SAVED_LISTINGS_KEY}".`,
+      error,
+    );
+    return false;
   }
 }
 

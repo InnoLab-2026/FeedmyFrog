@@ -15,6 +15,7 @@ import {
 import type { Listing } from '@/types';
 import {
   LEGACY_SAVED_LISTINGS_KEY,
+  SAVED_LISTINGS_KEY,
   SAVED_LISTINGS_EVENT,
   hashListingId,
   parseSavedListings,
@@ -31,7 +32,7 @@ interface KnownListing {
 
 interface SavedListingsContextValue {
   isSaved: (id: string) => boolean;
-  toggleSaved: (listing: Listing) => void;
+  toggleSaved: (listing: Listing) => Promise<void>;
   /** Hands the listings a page received to the saved view. */
   rememberListings: (listings: Listing[]) => void;
   /** Saved listings this tab has seen, most recently saved first. */
@@ -123,28 +124,31 @@ export function SavedListingsProvider({ children }: { children: ReactNode }) {
   );
 
   const toggleSaved = useCallback(
-    (listing: Listing) => {
-      hashOf(listing.id)
-        .then((hash) => {
-          setKnown((prev) =>
-            prev.has(listing.id)
-              ? prev
-              : new Map(prev).set(listing.id, { listing, hash }),
-          );
+    async (listing: Listing) => {
+      if (typeof listing.id !== 'string' || listing.id.length === 0) {
+        throw new Error('Cannot toggle a saved listing without listing.id.');
+      }
 
-          // Re-read rather than use `store`: another tab may have written
-          // since this one rendered.
-          const now = Date.now();
+      const hash = await hashOf(listing.id);
+      const now = Date.now();
+      const next = toggleSavedListing(
+        parseSavedListings(readSavedListingsRaw(), now),
+        hash,
+        now,
+      );
 
-          writeSavedListings(
-            toggleSavedListing(
-              parseSavedListings(readSavedListingsRaw(), now),
-              hash,
-              now,
-            ),
-          );
-        })
-        .catch(() => {});
+      // Fingerprints are stored at localStorage key `savedListings.v2`.
+      if (!writeSavedListings(next)) {
+        throw new Error(
+          `Could not persist listing in localStorage key "${SAVED_LISTINGS_KEY}".`,
+        );
+      }
+
+      setKnown((prev) =>
+        prev.has(listing.id)
+          ? prev
+          : new Map(prev).set(listing.id, { listing, hash }),
+      );
     },
     [hashOf],
   );

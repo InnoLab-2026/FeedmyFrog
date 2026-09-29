@@ -2,6 +2,7 @@
 
 import { MapPin, Mail, Bookmark } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { Listing } from '@/types';
 import { useSavedListings } from '@/components/marketplace/SavedListingsProvider';
@@ -17,6 +18,8 @@ export default function ListingCard({
 }: ListingCardProps) {
   const { t } = useTranslation();
   const saved = useSavedListings();
+  const [saveError, setSaveError] = useState(false);
+  const touchActivationHandled = useRef(false);
 
   // Bookmarking your own listing is pointless, so owner cards go without.
   const canSave = saved !== null && !ownerActions;
@@ -38,6 +41,56 @@ export default function ListingCard({
   const mailtoLink = `mailto:${listing.email}?subject=${encodeURIComponent(
     t('contact_subject', { title: listing.title }),
   )}`;
+
+  async function toggleBookmark() {
+    setSaveError(false);
+
+    if (!saved) return;
+
+    if (typeof listing.id !== 'string' || listing.id.length === 0) {
+      console.error('Cannot toggle bookmark: listing.id is missing.', listing.id);
+      setSaveError(true);
+      return;
+    }
+
+    try {
+      await saved.toggleSaved(listing);
+    } catch (error) {
+      console.error('Bookmark toggle failed for listing.id:', listing.id, error);
+      setSaveError(true);
+    }
+  }
+
+  function handleBookmarkClick(event: React.MouseEvent<HTMLButtonElement>) {
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (touchActivationHandled.current) {
+      touchActivationHandled.current = false;
+      return;
+    }
+
+    void toggleBookmark();
+  }
+
+  function handleBookmarkPointerUp(event: React.PointerEvent<HTMLButtonElement>) {
+    if (event.pointerType !== 'touch') return;
+    event.stopPropagation();
+    event.preventDefault();
+    if (touchActivationHandled.current) return;
+
+    touchActivationHandled.current = true;
+    void toggleBookmark();
+  }
+
+  function handleBookmarkTouchEnd(event: React.TouchEvent<HTMLButtonElement>) {
+    event.stopPropagation();
+    event.preventDefault();
+    if (touchActivationHandled.current) return;
+
+    touchActivationHandled.current = true;
+    void toggleBookmark();
+  }
 
   return (
     <div
@@ -77,14 +130,35 @@ export default function ListingCard({
             type="button"
             aria-label={saveLabel}
             title={saveLabel}
-            onClick={() => saved.toggleSaved(listing)}
+            onTouchStart={() => {
+              touchActivationHandled.current = false;
+            }}
+            onPointerDown={(event) => {
+              if (event.pointerType !== 'touch') {
+                touchActivationHandled.current = false;
+              }
+            }}
+            onPointerUp={handleBookmarkPointerUp}
+            onTouchEnd={handleBookmarkTouchEnd}
+            onClick={handleBookmarkClick}
+            onKeyDown={() => {
+              touchActivationHandled.current = false;
+            }}
             style={{
+              position: 'relative',
+              zIndex: 1,
+              width: '44px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               background: 'transparent',
               border: 'none',
               cursor: 'pointer',
               color: isSaved ? '#8DC63F' : 'var(--muted-fg)',
-              padding: '2px',
+              padding: 0,
               flexShrink: 0,
+              touchAction: 'manipulation',
             }}
           >
             <Bookmark
@@ -95,6 +169,19 @@ export default function ListingCard({
           </button>
         )}
       </div>
+
+      {saveError && (
+        <p
+          role="alert"
+          style={{
+            margin: '0 0 12px',
+            color: 'var(--danger-fg)',
+            fontSize: 'var(--fs-xs)',
+          }}
+        >
+          {t('error_unknown')}
+        </p>
+      )}
 
       <p
         className="mb-4"

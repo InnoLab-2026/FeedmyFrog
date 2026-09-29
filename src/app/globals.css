@@ -3,6 +3,13 @@
 @import "./fonts.css";
 @import "./theme.css";
 
+html,
+body {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: none;
+}
+
 /* --- Animations --------------------------------------------------------
    The confetti fountain on a published listing. Here rather than in a
    <style> tag inside the component: a keyframe rule is global no matter

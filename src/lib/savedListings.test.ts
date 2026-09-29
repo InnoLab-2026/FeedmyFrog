@@ -8,17 +8,30 @@ import {
   parseSavedListings,
   sweepSavedListings,
   toggleSavedListing,
+  writeSavedListings,
 } from './savedListings';
 
 const ID = '3f0c1d7e-9b1a-4a55-8f0e-2d6c1b7a9e42';
 const NOW = 1_800_000_000_000;
 
 describe('hashListingId', () => {
-  it('is a stable 64-character hex SHA-256', async () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('is a stable 64-character hex fingerprint', async () => {
     const hash = await hashListingId(ID);
 
     expect(hash).toMatch(/^[0-9a-f]{64}$/);
     expect(await hashListingId(ID)).toBe(hash);
+  });
+
+  it('uses a deterministic fallback when SubtleCrypto is unavailable', async () => {
+    vi.stubGlobal('crypto', {});
+
+    const hash = await hashListingId(ID);
+
+    expect(hash).toMatch(/^[0-9a-f]{64}$/);
+    expect(await hashListingId(ID)).toBe(hash);
+    expect(await hashListingId(`${ID}x`)).not.toBe(hash);
   });
 
   it('never contains the id it was computed from', async () => {
@@ -125,6 +138,36 @@ describe('on-disk lifetime', () => {
     sweepSavedListings(NOW);
 
     expect(disk.size).toBe(0);
+  });
+
+  it('writes saved fingerprints to the versioned key', () => {
+    expect(writeSavedListings({ fingerprint: NOW })).toBe(true);
+    expect(JSON.parse(disk.get(SAVED_LISTINGS_KEY)!)).toEqual({
+      fingerprint: NOW,
+    });
+  });
+
+  it('reports blocked storage writes', () => {
+    const error = new Error('blocked');
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.stubGlobal('window', {
+      localStorage: {
+        setItem: () => {
+          throw error;
+        },
+        removeItem: () => {
+          throw error;
+        },
+      },
+      dispatchEvent: () => true,
+    });
+
+    expect(writeSavedListings({ fingerprint: NOW })).toBe(false);
+    expect(errorSpy).toHaveBeenCalledWith(
+      `Could not write localStorage key "${SAVED_LISTINGS_KEY}".`,
+      error,
+    );
+    errorSpy.mockRestore();
   });
 
   it('clears everything on logout, the legacy plaintext key included', () => {

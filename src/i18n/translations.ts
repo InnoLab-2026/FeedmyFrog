@@ -67,6 +67,7 @@ export const resources = {
 
       // My listings
       back_to_overview: 'Back to overview',
+      back_to_my_listings: 'Back to my listings',
       my_listings_title: 'My listings',
       my_listings_description:
         'Create, edit and manage your own listings.',
@@ -266,6 +267,7 @@ export const resources = {
 
       // My listings
       back_to_overview: 'Zurück zur Übersicht',
+      back_to_my_listings: 'Zurück zu meinen Anzeigen',
       my_listings_title: 'Meine Anzeigen',
       my_listings_description:
         'Erstellen, bearbeiten und verwalten Sie Ihre eigenen Anzeigen.',
@@ -457,6 +459,7 @@ export const resources = {
       delete: 'Supprimer',
 
       back_to_overview: "Retour à l'aperçu",
+      back_to_my_listings: 'Retour à mes annonces',
       my_listings_title: 'Mes annonces',
       my_listings_description:
         'Créez, modifiez et gérez vos propres annonces.',
@@ -641,6 +644,7 @@ export const resources = {
       delete: 'Sil',
 
       back_to_overview: 'Genel bakışa dön',
+      back_to_my_listings: 'İlanlarıma geri dön',
       my_listings_title: 'İlanlarım',
       my_listings_description:
         'Kendi ilanlarınızı oluşturun, düzenleyin ve yönetin.',
@@ -825,6 +829,7 @@ export const resources = {
       delete: 'Eliminar',
 
       back_to_overview: 'Volver al resumen',
+      back_to_my_listings: 'Volver a mis anuncios',
       my_listings_title: 'Mis anuncios',
       my_listings_description:
         'Crea, edita y gestiona tus propios anuncios.',

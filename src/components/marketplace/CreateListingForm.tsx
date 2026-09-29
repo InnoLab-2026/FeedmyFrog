@@ -152,6 +152,7 @@ export default function CreateListingForm({
    */
   const titleFieldId = useId();
   const descriptionFieldId = useId();
+  const emailFieldId = useId();
 
   const counterStyle: React.CSSProperties = {
     margin: '6px 0 0',
@@ -222,7 +223,7 @@ export default function CreateListingForm({
               {t('type')} *
             </label>
 
-            <div className="grid grid-cols-2" style={{ gap: '12px' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '12px' }}>
               {(['need', 'offer'] as Mode[]).map((item) => {
                 const active = type === item;
 
@@ -277,7 +278,7 @@ export default function CreateListingForm({
               {t('choose_tags_hint', { max: MAX_CATEGORIES })}
             </p>
 
-            <div className="grid grid-cols-2" style={{ gap: '10px' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '10px' }}>
               {STANDARD_CATEGORY_TAGS.map((tag) => {
                 const selected = selectedTags.includes(tag);
                 const blocked = categoryLimitReached && !selected;
@@ -529,6 +530,7 @@ export default function CreateListingForm({
 
           <div style={{ marginBottom: '24px' }}>
             <label
+              htmlFor={emailFieldId}
               style={{
                 display: 'block',
                 marginBottom: '9px',
@@ -537,22 +539,26 @@ export default function CreateListingForm({
             >
               {t('email')}
             </label>
-            <input
-              type="email"
-              disabled
-              value={email}
+            <div
+              id={emailFieldId}
+              role="textbox"
+              aria-readonly="true"
+              aria-disabled="true"
+              aria-label={t('email')}
               style={{
                 ...inputStyle,
-                /*
-                 * Deliberately not the editable field surface. The address
-                 * comes from the session and cannot be changed here, and the
-                 * only thing saying so is how it looks.
-                 */
+                minHeight: '58px',
+                display: 'flex',
+                alignItems: 'center',
+                overflowWrap: 'anywhere',
+                wordBreak: 'break-word',
                 background: 'var(--input-readonly-bg)',
                 color: 'var(--muted-fg)',
                 cursor: 'not-allowed',
               }}
-            />
+            >
+              {email}
+            </div>
             <p
               style={{
                 margin: '6px 0 0',
@@ -625,6 +631,8 @@ export default function CreateListingForm({
                 margin: 0,
                 color: 'var(--muted-fg)',
                 fontSize: 'var(--fs-2xs)',
+                overflowWrap: 'anywhere',
+                wordBreak: 'break-word',
               }}
             >
               {location} • {email}
