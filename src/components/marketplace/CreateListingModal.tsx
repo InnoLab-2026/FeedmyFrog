@@ -54,13 +54,30 @@ export default function CreateListingModal({
       }
     }
 
-    const previousOverflow = document.body.style.overflow;
+    const scrollY = window.scrollY;
+    const previousBodyStyles = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
+    };
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+
+    document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
     window.addEventListener('keydown', onKeyDown);
 
     return () => {
-      document.body.style.overflow = previousOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBodyStyles.overflow;
+      document.body.style.position = previousBodyStyles.position;
+      document.body.style.top = previousBodyStyles.top;
+      document.body.style.width = previousBodyStyles.width;
       window.removeEventListener('keydown', onKeyDown);
+      window.scrollTo(0, scrollY);
     };
   }, [open, close]);
 
@@ -168,7 +185,10 @@ export default function CreateListingModal({
         <div
           className="fixed inset-0 flex items-center justify-center"
           style={{
-            padding: '24px',
+            padding:
+              'max(24px, env(safe-area-inset-top, 0px)) max(24px, env(safe-area-inset-right, 0px)) max(24px, env(safe-area-inset-bottom, 0px)) max(24px, env(safe-area-inset-left, 0px))',
+            overflow: 'hidden',
+            overscrollBehavior: 'none',
             /*
              * The scrim. It dims the page behind the dialog and it is the
              * click-outside-to-close target, so it is load-bearing twice
@@ -196,12 +216,15 @@ export default function CreateListingModal({
               position: 'relative',
               width: '100%',
               maxWidth: '760px',
-              maxHeight: '90vh',
-              overflowY: 'auto',
+              maxHeight:
+                'calc(100dvh - max(24px, env(safe-area-inset-top, 0px)) - max(24px, env(safe-area-inset-bottom, 0px)))',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              overscrollBehavior: 'contain',
               background: 'var(--card-bg)',
               border: '1px solid var(--card-border)',
               borderRadius: '18px',
-              padding: '32px',
               boxShadow: 'var(--elevation-xl)',
               outline: 'none',
             }}
@@ -210,7 +233,10 @@ export default function CreateListingModal({
             <div
               className="flex items-center justify-between"
               style={{
-                marginBottom: '30px',
+                flexShrink: 0,
+                gap: '12px',
+                padding: '32px 32px 24px',
+                background: 'var(--card-bg)',
               }}
             >
               <h1
@@ -251,7 +277,19 @@ export default function CreateListingModal({
               </button>
             </div>
 
-            <CreateListingForm email={email} onPublished={onPublished} />
+            <div
+              className="slim-scrollbar"
+              style={{
+                minHeight: 0,
+                flex: '1 1 auto',
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                overscrollBehavior: 'contain',
+                padding: '0 32px 32px',
+              }}
+            >
+              <CreateListingForm email={email} onPublished={onPublished} />
+            </div>
           </div>
         </div>
       )}

@@ -20,6 +20,7 @@ import { usePrefersReducedMotion } from '@/lib/useReducedMotion';
 import {
   DESCRIPTION_MAX_LENGTH,
   LISTING_LIMIT_VALUES,
+  MAX_CATEGORIES,
   TITLE_MAX_LENGTH,
 } from '@/lib/listingLimits';
 
@@ -35,14 +36,6 @@ interface CreateListingFormProps {
    */
   onPublished: () => void;
 }
-
-/*
- * How many of the built-in categories one listing may carry. Kept well under
- * the server's overall cap of TAGS_MAX_COUNT tags (ListingInput in
- * src/lib/validators.ts) so there is room left for the free-form hashtags
- * added in step 2.
- */
-const MAX_CATEGORIES = 2;
 
 /*
  * The confetti fountain: one [dx, dy] end point per piece, in pixels from the
@@ -222,7 +215,7 @@ export default function CreateListingForm({
               {t('type')} *
             </label>
 
-            <div className="grid grid-cols-2" style={{ gap: '12px' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '12px' }}>
               {(['need', 'offer'] as Mode[]).map((item) => {
                 const active = type === item;
 
@@ -277,7 +270,7 @@ export default function CreateListingForm({
               {t('choose_tags_hint', { max: MAX_CATEGORIES })}
             </p>
 
-            <div className="grid grid-cols-2" style={{ gap: '10px' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '10px' }}>
               {STANDARD_CATEGORY_TAGS.map((tag) => {
                 const selected = selectedTags.includes(tag);
                 const blocked = categoryLimitReached && !selected;
@@ -537,12 +530,23 @@ export default function CreateListingForm({
             >
               {t('email')}
             </label>
-            <input
-              type="email"
-              disabled
-              value={email}
+            {/*
+              * Not an <input>: a long address has to wrap on a phone, which
+              * an input cannot. Named by aria-label, since a <label> can only
+              * point at a form control.
+              */}
+            <div
+              role="textbox"
+              aria-readonly="true"
+              aria-disabled="true"
+              aria-label={t('email')}
               style={{
                 ...inputStyle,
+                minHeight: '58px',
+                display: 'flex',
+                alignItems: 'center',
+                overflowWrap: 'anywhere',
+                wordBreak: 'break-word',
                 /*
                  * Deliberately not the editable field surface. The address
                  * comes from the session and cannot be changed here, and the
@@ -552,7 +556,9 @@ export default function CreateListingForm({
                 color: 'var(--muted-fg)',
                 cursor: 'not-allowed',
               }}
-            />
+            >
+              {email}
+            </div>
             <p
               style={{
                 margin: '6px 0 0',
@@ -570,6 +576,9 @@ export default function CreateListingForm({
               background: 'var(--accent-tint)',
               border: '1px solid var(--card-border)',
               borderRadius: '10px',
+              // Same as ListingCard: one unbroken word must wrap, not overflow.
+              overflowWrap: 'anywhere',
+              wordBreak: 'break-word',
             }}
           >
             <p style={{ margin: '0 0 10px', fontWeight: 600, color: 'var(--page-fg)' }}>
@@ -606,6 +615,7 @@ export default function CreateListingForm({
                   <span
                     key={tag}
                     style={{
+                      maxWidth: '100%',
                       padding: '5px 9px',
                       background: 'rgba(141,198,63,0.08)',
                       color: '#8DC63F',

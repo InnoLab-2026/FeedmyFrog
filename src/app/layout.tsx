@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import {
   Plus_Jakarta_Sans,
   DM_Sans,
@@ -10,6 +10,10 @@ import { getRequestLanguage, serverT } from '@/i18n/server';
 import { APP_NAME } from '@/constants';
 
 import './globals.css';
+
+export const viewport: Viewport = {
+  viewportFit: 'cover',
+};
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],

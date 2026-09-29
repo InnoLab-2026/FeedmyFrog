@@ -10,6 +10,7 @@ export default function Footer() {
         background: 'var(--card-bg)',
         boxShadow: 'var(--elevation-md-up)',
         minHeight: '120px',
+        paddingBottom: 'calc(24px + env(safe-area-inset-bottom))',
       }}
     >
       <div

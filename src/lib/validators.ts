@@ -1,9 +1,11 @@
 import { z } from 'zod';
 import { env } from '@/lib/env';
 import { PLACES } from '@/lib/geo';
+import { isStandardCategory } from '@/data/categories';
 import {
   DESCRIPTION_MAX_LENGTH,
   DESCRIPTION_MIN_LENGTH,
+  MAX_CATEGORIES,
   TAG_MAX_LENGTH,
   TAGS_MAX_COUNT,
   TITLE_MAX_LENGTH,
@@ -49,7 +51,21 @@ export const ListingInput = z.object({
   type:        ListingType,
   title:       z.string().trim().min(TITLE_MIN_LENGTH, 'title_too_short').max(TITLE_MAX_LENGTH, 'title_too_long'),
   description: z.string().trim().min(DESCRIPTION_MIN_LENGTH, 'description_too_short').max(DESCRIPTION_MAX_LENGTH, 'description_too_long'),
-  tags:        z.array(z.string().trim().min(1, 'tag_empty').max(TAG_MAX_LENGTH, 'tag_too_long')).max(TAGS_MAX_COUNT, 'tags_too_many').default([]),
+  /*
+   * Between one and MAX_CATEGORIES built-in categories, the rest free-form
+   * hashtags. The forms already insist on this, but only here does it hold
+   * for a request that skips them: a listing with no category never shows
+   * under any tab, and one with every category floods all of them.
+   * Duplicates count once. No `.default([])`: a default short-circuits
+   * parsing, so an omitted field would skip both checks.
+   */
+  tags:        z.array(z.string().trim().min(1, 'tag_empty').max(TAG_MAX_LENGTH, 'tag_too_long'), { message: 'category_missing' })
+                 .max(TAGS_MAX_COUNT, 'tags_too_many')
+                 .refine((tags) => tags.some(isStandardCategory), 'category_missing')
+                 .refine(
+                   (tags) => new Set(tags.filter(isStandardCategory)).size <= MAX_CATEGORIES,
+                   'categories_too_many',
+                 ),
   /*
    * A choice from a closed list, not free text. This is the enforcement
    * boundary: the <select> in the forms is a convenience, but a request that

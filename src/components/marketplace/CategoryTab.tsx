@@ -7,6 +7,7 @@ interface CategoryTabProps {
   isFirst: boolean;
   isLast: boolean;
   fullWidth?: boolean;
+  separated?: boolean;
 
   /* Only the overflow ("more categories") tab uses these: it opens a menu,
      so it has to announce that and whether the menu is currently open. */
@@ -21,6 +22,7 @@ const CategoryTab = ({
   isFirst,
   isLast,
   fullWidth = false,
+  separated = false,
   ariaHasPopup,
   ariaExpanded,
 }: CategoryTabProps) => (
@@ -30,7 +32,9 @@ const CategoryTab = ({
     aria-haspopup={ariaHasPopup}
     aria-expanded={ariaExpanded}
     className={`flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-200 ${
-      fullWidth ? 'w-full h-full' : 'flex-1'
+      // Separated (mobile) tabs size to their label; the joined desktop
+      // strip shares the row.
+      fullWidth ? 'w-full h-full' : separated ? 'flex-none' : 'flex-1'
     }`}
     style={{
       minHeight: '44px',
@@ -38,12 +42,15 @@ const CategoryTab = ({
       color: isSelected ? 'var(--on-accent)' : 'var(--page-fg)',
       borderTop: '1px solid var(--card-border)',
       borderBottom: '1px solid var(--card-border)',
-      borderLeft: isFirst
+      borderLeft: separated || isFirst
         ? '1px solid var(--card-border)'
         : 'none',
       borderRight: '1px solid var(--card-border)',
-      borderTopLeftRadius: isFirst ? '8px' : '0',
-      borderTopRightRadius: isLast ? '8px' : '0',
+      borderTopLeftRadius: separated ? '10px' : isFirst ? '8px' : '0',
+      borderTopRightRadius: separated ? '10px' : isLast ? '8px' : '0',
+      borderBottomLeftRadius: separated ? '10px' : '0',
+      borderBottomRightRadius: separated ? '10px' : '0',
+      padding: separated ? '0 12px' : 0,
       fontWeight: 600,
       fontSize: 'var(--fs-md)',
       cursor: 'pointer',

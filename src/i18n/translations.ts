@@ -67,6 +67,7 @@ export const resources = {
 
       // My listings
       back_to_overview: 'Back to overview',
+      back_to_my_listings: 'Back to my listings',
       my_listings_title: 'My listings',
       my_listings_description:
         'Create, edit and manage your own listings.',
@@ -192,6 +193,8 @@ export const resources = {
       error_tag_empty: 'Tags cannot be empty.',
       error_tag_too_long: 'Each tag can be at most {{tagMax}} characters.',
       error_tags_too_many: 'You can add at most {{tagsMax}} tags.',
+      error_category_missing: 'Choose at least one category.',
+      error_categories_too_many: 'Choose at most {{categoriesMax}} categories.',
       error_location_invalid: 'Please choose a location from the list.',
       error_invalid_id: 'Invalid listing ID.',
       error_not_found: 'Listing not found.',
@@ -266,6 +269,7 @@ export const resources = {
 
       // My listings
       back_to_overview: 'Zurück zur Übersicht',
+      back_to_my_listings: 'Zurück zu meinen Anzeigen',
       my_listings_title: 'Meine Anzeigen',
       my_listings_description:
         'Erstellen, bearbeiten und verwalten Sie Ihre eigenen Anzeigen.',
@@ -390,6 +394,8 @@ export const resources = {
       error_tag_empty: 'Schlagwörter dürfen nicht leer sein.',
       error_tag_too_long: 'Jedes Schlagwort darf höchstens {{tagMax}} Zeichen lang sein.',
       error_tags_too_many: 'Sie können höchstens {{tagsMax}} Schlagwörter hinzufügen.',
+      error_category_missing: 'Wählen Sie mindestens eine Kategorie.',
+      error_categories_too_many: 'Wählen Sie höchstens {{categoriesMax}} Kategorien.',
       error_location_invalid: 'Bitte wählen Sie einen Standort aus der Liste.',
       error_invalid_id: 'Ungültige Anzeigen-ID.',
       error_not_found: 'Anzeige nicht gefunden.',
@@ -457,6 +463,7 @@ export const resources = {
       delete: 'Supprimer',
 
       back_to_overview: "Retour à l'aperçu",
+      back_to_my_listings: 'Retour à mes annonces',
       my_listings_title: 'Mes annonces',
       my_listings_description:
         'Créez, modifiez et gérez vos propres annonces.',
@@ -574,6 +581,8 @@ export const resources = {
       error_tag_empty: 'Les mots-clés ne peuvent pas être vides.',
       error_tag_too_long: 'Chaque mot-clé ne doit pas dépasser {{tagMax}} caractères.',
       error_tags_too_many: 'Vous pouvez ajouter {{tagsMax}} mots-clés au maximum.',
+      error_category_missing: 'Choisissez au moins une catégorie.',
+      error_categories_too_many: 'Choisissez {{categoriesMax}} catégories au maximum.',
       error_location_invalid: 'Veuillez choisir un lieu dans la liste.',
       error_invalid_id: "Identifiant d'annonce invalide.",
       error_not_found: 'Annonce introuvable.',
@@ -641,6 +650,7 @@ export const resources = {
       delete: 'Sil',
 
       back_to_overview: 'Genel bakışa dön',
+      back_to_my_listings: 'İlanlarıma geri dön',
       my_listings_title: 'İlanlarım',
       my_listings_description:
         'Kendi ilanlarınızı oluşturun, düzenleyin ve yönetin.',
@@ -757,6 +767,8 @@ export const resources = {
       error_tag_empty: 'Etiketler boş olamaz.',
       error_tag_too_long: 'Her etiket en fazla {{tagMax}} karakter olabilir.',
       error_tags_too_many: 'En fazla {{tagsMax}} etiket ekleyebilirsiniz.',
+      error_category_missing: 'En az bir kategori seçin.',
+      error_categories_too_many: 'En fazla {{categoriesMax}} kategori seçin.',
       error_location_invalid: 'Lütfen listeden bir konum seçin.',
       error_invalid_id: 'Geçersiz ilan kimliği.',
       error_not_found: 'İlan bulunamadı.',
@@ -825,6 +837,7 @@ export const resources = {
       delete: 'Eliminar',
 
       back_to_overview: 'Volver al resumen',
+      back_to_my_listings: 'Volver a mis anuncios',
       my_listings_title: 'Mis anuncios',
       my_listings_description:
         'Crea, edita y gestiona tus propios anuncios.',
@@ -941,6 +954,8 @@ export const resources = {
       error_tag_empty: 'Las etiquetas no pueden estar vacías.',
       error_tag_too_long: 'Cada etiqueta puede tener como máximo {{tagMax}} caracteres.',
       error_tags_too_many: 'Puedes añadir como máximo {{tagsMax}} etiquetas.',
+      error_category_missing: 'Elige al menos una categoría.',
+      error_categories_too_many: 'Elige como máximo {{categoriesMax}} categorías.',
       error_location_invalid: 'Por favor, elige una ubicación de la lista.',
       error_invalid_id: 'ID de anuncio no válido.',
       error_not_found: 'Anuncio no encontrado.',

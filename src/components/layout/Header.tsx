@@ -40,7 +40,22 @@ export default function Header({
 
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const [accountMenuTop, setAccountMenuTop] = useState<number | null>(null);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
+  const accountButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  const toggleAccountMenu = () => {
+    if (showAccountMenu) {
+      setShowAccountMenu(false);
+      return;
+    }
+
+    const button = accountButtonRef.current;
+    if (!button) return;
+
+    setAccountMenuTop(button.getBoundingClientRect().bottom + 8);
+    setShowAccountMenu(true);
+  };
 
   useEffect(() => {
     if (!showAccountMenu) return;
@@ -52,8 +67,16 @@ export default function Header({
         setShowAccountMenu(false);
       }
     };
+    // The menu is position: fixed, measured from the button when it opened;
+    // once the page scrolls it would float free of the header, so it closes.
+    const close = () => setShowAccountMenu(false);
+
     document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    window.addEventListener('scroll', close, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      window.removeEventListener('scroll', close);
+    };
   }, [showAccountMenu]);
 
   const [localLocationFilter, setLocalLocationFilter] =
@@ -82,19 +105,23 @@ export default function Header({
         }}
       >
         <div
-          className="absolute flex items-center gap-2"
-          style={{ top: '14px', right: '20px', zIndex: 20 }}
+          className="relative flex items-center justify-end gap-2 px-3 pt-[calc(12px+env(safe-area-inset-top))] md:absolute md:top-[calc(14px+env(safe-area-inset-top))] md:right-[calc(20px+env(safe-area-inset-right))] md:justify-start md:px-0 md:pt-0 [&_button]:min-w-11 [&_button]:min-h-11"
+          // top/right only apply once the cluster is absolute (md:). As inline
+          // style they also shifted the relative mobile row 20px left and
+          // 14px down.
+          style={{ zIndex: 20 }}
         >
-          <div className="relative" ref={accountMenuRef}>
+          <div className="relative order-last md:order-none" ref={accountMenuRef}>
             <button
+              ref={accountButtonRef}
               type="button"
-              onClick={() => setShowAccountMenu((current) => !current)}
+              onClick={toggleAccountMenu}
               aria-label={t('account_menu')}
               aria-haspopup="menu"
               aria-expanded={showAccountMenu}
               style={{
-                width: '36px',
-                height: '36px',
+                width: '44px',
+                height: '44px',
                 borderRadius: '50%',
                 border: '1px solid var(--card-border)',
                 background: '#8DC63F',
@@ -110,17 +137,28 @@ export default function Header({
             {showAccountMenu && (
               <div
                 role="menu"
-                className="absolute right-0"
+                className="fixed"
                 style={{
-                  top: 'calc(100% + 8px)',
+                  position: 'fixed',
+                  top: accountMenuTop ?? 0,
+                  right: '12px',
                   width: '280px',
+                  maxWidth: 'calc(100vw - 24px)',
+                  maxHeight:
+                    accountMenuTop === null
+                      ? '70dvh'
+                      : `min(70dvh, calc(100dvh - ${accountMenuTop}px - env(safe-area-inset-bottom, 0px) - 12px))`,
                   color: 'var(--page-fg)',
                   background: 'var(--card-bg)',
                   border: '1px solid var(--card-border)',
                   borderRadius: '14px',
                   boxShadow: 'var(--elevation-lg)',
-                  overflow: 'hidden',
-                  zIndex: 30,
+                  overflowX: 'hidden',
+                  overflowY: 'auto',
+                  overscrollBehavior: 'contain',
+                  paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+                  boxSizing: 'border-box',
+                  zIndex: 50,
                 }}
               >
                 <div
@@ -167,6 +205,8 @@ export default function Header({
                     >
                       <span
                         style={{
+                          minWidth: 0,
+                          flex: '1 1 auto',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
@@ -258,8 +298,8 @@ export default function Header({
             aria-label={t('disclaimer_btn')}
             aria-haspopup="dialog"
             style={{
-              width: '36px',
-              height: '36px',
+              width: '44px',
+              height: '44px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -276,18 +316,17 @@ export default function Header({
           <LanguageButton />
         </div>
 
-        {/* pr reserves room for the absolutely-positioned avatar/info/language
-            cluster above so it never overlaps the location field once the
-            search+location row grows narrower than its 1100px max-width
-            (roughly 768px-1310px viewports). Inline `style` always beats a
-            plain class, so the md: override has to live in className. */}
+        {/* The controls stay in this flow on mobile. From md up they are
+            absolutely positioned, so right padding reserves room for the
+            cluster before the search+location row reaches its 1100px
+            max-width: four 44px buttons + three 8px gaps + 20px inset = 220px,
+            plus a 16px gap. Change the buttons, change this. Inline `style`
+            always beats a plain class, so the md: overrides have to live in
+            className. */}
         <div
-          className="flex flex-col md:flex-row md:items-center pr-8 md:pr-[210px]"
+          className="flex flex-col gap-3 md:flex-row md:items-center md:gap-5 pt-3 md:pt-7 pl-5 pr-5 md:pl-8 md:pr-[236px]"
           style={{
-            paddingTop: '28px',
-            paddingLeft: '32px',
             paddingBottom: '22px',
-            gap: '20px',
           }}
         >
           <div className="flex-shrink-0" style={{ width: '168px' }}>
@@ -320,11 +359,11 @@ export default function Header({
           </div>
 
           <div
-            className="flex flex-col"
-            style={{ flex: 1, gap: '12px', maxWidth: '1100px' }}
+            className="flex w-full flex-col gap-3 md:flex-1"
+            style={{ maxWidth: '1100px' }}
           >
             <div className="flex flex-col md:flex-row" style={{ gap: '12px' }}>
-              <div className="relative" style={{ flex: 1, maxWidth: '760px' }}>
+              <div className="relative w-full md:flex-1" style={{ maxWidth: '760px' }}>
                 <Search
                   className="absolute left-4 top-1/2 -translate-y-1/2"
                   style={{ width: '18px', height: '18px', color: '#666' }}
@@ -334,7 +373,7 @@ export default function Header({
                   placeholder={t('search_placeholder')}
                   value={searchQuery}
                   onChange={(e) => onSearchChange(e.target.value)}
-                  className="w-full focus:outline-none"
+                  className="w-full max-md:!text-base focus:outline-none"
                   style={{
                     height: '44px',
                     paddingLeft: '42px',
@@ -343,12 +382,14 @@ export default function Header({
                     color: 'var(--page-fg)',
                     border: '1px solid var(--control-border)',
                     borderRadius: '9px',
+                    // Phones get 16px from max-md:!text-base above: iOS zooms
+                    // into any focused field smaller than that.
                     fontSize: 'var(--fs-control-input)',
                   }}
                 />
               </div>
 
-              <div style={{ width: '240px', flexShrink: 0 }}>
+              <div className="w-full shrink-0 md:w-[240px] max-md:[&_input]:!text-base">
                 <LocationSearch
                   value={locationFilter}
                   onChange={handleLocationChange}
@@ -357,7 +398,7 @@ export default function Header({
             </div>
 
             {showMyListingsButton && (
-              <div>
+              <div className="w-full md:w-auto max-md:[&_button]:w-full max-md:[&_button]:min-h-11">
                 <CreateListingModal
                   email={email}
                   label={t('manage_listings')}

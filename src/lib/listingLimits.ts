@@ -20,6 +20,14 @@ export const DESCRIPTION_MAX_LENGTH = 400;
 export const TAG_MAX_LENGTH = 40;
 export const TAGS_MAX_COUNT = 8;
 
+/*
+ * How many of the built-in categories one listing may carry (and it must
+ * carry at least one). Kept well under TAGS_MAX_COUNT so there is room left
+ * for free-form hashtags. Shared by both forms and ListingInput, which
+ * enforces it.
+ */
+export const MAX_CATEGORIES = 2;
+
 /**
  * Interpolation values for the `error_*` strings that quote a limit.
  *
@@ -36,4 +44,5 @@ export const LISTING_LIMIT_VALUES = {
   descriptionMax: DESCRIPTION_MAX_LENGTH,
   tagMax: TAG_MAX_LENGTH,
   tagsMax: TAGS_MAX_COUNT,
+  categoriesMax: MAX_CATEGORIES,
 } as const;

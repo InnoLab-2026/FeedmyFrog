@@ -3,6 +3,15 @@
 @import "./fonts.css";
 @import "./theme.css";
 
+/* Safety net against sideways scrolling on phones. `clip`, not `hidden`:
+   hidden turns <body> into a scroll container of its own, which breaks
+   position: sticky and fights the modal's scroll lock. overscroll-behavior
+   is left alone so pull-to-refresh keeps working. */
+html,
+body {
+  overflow-x: clip;
+}
+
 /* --- Animations --------------------------------------------------------
    The confetti fountain on a published listing. Here rather than in a
    <style> tag inside the component: a keyframe rule is global no matter

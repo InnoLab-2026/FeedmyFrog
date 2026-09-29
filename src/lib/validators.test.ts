@@ -6,6 +6,7 @@ import { PLACES } from './geo';
 import {
   DESCRIPTION_MAX_LENGTH,
   DESCRIPTION_MIN_LENGTH,
+  MAX_CATEGORIES,
   TAG_MAX_LENGTH,
   TAGS_MAX_COUNT,
   TITLE_MAX_LENGTH,
@@ -83,13 +84,34 @@ describe('ListingInput schema', () => {
     expect(ListingInput.safeParse(base).success).toBe(true);
   });
 
-  it('defaults tags to an empty array when omitted', () => {
+  it('rejects omitted tags with category_missing rather than defaulting them', () => {
     const withoutTags: Record<string, unknown> = { ...base };
     delete withoutTags.tags;
 
     const result = ListingInput.safeParse(withoutTags);
-    expect(result.success).toBe(true);
-    if (result.success) expect(result.data.tags).toEqual([]);
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.flatten().fieldErrors.tags).toEqual(['category_missing']);
+  });
+
+  it('rejects a listing with only hashtags with category_missing', () => {
+    const result = ListingInput.safeParse({ ...base, tags: ['Nachhilfe', 'Mathe'] });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.flatten().fieldErrors.tags).toEqual(['category_missing']);
+  });
+
+  it('rejects more built-in categories than MAX_CATEGORIES with categories_too_many', () => {
+    const result = ListingInput.safeParse({ ...base, tags: ['Bildung', 'Familie', 'Kinder'] });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.flatten().fieldErrors.tags).toEqual(['categories_too_many']);
+    }
+  });
+
+  it('accepts MAX_CATEGORIES categories plus hashtags, counting duplicates once', () => {
+    expect(MAX_CATEGORIES).toBe(2);
+    expect(
+      ListingInput.safeParse({ ...base, tags: ['Bildung', 'Familie', 'Bildung', 'Mathe'] }).success,
+    ).toBe(true);
   });
 
   /*
@@ -119,7 +141,7 @@ describe('ListingInput schema', () => {
   });
 
   it('rejects more than 8 tags with tags_too_many', () => {
-    const tags = Array.from({ length: 9 }, (_, i) => `tag${i}`);
+    const tags = ['Bildung', ...Array.from({ length: 8 }, (_, i) => `tag${i}`)];
     const result = ListingInput.safeParse({ ...base, tags });
     expect(result.success).toBe(false);
     if (!result.success) expect(result.error.flatten().fieldErrors.tags).toEqual(['tags_too_many']);
@@ -213,13 +235,13 @@ describe('listing length limits', () => {
 
   it('enforces exactly the tag limits listingLimits declares', () => {
     expect(
-      ListingInput.safeParse({ ...base, tags: ['a'.repeat(TAG_MAX_LENGTH)] }).success,
+      ListingInput.safeParse({ ...base, tags: ['Bildung', 'a'.repeat(TAG_MAX_LENGTH)] }).success,
     ).toBe(true);
     expect(
-      ListingInput.safeParse({ ...base, tags: ['a'.repeat(TAG_MAX_LENGTH + 1)] }).success,
+      ListingInput.safeParse({ ...base, tags: ['Bildung', 'a'.repeat(TAG_MAX_LENGTH + 1)] }).success,
     ).toBe(false);
 
-    const tags = (n: number) => Array.from({ length: n }, (_, i) => `tag${i}`);
+    const tags = (n: number) => ['Bildung', ...Array.from({ length: n - 1 }, (_, i) => `tag${i}`)];
 
     expect(ListingInput.safeParse({ ...base, tags: tags(TAGS_MAX_COUNT) }).success).toBe(true);
     expect(
