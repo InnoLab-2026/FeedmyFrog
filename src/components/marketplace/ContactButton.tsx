@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, Copy, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -11,88 +11,28 @@ interface ContactButtonProps {
   href: string;
 }
 
-/** Room the menu needs, used to keep it on screen near the pointer. */
-const MENU_WIDTH = 180;
-const MENU_HEIGHT = 56;
-const EDGE = 8;
-
 const STATUS_MS = 2500;
 
 type CopyStatus = 'copied' | 'failed';
 
 /*
- * The listing's Contact button: a plain mailto: link on click, and on right
- * click (or the context-menu key, or a long press on Android) a one-item menu
- * that copies the address instead. Not everyone has a mail client wired up to
- * mailto:, and selecting an address out of a link is not possible.
+ * The listing's Contact control, a split button: `[ Contact | copy ]`.
  *
- * The menu and the confirmation are portalled to <body> and positioned
- * fixed, so neither is clipped by the card or stacked under its neighbours.
+ * The left part is the mailto: link, filled like every primary action. The
+ * right part is outlined instead, so the two read as two buttons with two
+ * different results rather than one wide one. It copies the address, for
+ * everyone whose mail client is not wired up to mailto: -- and it is a visible
+ * button on purpose. A right-click menu was tried first: nobody finds it, iOS
+ * never fires `contextmenu`, and it hid the browser's own menu, which already
+ * offers "Copy email address" on a mailto: link. That native menu is left
+ * alone now.
+ *
+ * Two sibling controls rather than one nested in the other: a button inside a
+ * link is invalid HTML and would fire both.
  */
 export default function ContactButton({ email, href }: ContactButtonProps) {
   const { t } = useTranslation();
-  const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
   const [status, setStatus] = useState<CopyStatus | null>(null);
-
-  const linkRef = useRef<HTMLAnchorElement | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null);
-  const copyRef = useRef<HTMLButtonElement | null>(null);
-
-  function openMenu(event: React.MouseEvent<HTMLAnchorElement>) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    let { clientX: x, clientY: y } = event;
-
-    // Opened from the keyboard: there is no pointer, so browsers report 0,0.
-    // Anchor the menu under the button instead.
-    if (x === 0 && y === 0 && linkRef.current) {
-      const box = linkRef.current.getBoundingClientRect();
-      x = box.left;
-      y = box.bottom + 4;
-    }
-
-    setMenuAt({
-      x: Math.max(EDGE, Math.min(x, window.innerWidth - MENU_WIDTH - EDGE)),
-      y: Math.max(EDGE, Math.min(y, window.innerHeight - MENU_HEIGHT - EDGE)),
-    });
-  }
-
-  function closeMenu(returnFocus: boolean) {
-    setMenuAt(null);
-    if (returnFocus) linkRef.current?.focus();
-  }
-
-  useEffect(() => {
-    if (!menuAt) return;
-
-    copyRef.current?.focus();
-
-    const onPointerDown = (event: PointerEvent) => {
-      if (!menuRef.current?.contains(event.target as Node)) setMenuAt(null);
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setMenuAt(null);
-        linkRef.current?.focus();
-      }
-    };
-    // Fixed to where the pointer was; once the page moves it would point at
-    // nothing, so it closes like a native context menu does.
-    const onMove = () => setMenuAt(null);
-
-    document.addEventListener('pointerdown', onPointerDown);
-    document.addEventListener('keydown', onKeyDown);
-    window.addEventListener('scroll', onMove, { passive: true });
-    window.addEventListener('resize', onMove);
-
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown);
-      document.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('scroll', onMove);
-      window.removeEventListener('resize', onMove);
-    };
-  }, [menuAt]);
 
   useEffect(() => {
     if (!status) return;
@@ -101,8 +41,8 @@ export default function ContactButton({ email, href }: ContactButtonProps) {
     return () => window.clearTimeout(timer);
   }, [status]);
 
-  async function copyEmail() {
-    closeMenu(true);
+  async function copyEmail(event: React.MouseEvent<HTMLButtonElement>) {
+    event.stopPropagation();
 
     // navigator.clipboard exists only in secure contexts (HTTPS, localhost)
     // and can be refused by permissions; both land in the catch.
@@ -117,88 +57,73 @@ export default function ContactButton({ email, href }: ContactButtonProps) {
   const statusText =
     status === 'copied' ? t('email_copied') : status === 'failed' ? t('copy_failed') : '';
 
+  const copied = status === 'copied';
+
+  const focusRing =
+    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-fg)]';
+
+  // Backgrounds live in className, not style: an inline background would
+  // outrank the hover: variant and the halves would not react to the pointer.
+
   return (
     <>
-      <a
-        ref={linkRef}
-        href={href}
-        className="flex shrink-0 items-center gap-1.5 px-4 py-2 transition-all duration-200"
-        style={{
-          background: '#8DC63F',
-          color: 'var(--on-accent)',
-          border: '1px solid #8DC63F',
-          borderRadius: '7px',
-          fontSize: 'var(--fs-xs)',
-          fontWeight: 600,
-          textDecoration: 'none',
-        }}
-        onClick={(e) => e.stopPropagation()}
-        onContextMenu={openMenu}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = '#72a830';
-          e.currentTarget.style.borderColor = '#72a830';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = '#8DC63F';
-          e.currentTarget.style.borderColor = '#8DC63F';
-        }}
+      {/* Full width on its own row on phones -- a 44px-tall target that
+          does not squeeze the location beside it -- and content-sized from
+          sm up. */}
+      <div
+        className="flex w-full min-h-11 items-stretch sm:w-auto sm:min-h-0 sm:shrink-0"
+        style={{ fontSize: 'var(--fs-xs)', fontWeight: 600 }}
       >
-        <Mail className="w-3.5 h-3.5" />
-        <span>{t('contact')}</span>
-      </a>
+        <a
+          href={href}
+          className={`flex flex-1 items-center justify-center gap-1.5 px-4 py-2 transition-colors duration-200 bg-[#8DC63F] hover:bg-[#72a830] sm:flex-none ${focusRing}`}
+          style={{
+            color: 'var(--on-accent)',
+            border: '1px solid #8DC63F',
+            borderRadius: '7px 0 0 7px',
+            textDecoration: 'none',
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Mail aria-hidden="true" className="w-3.5 h-3.5" />
+          <span>{t('contact')}</span>
+        </a>
+
+        <button
+          type="button"
+          aria-label={t('copy_email')}
+          title={t('copy_email')}
+          onClick={copyEmail}
+          // Stays outlined when copied -- a filled check would merge with
+          // Contact and the split would vanish just as it was used.
+          className={`flex items-center justify-center transition-colors duration-200 ${
+            copied
+              ? 'bg-[rgba(141,198,63,0.28)]'
+              : 'bg-[var(--accent-tint)] hover:bg-[rgba(141,198,63,0.18)]'
+          } ${focusRing}`}
+          style={{
+            // 44px wide for touch; the row sets the height.
+            minWidth: '44px',
+            padding: '0 12px',
+            color: 'var(--accent-fg)',
+            border: '1px solid var(--accent-fg)',
+            borderRadius: '0 7px 7px 0',
+            cursor: 'pointer',
+          }}
+        >
+          {copied ? (
+            <Check aria-hidden="true" className="w-4 h-4" />
+          ) : (
+            <Copy aria-hidden="true" className="w-4 h-4" />
+          )}
+        </button>
+      </div>
 
       {/* Always mounted, so screen readers hear the change. The visible
           confirmation below is the same text and hidden from them. */}
       <span role="status" className="sr-only">
         {statusText}
       </span>
-
-      {menuAt &&
-        createPortal(
-          <div
-            ref={menuRef}
-            role="menu"
-            aria-label={t('contact')}
-            style={{
-              position: 'fixed',
-              left: menuAt.x,
-              top: menuAt.y,
-              zIndex: 60,
-              minWidth: '160px',
-              padding: '4px',
-              background: 'var(--card-bg)',
-              border: '1px solid var(--card-border)',
-              borderRadius: '10px',
-              boxShadow: 'var(--elevation-lg)',
-            }}
-          >
-            <button
-              ref={copyRef}
-              type="button"
-              role="menuitem"
-              onClick={copyEmail}
-              onKeyDown={(e) => {
-                if (e.key === 'Tab') closeMenu(false);
-              }}
-              className="flex w-full items-center rounded-lg outline-none hover:bg-[var(--accent-tint)] focus-visible:bg-[var(--accent-tint)]"
-              style={{
-                gap: '10px',
-                minHeight: '44px',
-                padding: '0 14px',
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--page-fg)',
-                fontSize: 'var(--fs-sm)',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              <Copy aria-hidden="true" style={{ width: '16px', height: '16px' }} />
-              {t('copy')}
-            </button>
-          </div>,
-          document.body,
-        )}
 
       {status &&
         createPortal(

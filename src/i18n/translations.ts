@@ -62,7 +62,7 @@ export const resources = {
 
       // Listing card
       contact: 'Contact',
-      copy: 'Copy',
+      copy_email: 'Copy email address',
       email_copied: 'Email address copied.',
       copy_failed: 'Could not copy the email address.',
       edit: 'Edit',
@@ -267,7 +267,7 @@ export const resources = {
 
       // Listing card
       contact: 'Kontakt aufnehmen',
-      copy: 'Kopieren',
+      copy_email: 'E-Mail-Adresse kopieren',
       email_copied: 'E-Mail-Adresse kopiert.',
       copy_failed: 'Die E-Mail-Adresse konnte nicht kopiert werden.',
       edit: 'Bearbeiten',
@@ -465,7 +465,7 @@ export const resources = {
       page_of: 'Page {{current}} sur {{total}}',
 
       contact: 'Contacter',
-      copy: 'Copier',
+      copy_email: 'Copier l’adresse e-mail',
       email_copied: 'Adresse e-mail copiée.',
       copy_failed: 'Impossible de copier l’adresse e-mail.',
       edit: 'Modifier',
@@ -655,7 +655,7 @@ export const resources = {
       page_of: 'Sayfa {{current}} / {{total}}',
 
       contact: 'İletişime geç',
-      copy: 'Kopyala',
+      copy_email: 'E-posta adresini kopyala',
       email_copied: 'E-posta adresi kopyalandı.',
       copy_failed: 'E-posta adresi kopyalanamadı.',
       edit: 'Düzenle',
@@ -845,7 +845,7 @@ export const resources = {
       page_of: 'Página {{current}} de {{total}}',
 
       contact: 'Contactar',
-      copy: 'Copiar',
+      copy_email: 'Copiar dirección de correo',
       email_copied: 'Dirección de correo copiada.',
       copy_failed: 'No se pudo copiar la dirección de correo.',
       edit: 'Editar',

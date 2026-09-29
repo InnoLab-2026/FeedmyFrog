@@ -103,6 +103,11 @@
   --on-accent: #1a3200;
   /* The faint green wash behind confirmations and the GPS affordance. */
   --accent-tint: #F7FBF9;
+  /* Green for icons, text and outlines on the card surface. The brand green
+     itself is only 2:1 on white -- too faint to read or to outline a control
+     (WCAG 1.4.3 / 1.4.11) -- so light mode darkens it to 5:1. Dark mode can
+     use the brand green as is (7:1). */
+  --accent-fg: #4f7a1f;
 
   --danger-fg: #dc2626;
   --danger-bg: #fff7f7;
@@ -136,6 +141,7 @@
   --input-bg: #1b1f18;
   --input-readonly-bg: #171b15;
   --accent-tint: #1f2a18;
+  --accent-fg: #8DC63F;
 
   --danger-fg: #f87171;
   --danger-bg: #2a1c1c;

@@ -150,16 +150,19 @@ export default function ListingCard({
       </div>
 
       <div
-        className="flex items-center justify-between gap-3 pt-3"
+        className="flex flex-wrap items-center justify-between gap-3 pt-3"
         style={{
           fontSize: 'var(--fs-xs)',
           fontWeight: 500,
           borderTop: '1px solid var(--divider)',
         }}
       >
+        {/* A place name from a closed list, never long: it keeps its line
+            and the row wraps the button under it instead of breaking it
+            mid-word. */}
         <div
           className="flex items-center gap-1.5"
-          style={{ minWidth: 0, color: 'var(--muted-fg)' }}
+          style={{ whiteSpace: 'nowrap', color: 'var(--muted-fg)' }}
         >
           <MapPin className="w-3.5 h-3.5 shrink-0" />
           <span>{listing.location}</span>
