@@ -1,10 +1,11 @@
 'use client';
 
-import { MapPin, Mail, Bookmark } from 'lucide-react';
+import { MapPin, Bookmark } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { ReactNode } from 'react';
 import type { Listing } from '@/types';
 import { useSavedListings } from '@/components/marketplace/SavedListingsProvider';
+import ContactButton from '@/components/marketplace/ContactButton';
 
 interface ListingCardProps {
   listing: Listing;
@@ -164,31 +165,7 @@ export default function ListingCard({
           <span>{listing.location}</span>
         </div>
 
-        <a
-          href={mailtoLink}
-          className="flex shrink-0 items-center gap-1.5 px-4 py-2 transition-all duration-200"
-          style={{
-            background: '#8DC63F',
-            color: 'var(--on-accent)',
-            border: '1px solid #8DC63F',
-            borderRadius: '7px',
-            fontSize: 'var(--fs-xs)',
-            fontWeight: 600,
-            textDecoration: 'none',
-          }}
-          onClick={(e) => e.stopPropagation()}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#72a830';
-            e.currentTarget.style.borderColor = '#72a830';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#8DC63F';
-            e.currentTarget.style.borderColor = '#8DC63F';
-          }}
-        >
-          <Mail className="w-3.5 h-3.5" />
-          <span>{t('contact')}</span>
-        </a>
+        <ContactButton email={listing.email} href={mailtoLink} />
       </div>
 
       {ownerActions && (
