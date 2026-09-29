@@ -167,6 +167,7 @@ describe('limit placeholders', () => {
       'error_description_too_long',
       'error_tag_too_long',
       'error_tags_too_many',
+      'error_categories_too_many',
     ]) {
       expect(placeholders(reference[key])).not.toEqual([]);
     }
