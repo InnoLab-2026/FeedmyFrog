@@ -20,6 +20,7 @@ import { usePrefersReducedMotion } from '@/lib/useReducedMotion';
 import {
   DESCRIPTION_MAX_LENGTH,
   LISTING_LIMIT_VALUES,
+  MAX_CATEGORIES,
   TITLE_MAX_LENGTH,
 } from '@/lib/listingLimits';
 
@@ -35,14 +36,6 @@ interface CreateListingFormProps {
    */
   onPublished: () => void;
 }
-
-/*
- * How many of the built-in categories one listing may carry. Kept well under
- * the server's overall cap of TAGS_MAX_COUNT tags (ListingInput in
- * src/lib/validators.ts) so there is room left for the free-form hashtags
- * added in step 2.
- */
-const MAX_CATEGORIES = 2;
 
 /*
  * The confetti fountain: one [dx, dy] end point per piece, in pixels from the
@@ -66,7 +59,7 @@ const CONFETTI_COLORS = ['#FF3B30', '#007AFF', '#FFD60A', '#FF2D55', '#FF9F0A'];
  * confetti animation; without motion there is nothing to wait for beyond long
  * enough to read the line.
  */
-const CELEBRATION_MS = 1800;
+const CELEBRATION_MS = 2100;
 const CELEBRATION_REDUCED_MS = 700;
 
 export default function CreateListingForm({
@@ -163,13 +156,13 @@ export default function CreateListingForm({
   const inputStyle: React.CSSProperties = {
     width: '100%',
     padding: '14px 16px',
-    background: 'white',
-    border: '1px solid rgba(47,47,47,0.2)',
+    background: 'var(--input-bg)',
+    border: '1px solid var(--control-border)',
     borderRadius: '8px',
     fontSize: 'var(--fs-control-input)',
-    color: '#2F2F2F',
+    color: 'var(--page-fg)',
     outline: 'none',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+    boxShadow: 'var(--elevation-sm)',
   };
 
   return (
@@ -191,7 +184,7 @@ export default function CreateListingForm({
               height: '8px',
               flex: 1,
               borderRadius: '999px',
-              background: item <= step ? '#8DC63F' : '#dedede',
+              background: item <= step ? '#8DC63F' : 'var(--divider)',
             }}
           />
         ))}
@@ -202,7 +195,7 @@ export default function CreateListingForm({
           <h2
             style={{
               margin: '0 0 26px',
-              color: '#2F2F2F',
+              color: 'var(--page-fg)',
               fontSize: 'var(--fs-xl)',
               fontWeight: 600,
             }}
@@ -222,7 +215,7 @@ export default function CreateListingForm({
               {t('type')} *
             </label>
 
-            <div className="grid grid-cols-2" style={{ gap: '12px' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '12px' }}>
               {(['need', 'offer'] as Mode[]).map((item) => {
                 const active = type === item;
 
@@ -234,16 +227,16 @@ export default function CreateListingForm({
                     data-testid={`listing-type-${item}`}
                     style={{
                       minHeight: '62px',
-                      background: active ? '#8DC63F' : 'white',
-                      color: active ? 'white' : '#2F2F2F',
+                      background: active ? '#8DC63F' : 'var(--input-bg)',
+                      color: active ? 'var(--on-accent)' : 'var(--page-fg)',
                       border: active
                         ? '1px solid #8DC63F'
-                        : '1px solid rgba(47,47,47,0.2)',
+                        : '1px solid var(--control-border)',
                       borderRadius: '9px',
                       fontSize: 'var(--fs-lg)',
                       fontWeight: 600,
                       cursor: 'pointer',
-                      boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                      boxShadow: 'var(--elevation-sm)',
                     }}
                   >
                     {item === 'need' ? t('mode_need') : t('mode_offer')}
@@ -271,14 +264,14 @@ export default function CreateListingForm({
             <p
               style={{
                 margin: '-6px 0 12px',
-                color: '#666',
+                color: 'var(--muted-fg)',
                 fontSize: 'var(--fs-xs)',
               }}
             >
               {t('choose_tags_hint', { max: MAX_CATEGORIES })}
             </p>
 
-            <div className="grid grid-cols-2" style={{ gap: '10px' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '10px' }}>
               {STANDARD_CATEGORY_TAGS.map((tag) => {
                 const selected = selectedTags.includes(tag);
                 const blocked = categoryLimitReached && !selected;
@@ -295,17 +288,17 @@ export default function CreateListingForm({
                       minHeight: '50px',
                       padding: '0 16px',
                       textAlign: 'left',
-                      background: selected ? '#8DC63F' : 'white',
-                      color: selected ? '#1a3200' : '#2F2F2F',
+                      background: selected ? '#8DC63F' : 'var(--input-bg)',
+                      color: selected ? 'var(--on-accent)' : 'var(--page-fg)',
                       border: selected
                         ? '1px solid #8DC63F'
-                        : '1px solid rgba(47,47,47,0.2)',
+                        : '1px solid var(--control-border)',
                       borderRadius: '8px',
                       fontSize: 'var(--fs-md)',
                       fontWeight: 500,
                       cursor: blocked ? 'not-allowed' : 'pointer',
-                      opacity: blocked ? 0.45 : 1,
-                      boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                      opacity: blocked ? 0.55 : 1,
+                      boxShadow: 'var(--elevation-sm)',
                     }}
                   >
                     {categoryLabel(tag, t)}
@@ -325,7 +318,7 @@ export default function CreateListingForm({
               minHeight: '58px',
               marginTop: '30px',
               background: '#8DC63F',
-              color: '#1a3200',
+              color: 'var(--on-accent)',
               border: 'none',
               borderRadius: '8px',
               fontSize: 'var(--fs-lg)',
@@ -344,7 +337,7 @@ export default function CreateListingForm({
           <h2
             style={{
               margin: '0 0 26px',
-              color: '#2F2F2F',
+              color: 'var(--page-fg)',
               fontSize: 'var(--fs-xl)',
               fontWeight: 600,
             }}
@@ -472,7 +465,7 @@ export default function CreateListingForm({
             <p
               style={{
                 margin: '7px 0 0',
-                color: '#666',
+                color: 'var(--muted-fg)',
                 fontSize: 'var(--fs-xs)',
               }}
             >
@@ -489,8 +482,9 @@ export default function CreateListingForm({
               onClick={() => setStep(1)}
               style={{
                 minHeight: '52px',
-                background: 'white',
-                border: '1px solid rgba(47,47,47,0.2)',
+                background: 'var(--input-bg)',
+                color: 'var(--page-fg)',
+                border: '1px solid var(--control-border)',
                 borderRadius: '8px',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -506,7 +500,7 @@ export default function CreateListingForm({
               style={{
                 minHeight: '52px',
                 background: '#8DC63F',
-                color: '#1a3200',
+                color: 'var(--on-accent)',
                 border: 'none',
                 borderRadius: '8px',
                 fontWeight: 600,
@@ -525,7 +519,7 @@ export default function CreateListingForm({
           <h2
             style={{
               margin: '0 0 26px',
-              color: '#2F2F2F',
+              color: 'var(--page-fg)',
               fontSize: 'var(--fs-xl)',
               fontWeight: 600,
             }}
@@ -543,20 +537,39 @@ export default function CreateListingForm({
             >
               {t('email')}
             </label>
-            <input
-              type="email"
-              disabled
-              value={email}
+            {/*
+              * Not an <input>: a long address has to wrap on a phone, which
+              * an input cannot. Named by aria-label, since a <label> can only
+              * point at a form control.
+              */}
+            <div
+              role="textbox"
+              aria-readonly="true"
+              aria-disabled="true"
+              aria-label={t('email')}
               style={{
                 ...inputStyle,
-                background: '#F5F5F5',
-                color: '#666',
+                minHeight: '58px',
+                display: 'flex',
+                alignItems: 'center',
+                overflowWrap: 'anywhere',
+                wordBreak: 'break-word',
+                /*
+                 * Deliberately not the editable field surface. The address
+                 * comes from the session and cannot be changed here, and the
+                 * only thing saying so is how it looks.
+                 */
+                background: 'var(--input-readonly-bg)',
+                color: 'var(--muted-fg)',
+                cursor: 'not-allowed',
               }}
-            />
+            >
+              {email}
+            </div>
             <p
               style={{
                 margin: '6px 0 0',
-                color: '#666',
+                color: 'var(--muted-fg)',
                 fontSize: 'var(--fs-2xs)',
               }}
             >
@@ -567,12 +580,15 @@ export default function CreateListingForm({
           <div
             style={{
               padding: '20px',
-              background: '#F7FBF9',
-              border: '1px solid rgba(47,47,47,0.15)',
+              background: 'var(--accent-tint)',
+              border: '1px solid var(--card-border)',
               borderRadius: '10px',
+              // Same as ListingCard: one unbroken word must wrap, not overflow.
+              overflowWrap: 'anywhere',
+              wordBreak: 'break-word',
             }}
           >
-            <p style={{ margin: '0 0 10px', fontWeight: 600 }}>
+            <p style={{ margin: '0 0 10px', fontWeight: 600, color: 'var(--page-fg)' }}>
               {t('preview')}
             </p>
             <h3
@@ -580,6 +596,7 @@ export default function CreateListingForm({
                 margin: '0 0 8px',
                 fontSize: 'var(--fs-lg)',
                 fontWeight: 600,
+                color: 'var(--page-fg)',
               }}
             >
               {title}
@@ -605,6 +622,7 @@ export default function CreateListingForm({
                   <span
                     key={tag}
                     style={{
+                      maxWidth: '100%',
                       padding: '5px 9px',
                       background: 'rgba(141,198,63,0.08)',
                       color: '#8DC63F',
@@ -622,7 +640,7 @@ export default function CreateListingForm({
             <p
               style={{
                 margin: 0,
-                color: '#666',
+                color: 'var(--muted-fg)',
                 fontSize: 'var(--fs-2xs)',
               }}
             >
@@ -636,7 +654,7 @@ export default function CreateListingForm({
               data-testid="listing-errors"
               style={{
                 marginTop: '18px',
-                color: '#dc2626',
+                color: 'var(--danger-fg)',
                 fontSize: 'var(--fs-xs)',
               }}
             >
@@ -665,8 +683,9 @@ export default function CreateListingForm({
               onClick={() => setStep(2)}
               style={{
                 minHeight: '52px',
-                background: 'white',
-                border: '1px solid rgba(47,47,47,0.2)',
+                background: 'var(--input-bg)',
+                color: 'var(--page-fg)',
+                border: '1px solid var(--control-border)',
                 borderRadius: '8px',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -683,7 +702,7 @@ export default function CreateListingForm({
                 gap: '8px',
                 minHeight: '52px',
                 background: '#8DC63F',
-                color: '#1a3200',
+                color: 'var(--on-accent)',
                 border: 'none',
                 borderRadius: '8px',
                 fontWeight: 600,
@@ -741,7 +760,7 @@ export default function CreateListingForm({
             ))}
 
           <Image src="/happyfrog.png" alt="" width={160} height={107} />
-          <p style={{ fontWeight: 700, fontSize: 'var(--fs-xl)', color: '#1a3200' }}>
+          <p style={{ fontWeight: 700, fontSize: 'var(--fs-xl)', color: 'var(--on-accent)' }}>
             {t('listing_published')}
           </p>
         </div>

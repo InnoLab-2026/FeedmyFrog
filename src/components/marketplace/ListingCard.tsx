@@ -1,22 +1,28 @@
 'use client';
 
-import { MapPin, Mail } from 'lucide-react';
+import { MapPin, Bookmark } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { ReactNode } from 'react';
 import type { Listing } from '@/types';
+import { useSavedListings } from '@/components/marketplace/SavedListingsProvider';
+import ContactButton from '@/components/marketplace/ContactButton';
 
 interface ListingCardProps {
   listing: Listing;
   ownerActions?: ReactNode;
-  alternateBackground?: boolean;
 }
 
 export default function ListingCard({
   listing,
   ownerActions,
-  alternateBackground = false,
 }: ListingCardProps) {
   const { t } = useTranslation();
+  const saved = useSavedListings();
+
+  // Bookmarking your own listing is pointless, so owner cards go without.
+  const canSave = saved !== null && saved.available && !ownerActions;
+  const isSaved = canSave && saved.isSaved(listing.id);
+  const saveLabel = t(isSaved ? 'unsave_listing' : 'save_listing');
 
   const ariaLabel = [
     listing.title,
@@ -41,11 +47,21 @@ export default function ListingCard({
       role="article"
       aria-label={ariaLabel}
       style={{
-        background: alternateBackground ? 'white' : '#F7FBF9',
-        border: '1px solid rgba(47, 47, 47, 0.15)',
+        background: 'var(--card-bg)',
+        border: '1px solid var(--card-border)',
         borderRadius: '10px',
-        boxShadow:
-          '0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)',
+        boxShadow: 'var(--elevation-sm)',
+        /*
+         * Titles, descriptions and hashtags are free text, and one unbroken
+         * 120-character "word" (a URL, a keyboard mash) would otherwise run
+         * straight out of the card. Inherited by everything inside; `anywhere`
+         * rather than `break-word` because only it also lowers the min-content
+         * width, which is what lets the flex rows below shrink around it.
+         * word-break is the fallback for Safari before 15.4.
+         */
+        overflowWrap: 'anywhere',
+        wordBreak: 'break-word',
+        minWidth: 0,
       }}
       onFocus={(e) => {
         e.currentTarget.style.outline = '3px solid #8DC63F';
@@ -55,25 +71,60 @@ export default function ListingCard({
         e.currentTarget.style.outline = 'none';
       }}
     >
-      <h3
-        className="mb-3"
-        style={{
-          fontFamily: 'var(--font-family-display)',
-          fontWeight: 600,
-          fontSize: 'var(--fs-lg)',
-          lineHeight: 1.3,
-          color: '#2F2F2F',
-        }}
-      >
-        {listing.title}
-      </h3>
+      <div className="flex items-start justify-between gap-4 mb-3">
+        <h3
+          style={{
+            minWidth: 0,
+            fontFamily: 'var(--font-family-display)',
+            fontWeight: 600,
+            fontSize: 'var(--fs-lg)',
+            lineHeight: 1.3,
+            color: 'var(--page-fg)',
+          }}
+        >
+          {listing.title}
+        </h3>
+
+        {canSave && (
+          <button
+            type="button"
+            aria-label={saveLabel}
+            title={saveLabel}
+            onClick={() => saved.toggleSaved(listing)}
+            style={{
+              // 44px: the minimum touch target (WCAG 2.5.5, Apple HIG). The
+              // negative margins keep the 20px icon where it was, so the
+              // bigger hit area does not push the title row taller.
+              width: '44px',
+              height: '44px',
+              margin: '-9px -12px -9px 0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: isSaved ? '#8DC63F' : 'var(--muted-fg)',
+              padding: 0,
+              flexShrink: 0,
+              touchAction: 'manipulation',
+            }}
+          >
+            <Bookmark
+              aria-hidden="true"
+              className="w-5 h-5"
+              fill={isSaved ? 'currentColor' : 'none'}
+            />
+          </button>
+        )}
+      </div>
 
       <p
         className="mb-4"
         style={{
           fontSize: 'var(--fs-sm)',
           lineHeight: 1.6,
-          color: '#5a5a5a',
+          color: 'var(--muted-fg)',
         }}
       >
         {listing.description}
@@ -85,6 +136,7 @@ export default function ListingCard({
             key={tag}
             className="px-3 py-1.5 text-xs"
             style={{
+              maxWidth: '100%',
               background: 'rgba(141, 198, 63, 0.08)',
               color: '#8DC63F',
               border: '1px solid rgba(141, 198, 63, 0.2)',
@@ -98,46 +150,25 @@ export default function ListingCard({
       </div>
 
       <div
-        className="flex items-center justify-between pt-3"
+        className="flex flex-wrap items-center justify-between gap-3 pt-3"
         style={{
           fontSize: 'var(--fs-xs)',
           fontWeight: 500,
-          borderTop: '1px solid rgba(47, 47, 47, 0.08)',
+          borderTop: '1px solid var(--divider)',
         }}
       >
+        {/* A place name from a closed list, never long: it keeps its line
+            and the row wraps the button under it instead of breaking it
+            mid-word. */}
         <div
           className="flex items-center gap-1.5"
-          style={{ color: '#6a6a6a' }}
+          style={{ whiteSpace: 'nowrap', color: 'var(--muted-fg)' }}
         >
-          <MapPin className="w-3.5 h-3.5" />
+          <MapPin className="w-3.5 h-3.5 shrink-0" />
           <span>{listing.location}</span>
         </div>
 
-        <a
-          href={mailtoLink}
-          className="flex items-center gap-1.5 px-4 py-2 transition-all duration-200"
-          style={{
-            background: '#8DC63F',
-            color: '#1a3200',
-            border: '1px solid #8DC63F',
-            borderRadius: '7px',
-            fontSize: 'var(--fs-xs)',
-            fontWeight: 600,
-            textDecoration: 'none',
-          }}
-          onClick={(e) => e.stopPropagation()}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#72a830';
-            e.currentTarget.style.borderColor = '#72a830';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#8DC63F';
-            e.currentTarget.style.borderColor = '#8DC63F';
-          }}
-        >
-          <Mail className="w-3.5 h-3.5" />
-          <span>{t('contact')}</span>
-        </a>
+        <ContactButton email={listing.email} href={mailtoLink} />
       </div>
 
       {ownerActions && (

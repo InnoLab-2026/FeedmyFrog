@@ -35,6 +35,7 @@ import { useEffect, useRef, useState } from 'react';
 /** One hop: how long it takes, and how high it goes at the top of the arc. */
 const HOP_MS = 520;
 const HOP_HEIGHT = 46;
+const FROG_SIZE = 56;
 
 function HoppingFrog() {
   const frogRef = useRef<HTMLDivElement | null>(null);
@@ -48,7 +49,14 @@ function HoppingFrog() {
     const onClick = (event: MouseEvent) => {
       // Centred on the pointer by the translateX below, so the frog lands on
       // the click rather than beside it.
-      if (frogRef.current) frogRef.current.style.left = `${event.clientX}px`;
+      if (frogRef.current) {
+        const halfFrog = FROG_SIZE / 2;
+        const left = Math.min(
+          Math.max(event.clientX, halfFrog),
+          window.innerWidth - halfFrog,
+        );
+        frogRef.current.style.left = `${left}px`;
+      }
 
       setHopping(true);
       if (restTimer.current !== null) window.clearTimeout(restTimer.current);
@@ -93,7 +101,7 @@ function HoppingFrog() {
       style={{
         position: 'fixed',
         left: '40px',
-        bottom: 8,
+        bottom: 'calc(8px + env(safe-area-inset-bottom))',
         transform: 'translateX(-50%)',
         zIndex: 9999,
         pointerEvents: 'none',
@@ -101,7 +109,7 @@ function HoppingFrog() {
       }}
     >
       <div ref={arcRef}>
-        <FrogFace happy={hopping} size={56} />
+        <FrogFace happy={hopping} size={FROG_SIZE} />
       </div>
     </div>
   );
@@ -116,14 +124,31 @@ export default function LoginCard({
 
   return (
     <main
-      className="relative flex min-h-screen items-center justify-center p-6"
+      className="relative flex min-h-dvh items-center justify-center"
+      /*
+       * min-h-dvh keeps the card vertically centred (dvh, not vh: iOS counts
+       * the collapsing toolbar into 100vh and scrolls). `safe center` on the
+       * cross axis falls back to the top when the card is taller than the
+       * screen, so its top -- the logo -- can never be pushed out of reach.
+       */
       style={{
+        overflow: 'visible',
+        overscrollBehavior: 'none',
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 24px)',
+        paddingRight: 'max(24px, env(safe-area-inset-right))',
+        paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
+        paddingLeft: 'max(24px, env(safe-area-inset-left))',
+        alignItems: 'safe center',
+        justifyContent: 'safe center',
         background: '#FFFFFF',
       }}
     >
       <div
         className="absolute"
-        style={{ top: '20px', right: '20px' }}
+        style={{
+          top: 'calc(20px + env(safe-area-inset-top))',
+          right: 'calc(20px + env(safe-area-inset-right))',
+        }}
       >
         <LanguageButton />
       </div>
@@ -140,9 +165,12 @@ export default function LoginCard({
             display: 'flex',
             justifyContent: 'center',
             marginBottom: '26px',
+            overflow: 'visible',
+            height: 'auto',
+            minHeight: '156px',
           }}
         >
-          {/* Same 480x373 source as the header, painted at 220px here -- the
+          {/* Same 480x373 source as the header, painted at 200px here -- the
               largest anything paints it, which is what sizes the file.
               `priority` because this logo is the login page's LCP element:
               it sits at the top of the only card on the page.
@@ -155,12 +183,15 @@ export default function LoginCard({
             alt=""
             width={480}
             height={373}
-            sizes="220px"
+            sizes="200px"
             priority
             style={{
-              width: '220px',
+              width: '200px',
               height: 'auto',
               display: 'block',
+              objectFit: 'contain',
+              objectPosition: 'top center',
+              marginTop: 0,
             }}
           />
         </div>
@@ -168,8 +199,8 @@ export default function LoginCard({
         {/* Login Card */}
         <div
           style={{
-            background: 'white',
-            border: '1px solid rgba(47,47,47,0.15)',
+            background: 'var(--card-bg)',
+            border: '1px solid var(--card-border)',
             borderRadius: '18px',
             padding: '34px',
             boxShadow: CARD_SHADOW,
@@ -211,7 +242,7 @@ export default function LoginCard({
           <div
             style={{
               height: '1px',
-              background: 'rgba(47,47,47,0.08)',
+              background: 'var(--divider)',
               margin: '28px 0 20px',
             }}
           />

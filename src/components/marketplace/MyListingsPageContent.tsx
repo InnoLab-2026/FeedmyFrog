@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { deleteListing } from '@/actions/listings';
@@ -28,7 +29,7 @@ export default function MyListingsPageContent({
       <main
         className="min-h-screen"
         style={{
-          background: '#f7f8f7',
+          background: 'var(--page-bg)',
           padding: '20px 30px 80px',
         }}
       >
@@ -41,17 +42,18 @@ export default function MyListingsPageContent({
         >
           <Link
             href="/"
-            className="inline-flex items-center"
+            aria-label={t('back_to_overview')}
+            className="inline-flex h-11 w-11 items-center justify-center"
             style={{
-              gap: '8px',
-              marginBottom: '12px',
-              color: '#659629',
-              fontSize: 'var(--fs-sm)',
-              fontWeight: 600,
+              margin: '20px 0 12px',
+              color: 'var(--page-fg)',
+              background: 'var(--card-bg)',
+              border: '1px solid var(--control-border)',
+              borderRadius: '10px',
               textDecoration: 'none',
             }}
           >
-            <span aria-hidden="true">←</span> {t('back_to_overview')}
+            <ArrowLeft aria-hidden="true" size={18} />
           </Link>
 
           <div
@@ -62,7 +64,7 @@ export default function MyListingsPageContent({
               <h1
                 style={{
                   margin: '0 0 6px',
-                  color: '#2f2f2f',
+                  color: 'var(--page-fg)',
                   fontSize: 'var(--fs-3xl)',
                   lineHeight: 1.25,
                   fontWeight: 700,
@@ -73,7 +75,7 @@ export default function MyListingsPageContent({
               <p
                 style={{
                   margin: 0,
-                  color: '#6a6a6a',
+                  color: 'var(--muted-fg)',
                   fontSize: 'var(--fs-md)',
                   lineHeight: 1.5,
                 }}
@@ -88,8 +90,8 @@ export default function MyListingsPageContent({
           {data.length === 0 ? (
             <div
               style={{
-                background: 'white',
-                border: '1px solid rgba(47,47,47,0.14)',
+                background: 'var(--card-bg)',
+                border: '1px solid var(--card-border)',
                 borderRadius: '12px',
                 padding: '64px 30px',
                 textAlign: 'center',
@@ -123,9 +125,9 @@ export default function MyListingsPageContent({
                         style={{
                           minHeight: '42px',
                           padding: '0 18px',
-                          background: 'white',
-                          color: '#2f2f2f',
-                          border: '1px solid rgba(47,47,47,0.2)',
+                          background: 'var(--page-bg)',
+                          color: 'var(--page-fg)',
+                          border: '1px solid var(--control-border)',
                           borderRadius: '7px',
                           fontSize: 'var(--fs-xs)',
                           fontWeight: 600,
@@ -141,7 +143,7 @@ export default function MyListingsPageContent({
                           style={{
                             minHeight: '42px',
                             padding: '0 18px',
-                            background: 'white',
+                            background: 'var(--card-bg)',
                             color: '#b42318',
                             border: '1px solid rgba(180,35,24,0.3)',
                             borderRadius: '7px',

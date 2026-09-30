@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import {
   Plus_Jakarta_Sans,
   DM_Sans,
@@ -10,6 +10,10 @@ import { getRequestLanguage, serverT } from '@/i18n/server';
 import { APP_NAME } from '@/constants';
 
 import './globals.css';
+
+export const viewport: Viewport = {
+  viewportFit: 'cover',
+};
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -48,11 +52,34 @@ export default async function RootLayout({
     <html
       lang={language}
       className={`${jakarta.variable} ${dmSans.variable} h-full antialiased`}
+      // The theme script below writes to this element's class list before
+      // React hydrates, so the class the server rendered and the class in
+      // the document legitimately differ. Without this, React reports that
+      // as a mismatch on every page load.
+      suppressHydrationWarning
     >
+      <head>
+        {/*
+         * Blocking, inline, and first: the theme has to be on the document
+         * before the first paint or the reader sees a white flash before a
+         * dark page. That rules out an effect, a client component, and an
+         * external file -- all three run too late. `localStorage` first so an
+         * explicit choice wins, the media query second so a reader who has
+         * never chosen still gets the theme their system asks for, and the
+         * whole thing in a try/catch because reading storage throws outright
+         * in a private window.
+         */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=sessionStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body
         className="min-h-full flex flex-col"
         style={{
-          background: '#f5f5f5',
+          background: 'var(--page-bg)',
+          color: 'var(--page-fg)',
         }}
       >
         <I18nProvider language={language}>

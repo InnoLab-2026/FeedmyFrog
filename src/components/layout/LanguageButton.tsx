@@ -37,9 +37,6 @@ export default function LanguageButton() {
       const secure = window.location.protocol === 'https:' ? '; secure' : '';
       document.cookie =
         `${LANG_COOKIE}=${next.code}; path=/; max-age=${LANG_COOKIE_MAX_AGE}; samesite=lax${secure}`;
-
-      // Kept in sync for anyone still running a tab from before the cookie.
-      window.localStorage.setItem('i18nextLng', next.code);
     } catch {
       // Cookies or storage may be blocked; the language still applies to
       // this session via changeLanguage above.
@@ -60,8 +57,8 @@ export default function LanguageButton() {
       })}
       className="flex items-center justify-center rounded-xl select-none"
       style={{
-        background: 'white',
-        border: '1px solid rgba(47,47,47,0.18)',
+        background: 'var(--card-bg)',
+        border: '1px solid var(--control-border)',
         fontSize: 'var(--fs-xs)',
         fontWeight: 700,
         letterSpacing: '0.04em',

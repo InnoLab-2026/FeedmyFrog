@@ -23,10 +23,10 @@ export default function ModeToggle({ mode, onChange }: ModeToggleProps) {
       <div
         className="inline-flex p-1"
         style={{
-          background: 'white',
-          border: '1px solid rgba(47,47,47,0.18)',
+          background: 'var(--card-bg)',
+          border: '1px solid var(--control-border)',
           borderRadius: '999px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+          boxShadow: 'var(--elevation-sm)',
         }}
       >
         {MODES.map((m) => {
@@ -43,7 +43,7 @@ export default function ModeToggle({ mode, onChange }: ModeToggleProps) {
                 borderRadius: '999px',
                 border: 'none',
                 background: active ? '#8DC63F' : 'transparent',
-                color: active ? '#1a3200' : '#2f2f2f',
+                color: active ? 'var(--on-accent)' : 'var(--page-fg)',
                 fontWeight: 600,
                 fontSize: 'var(--fs-control-button)',
                 cursor: 'pointer',

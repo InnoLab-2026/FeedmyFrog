@@ -30,7 +30,7 @@ export default function VerifyPromptCard({ token }: { token: string | null }) {
   return (
     <main
       className="relative flex min-h-screen items-center justify-center p-6"
-      style={{ background: '#f5f5f5' }}
+      style={{ background: 'var(--page-bg)' }}
     >
       <div className="absolute" style={{ top: '20px', right: '20px' }}>
         <LanguageButton />
@@ -39,8 +39,8 @@ export default function VerifyPromptCard({ token }: { token: string | null }) {
       <div
         className="w-full max-w-md p-8 rounded-2xl"
         style={{
-          background: 'white',
-          border: '2px solid black',
+          background: 'var(--card-bg)',
+          border: 'var(--card-border-strong)',
           boxShadow: CARD_SHADOW,
         }}
       >
@@ -71,7 +71,7 @@ export default function VerifyPromptCard({ token }: { token: string | null }) {
                 fontFamily: 'var(--font-family-display)',
                 fontWeight: 700,
                 fontSize: 'var(--fs-2xl)',
-                color: 'black',
+                color: 'var(--page-fg)',
                 textAlign: 'center',
               }}
             >
@@ -81,11 +81,11 @@ export default function VerifyPromptCard({ token }: { token: string | null }) {
               role="alert"
               className="mt-4 p-3 rounded-xl"
               style={{
-                border: '1px solid rgba(220,38,38,0.25)',
-                color: '#dc2626',
+                border: '1px solid var(--danger-border)',
+                color: 'var(--danger-fg)',
                 fontSize: 'var(--fs-sm)',
                 fontWeight: 600,
-                background: '#fff7f7',
+                background: 'var(--danger-bg)',
               }}
             >
               {t('invalid_link_body')}
@@ -130,7 +130,7 @@ export default function VerifyPromptCard({ token }: { token: string | null }) {
                 style={{
                   minHeight: '54px',
                   background: '#8DC63F',
-                  color: '#1a3200',
+                  color: 'var(--on-accent)',
                   border: '1px solid #8DC63F',
                   borderRadius: '10px',
                   fontSize: 'var(--fs-control-button)',

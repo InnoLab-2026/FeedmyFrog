@@ -17,13 +17,20 @@ export default function DisclaimerOverlay({ onClose }: DisclaimerOverlayProps) {
   return (
     <div
       className="fixed inset-0 flex items-center justify-center px-5"
-      style={{ background: 'rgba(0, 0, 0, 0.55)', zIndex: 50, cursor: 'pointer' }}
+      style={{ background: 'var(--overlay-bg)', zIndex: 50, cursor: 'pointer' }}
       onClick={onClose}
       role="dialog" aria-modal="true" aria-label={t('disclaimer_title')}
     >
       <div
         className="p-6 rounded-2xl w-full"
-        style={{ background: 'white', border: '2px solid black', boxShadow: CARD_SHADOW, maxWidth: '400px', cursor: 'default' }}
+        style={{
+          background: 'var(--card-bg)',
+          color: 'var(--page-fg)',
+          border: 'var(--card-border-strong)',
+          boxShadow: CARD_SHADOW,
+          maxWidth: '400px',
+          cursor: 'default',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
@@ -33,7 +40,12 @@ export default function DisclaimerOverlay({ onClose }: DisclaimerOverlayProps) {
           <button
             onClick={onClose}
             className="w-7 h-7 flex items-center justify-center rounded-full"
-            style={{ border: '2px solid black', background: 'white', cursor: 'pointer' }}
+            style={{
+              border: '1px solid var(--control-border)',
+              background: 'var(--page-bg)',
+              color: 'var(--page-fg)',
+              cursor: 'pointer',
+            }}
             aria-label={t('close')}
           >
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">

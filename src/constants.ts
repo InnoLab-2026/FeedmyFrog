@@ -19,4 +19,10 @@
  */
 export const APP_NAME = 'FeedmyFrog';
 
-export const CARD_SHADOW = '0 4px 12px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.15)';
+/*
+ * The card elevation, as a token rather than a literal, so the one shadow
+ * every card shares changes with the theme. A shadow keeps its geometry
+ * across themes and changes only its darkness, which is why the value lives
+ * in theme.css and this is a reference to it.
+ */
+export const CARD_SHADOW = 'var(--elevation-card)';

@@ -39,7 +39,6 @@ const GEOLOCATION_OPTIONS: PositionOptions = {
   timeout: 10_000,
 };
 
-
 interface LocationSearchProps {
   value: LocationFilter | null;
   onChange: (value: LocationFilter | null) => void;
@@ -56,7 +55,9 @@ export default function LocationSearch({
   const [suggestions, setSuggestions] = useState<Place[]>([]);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState('');
-  const [pendingRadius, setPendingRadius] = useState(value?.radius ?? DEFAULT_RADIUS_KM);
+  const [pendingRadius, setPendingRadius] = useState(
+    value?.radius ?? DEFAULT_RADIUS_KM,
+  );
 
   const ref = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -178,9 +179,9 @@ export default function LocationSearch({
           paddingLeft: '16px',
           paddingRight: '14px',
           gap: '10px',
-          background: 'white',
-          color: value ? '#444' : '#555',
-          border: `1px solid ${open ? '#8DC63F' : 'rgba(47,47,47,0.15)'}`,
+          background: 'var(--card-bg)',
+          color: value ? 'var(--page-fg)' : 'var(--muted-fg)',
+          border: `1px solid ${open ? '#8DC63F' : 'var(--control-border)'}`,
           borderRadius: '10px',
           boxShadow: open ? '0 0 0 3px rgba(141,198,63,0.10)' : 'none',
           fontSize: 'var(--fs-control-input)',
@@ -191,7 +192,7 @@ export default function LocationSearch({
           style={{
             width: '17px',
             height: '17px',
-            color: value ? '#8DC63F' : '#666',
+            color: value ? '#8DC63F' : 'var(--muted-fg)',
             flexShrink: 0,
           }}
         />
@@ -227,7 +228,7 @@ export default function LocationSearch({
                 event.stopPropagation();
                 clear();
               }}
-              style={{ display: 'flex', color: '#aaa' }}
+              style={{ display: 'flex', color: 'var(--muted-fg)' }}
             >
               <X style={{ width: '16px', height: '16px' }} />
             </span>
@@ -243,10 +244,10 @@ export default function LocationSearch({
             left: 0,
             right: 0,
             padding: '14px',
-            background: 'white',
-            border: '1px solid rgba(47,47,47,0.13)',
+            background: 'var(--card-bg)',
+            border: '1px solid var(--card-border)',
             borderRadius: '12px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+            boxShadow: 'var(--elevation-lg)',
             zIndex: 200,
           }}
         >
@@ -259,7 +260,7 @@ export default function LocationSearch({
                 transform: 'translateY(-50%)',
                 width: '18px',
                 height: '18px',
-                color: '#aaa',
+                color: 'var(--muted-fg)',
               }}
             />
             <input
@@ -272,8 +273,9 @@ export default function LocationSearch({
                 height: '48px',
                 paddingLeft: '40px',
                 paddingRight: '36px',
-                background: 'white',
-                border: '1px solid rgba(47,47,47,0.2)',
+                background: 'var(--input-bg)',
+                color: 'var(--page-fg)',
+                border: '1px solid var(--control-border)',
                 borderRadius: '8px',
                 fontSize: 'var(--fs-md)',
                 outline: 'none',
@@ -292,7 +294,7 @@ export default function LocationSearch({
                   transform: 'translateY(-50%)',
                   width: '16px',
                   height: '16px',
-                  color: '#aaa',
+                  color: 'var(--muted-fg)',
                   cursor: 'pointer',
                 }}
               />
@@ -303,7 +305,7 @@ export default function LocationSearch({
             <div
               style={{
                 marginBottom: '10px',
-                border: '1px solid rgba(47,47,47,0.1)',
+                border: '1px solid var(--card-border)',
                 borderRadius: '8px',
                 overflow: 'hidden',
               }}
@@ -319,7 +321,8 @@ export default function LocationSearch({
                     alignItems: 'center',
                     gap: '8px',
                     padding: '10px 12px',
-                    background: 'white',
+                    background: 'var(--input-bg)',
+                    color: 'var(--page-fg)',
                     border: 'none',
                     fontSize: 'var(--fs-sm)',
                     textAlign: 'left',
@@ -349,10 +352,10 @@ export default function LocationSearch({
               alignItems: 'center',
               gap: '10px',
               padding: '12px',
-              background: 'rgba(141,198,63,0.07)',
-              border: '1px solid rgba(141,198,63,0.25)',
+              background: 'rgba(141,198,63,0.12)',
+              border: '1px solid rgba(141,198,63,0.35)',
               borderRadius: '8px',
-              color: '#1a3200',
+              color: 'var(--page-fg)',
               fontSize: 'var(--fs-sm)',
               fontWeight: 600,
               cursor: gpsLoading ? 'default' : 'pointer',
@@ -372,7 +375,7 @@ export default function LocationSearch({
             <p
               style={{
                 marginTop: '8px',
-                color: '#dc2626',
+                color: 'var(--danger-fg)',
                 fontSize: 'var(--fs-2xs)',
               }}
             >
@@ -384,7 +387,7 @@ export default function LocationSearch({
             <p
               style={{
                 marginBottom: '7px',
-                color: '#777',
+                color: 'var(--muted-fg)',
                 fontSize: 'var(--fs-2xs)',
                 fontWeight: 500,
               }}
@@ -402,10 +405,10 @@ export default function LocationSearch({
                     style={{
                       flex: 1,
                       padding: '8px 0',
-                      background: active ? '#8DC63F' : 'white',
-                      color: active ? '#1a3200' : '#2F2F2F',
+                      background: active ? '#8DC63F' : 'var(--page-bg)',
+                      color: active ? 'var(--on-accent)' : 'var(--page-fg)',
                       border: `1px solid ${
-                        active ? '#8DC63F' : 'rgba(47,47,47,0.2)'
+                        active ? '#8DC63F' : 'var(--control-border)'
                       }`,
                       borderRadius: '7px',
                       fontSize: 'var(--fs-xs)',

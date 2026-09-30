@@ -3,6 +3,15 @@
 @import "./fonts.css";
 @import "./theme.css";
 
+/* Safety net against sideways scrolling on phones. `clip`, not `hidden`:
+   hidden turns <body> into a scroll container of its own, which breaks
+   position: sticky and fights the modal's scroll lock. overscroll-behavior
+   is left alone so pull-to-refresh keeps working. */
+html,
+body {
+  overflow-x: clip;
+}
+
 /* --- Animations --------------------------------------------------------
    The confetti fountain on a published listing. Here rather than in a
    <style> tag inside the component: a keyframe rule is global no matter
@@ -34,22 +43,35 @@
    holding four hundred characters, and a dialog capped at 90vh holding a
    two-step form whose publish button is below the fold, both depend on it.
    `scrollbar-width` is Firefox-only and `::-webkit-scrollbar` is Blink and
-   WebKit only, so both spellings are needed for one appearance. */
+   WebKit only, so both spellings are needed for one appearance.
+
+   `html` and `.slim-scrollbar` both, and for different reasons. The page's
+   own scrollbar wants the same restraint, and dark mode makes that visible
+   -- a light system scrollbar down the edge of a dark page is a seam of its
+   own. But styling `html` does not reach an inner scroll container, so the
+   class the two components above actually carry has to keep existing; moving
+   the rules to `html` alone left both of them on the platform default while
+   appearing to have fixed something. The thumb colour is a token, so it
+   follows the theme rather than needing a second copy of each rule. */
+html,
 .slim-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(47, 47, 47, 0.28) transparent;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 
+html::-webkit-scrollbar,
 .slim-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
-.slim-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+html::-webkit-scrollbar-thumb,
+.slim-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
 }
 
-.slim-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(47, 47, 47, 0.28);
-  border-radius: 3px;
+html::-webkit-scrollbar-track,
+.slim-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
 }
