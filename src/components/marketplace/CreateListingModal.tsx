@@ -142,8 +142,7 @@ export default function CreateListingModal({
    * a navigation -- `open` is this component's state and the celebration is
    * keyed on the action's result -- so that left a full-screen overlay with
    * no dismiss control on top of a modal that never closed.
-   */
-  /*
+   *
    * `useCallback`, because the form holds this in a `useEffect` dependency
    * list alongside the celebration timer: a fresh identity on every render
    * would clear and restart that timer, and a parent that re-rendered often
@@ -160,6 +159,7 @@ export default function CreateListingModal({
         ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
+        data-testid="create-listing-trigger"
         aria-haspopup="dialog"
         aria-expanded={open}
         className="inline-flex items-center justify-center"
@@ -207,6 +207,7 @@ export default function CreateListingModal({
           <div
             ref={dialogRef}
             role="dialog"
+            data-testid="create-listing-dialog"
             aria-modal="true"
             aria-labelledby={titleId}
             tabIndex={-1}

@@ -16,6 +16,12 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['src/**/*.test.ts'],
+    /*
+     * `cypress/**` too, for the guards *about* the e2e suite rather than in
+     * it. The spec files themselves are `.cy.ts` and are Cypress's to run;
+     * these are ordinary unit tests that happen to have Cypress as a subject,
+     * and they belong in the fast suite that runs on every push.
+     */
+    include: ['src/**/*.test.ts', 'cypress/**/*.test.ts'],
   },
 });

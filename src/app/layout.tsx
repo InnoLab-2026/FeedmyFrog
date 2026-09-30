@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { headers } from 'next/headers';
 import {
   Plus_Jakarta_Sans,
   DM_Sans,
@@ -48,6 +49,11 @@ export default async function RootLayout({
   // instead of being corrected after hydration.
   const language = await getRequestLanguage();
 
+  // The per-request CSP nonce src/proxy.ts generates. Without it the theme
+  // script below is an inline script the policy does not trust, and the
+  // browser refuses to run it -- silently, on every page.
+  const nonce = (await headers()).get('x-nonce') ?? undefined;
+
   return (
     <html
       lang={language}
@@ -58,23 +64,6 @@ export default async function RootLayout({
       // as a mismatch on every page load.
       suppressHydrationWarning
     >
-      <head>
-        {/*
-         * Blocking, inline, and first: the theme has to be on the document
-         * before the first paint or the reader sees a white flash before a
-         * dark page. That rules out an effect, a client component, and an
-         * external file -- all three run too late. `localStorage` first so an
-         * explicit choice wins, the media query second so a reader who has
-         * never chosen still gets the theme their system asks for, and the
-         * whole thing in a try/catch because reading storage throws outright
-         * in a private window.
-         */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=sessionStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();`,
-          }}
-        />
-      </head>
       <body
         className="min-h-full flex flex-col"
         style={{
@@ -82,6 +71,34 @@ export default async function RootLayout({
           color: 'var(--page-fg)',
         }}
       >
+        {/*
+         * Blocking, inline, and first: the theme has to be on the document
+         * before the first paint or the reader sees a white flash before a
+         * dark page. That rules out an effect, a client component, and an
+         * external file -- all three run too late, and so does next/script's
+         * beforeInteractive, which the App Router queues through its own
+         * runtime. The choice lives in sessionStorage (ThemeToggle writes it,
+         * logout clears it), and the whole thing is in a try/catch because
+         * reading storage throws outright in a private window.
+         *
+         * First in <body>, not in <head>: it still runs before anything is
+         * painted, but <head> is where browser extensions and test runners
+         * inject their own nodes. React 19 steps over foreign elements there,
+         * not over the stray whitespace they leave behind, and as the only
+         * React-rendered child of <head> this script was what that whitespace
+         * collided with -- a hydration mismatch (React #418) on every page,
+         * which is what failed the whole Cypress suite.
+         *
+         * It carries the request's nonce: the CSP in src/proxy.ts allows no
+         * inline script without one.
+         */}
+        <script
+          nonce={nonce}
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=sessionStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();`,
+          }}
+        />
+
         <I18nProvider language={language}>
           {children}
         </I18nProvider>
