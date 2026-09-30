@@ -12,9 +12,10 @@ import {
 } from '@/components/layout/LegalText';
 
 /*
- * Angaben gemäß § 5 DDG. The [ ] placeholders have to be filled in with the
- * actual operator's details before the internal pilot — in src/i18n/legalResources.ts,
- * in every language.
+ * Angaben gemäß § 5 DDG, filled with Hochschule Reutlingen's standard
+ * operator block (as on reutlingen-university.de/impressum). The wording is
+ * in src/i18n/legalResources.ts, in every language -- keep all five in step
+ * when the university's own details change.
  */
 
 const SECTIONS = ['operator', 'contact', 'responsible', 'note', 'hosting'] as const;

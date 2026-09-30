@@ -14,9 +14,9 @@ export async function generateMetadata(): Promise<Metadata> {
 // header set in src/proxy.ts.
 export const dynamic = 'force-dynamic';
 
-// Informationspflichten nach Art. 13 DSGVO. Die mit [ ] markierten
-// Platzhalter müssen vor dem Produktivbetrieb gefüllt werden. Der sichtbare
-// Text steht — in allen fünf Sprachen — in DatenschutzContent.tsx.
+// Informationspflichten nach Art. 13 DSGVO. Verantwortliche und
+// Datenschutzbeauftragter sind die der Hochschule Reutlingen. Der sichtbare
+// Text steht — in allen fünf Sprachen — in legalResources.ts.
 export default function DatenschutzPage() {
   return (
     <main

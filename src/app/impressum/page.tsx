@@ -14,10 +14,10 @@ export async function generateMetadata(): Promise<Metadata> {
 // header set in src/proxy.ts.
 export const dynamic = 'force-dynamic';
 
-// Angaben gemäß § 5 DDG. Die mit [ ] markierten Platzhalter müssen vor dem
-// Produktivbetrieb (interner Pilot) mit den Angaben des tatsächlichen
-// Betreibers gefüllt werden.
-// Der sichtbare Text steht — in allen fünf Sprachen — in ImpressumContent.tsx.
+// Angaben gemäß § 5 DDG: der Standardblock der Hochschule Reutlingen, wie sie
+// ihn selbst auf reutlingen-university.de/impressum führt. Wechselt dort die
+// Präsidentin oder eine Anschrift, muss er hier nachgezogen werden.
+// Der sichtbare Text steht — in allen fünf Sprachen — in legalResources.ts.
 export default function ImpressumPage() {
   return (
     <main

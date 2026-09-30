@@ -85,7 +85,7 @@ export const legalResources: Record<LangCode, LegalBundle> = {
       controller: {
         heading: '1. Verantwortlicher',
         body:
-          '[Name und Anschrift des Verantwortlichen im Sinne von Art. 4 Nr. 7 DSGVO — vor dem Pilotbetrieb eintragen], E-Mail: [Kontakt-E-Mail-Adresse].<br />Datenschutzbeauftragte/r: [Kontaktdaten der/des Datenschutzbeauftragten der Hochschule].',
+          'Hochschule Reutlingen, Alteburgstraße 150, 72762 Reutlingen, Deutschland, vertreten durch die Präsidentin Prof. Dr. Sabine Löbbe. Telefon: +49 7121 271-0, E-Mail: info@reutlingen-university.de.<br />Datenschutzbeauftragter: Maximilian Musch, Deutsche Datenschutzkanzlei, Richard-Wagner-Straße 2, 88094 Oberteuringen, Deutschland, Telefon: +49 7542 949 21-02, E-Mail: maximilian.musch@reutlingen-university.de.',
       },
       purpose: {
         heading: '2. Zweck der Plattform',
@@ -166,7 +166,7 @@ export const legalResources: Record<LangCode, LegalBundle> = {
       rights: {
         heading: '7. Ihre Rechte',
         body:
-          'Sie haben nach Art. 15–21 DSGVO das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch. Eigene Inserate können Sie jederzeit selbst unter <em>Meine Einträge</em> bearbeiten oder löschen; da kein weiteres Nutzerkonto existiert, sind damit alle zu Ihrer Person gespeicherten Inhalte entfernt. Für alle Anliegen wenden Sie sich an [Kontakt-E-Mail-Adresse]. Sie haben außerdem das Recht auf Beschwerde bei einer Aufsichtsbehörde (Art. 77 DSGVO), z. B. beim Landesbeauftragten für den Datenschutz und die Informationsfreiheit Baden-Württemberg.',
+          'Sie haben nach Art. 15–21 DSGVO das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch. Eigene Inserate können Sie jederzeit selbst unter <em>Meine Einträge</em> bearbeiten oder löschen; da kein weiteres Nutzerkonto existiert, sind damit alle zu Ihrer Person gespeicherten Inhalte entfernt. Für alle Anliegen wenden Sie sich an info@reutlingen-university.de oder an den Datenschutzbeauftragten (Abschnitt 1). Sie haben außerdem das Recht auf Beschwerde bei einer Aufsichtsbehörde (Art. 77 DSGVO), z. B. beim Landesbeauftragten für den Datenschutz und die Informationsfreiheit Baden-Württemberg.',
       },
       imprint_link: 'Impressum',
     },
@@ -175,15 +175,15 @@ export const legalResources: Record<LangCode, LegalBundle> = {
       operator: {
         heading: 'Angaben gemäß § 5 DDG',
         body:
-          '[Name des Betreibers / der verantwortlichen Organisationseinheit]<br />[Straße und Hausnummer]<br />[PLZ und Ort]',
+          'Anbieter und somit verantwortlich für dieses Onlineangebot ist die Hochschule Reutlingen, Körperschaft des öffentlichen Rechts, vertreten durch die Präsidentin Prof. Dr. Sabine Löbbe.<br />Alteburgstraße 150<br />72762 Reutlingen<br />Deutschland<br /><br />Zuständige Aufsichtsbehörde: Ministerium für Wissenschaft, Forschung und Kunst Baden-Württemberg (MWK), Königstraße 46, 70173 Stuttgart<br />Umsatzsteuer-Identifikationsnummer: DE 811 323 197',
       },
       contact: {
         heading: 'Kontakt',
-        body: 'E-Mail: [Kontakt-E-Mail-Adresse]<br />Telefon: [Telefonnummer]',
+        body: 'E-Mail: info@reutlingen-university.de<br />Telefon: +49 7121 271-0',
       },
       responsible: {
         heading: 'Verantwortlich für den Inhalt',
-        body: '[Name und Anschrift der inhaltlich verantwortlichen Person]',
+        body: 'Prof. Dr. Sabine Löbbe, Hochschulpräsidentin<br />Hochschule Reutlingen, Alteburgstraße 150, 72762 Reutlingen',
       },
       note: {
         heading: 'Hinweis',
@@ -205,7 +205,7 @@ export const legalResources: Record<LangCode, LegalBundle> = {
       controller: {
         heading: '1. Controller',
         body:
-          '[Name and address of the controller under Art. 4(7) GDPR — to be added before pilot operation], email: [contact email].<br />Data protection officer: [contact details of the university DPO].',
+          'Hochschule Reutlingen (Reutlingen University), Alteburgstraße 150, 72762 Reutlingen, Germany, represented by its President, Prof. Dr. Sabine Löbbe. Phone: +49 7121 271-0, email: info@reutlingen-university.de.<br />Data protection officer: Maximilian Musch, Deutsche Datenschutzkanzlei, Richard-Wagner-Straße 2, 88094 Oberteuringen, Germany, phone: +49 7542 949 21-02, email: maximilian.musch@reutlingen-university.de.',
       },
       purpose: {
         heading: '2. Purpose of the platform',
@@ -286,7 +286,7 @@ export const legalResources: Record<LangCode, LegalBundle> = {
       rights: {
         heading: '7. Your rights',
         body:
-          'Under Art. 15–21 GDPR you have the right of access, rectification, erasure, restriction of processing, data portability and objection. You can edit or delete your own listings at any time under <em>My listings</em>; there is no further user account, so this removes all content stored about you. For all requests contact [contact email]. You may also lodge a complaint with a supervisory authority (Art. 77 GDPR), e.g. the State Commissioner for Data Protection and Freedom of Information of Baden-Württemberg.',
+          'Under Art. 15–21 GDPR you have the right of access, rectification, erasure, restriction of processing, data portability and objection. You can edit or delete your own listings at any time under <em>My listings</em>; there is no further user account, so this removes all content stored about you. For all requests contact info@reutlingen-university.de or the data protection officer (section 1). You may also lodge a complaint with a supervisory authority (Art. 77 GDPR), e.g. the State Commissioner for Data Protection and Freedom of Information of Baden-Württemberg.',
       },
       imprint_link: 'Imprint',
     },
@@ -295,15 +295,15 @@ export const legalResources: Record<LangCode, LegalBundle> = {
       operator: {
         heading: 'Information according to § 5 DDG',
         body:
-          '[Name of the operator / responsible organisational unit]<br />[Street and number]<br />[Postcode and city]',
+          'Provider and therefore responsible for this online service is Hochschule Reutlingen (Reutlingen University), a public-law corporation (Körperschaft des öffentlichen Rechts), represented by its President, Prof. Dr. Sabine Löbbe.<br />Alteburgstraße 150<br />72762 Reutlingen<br />Germany<br /><br />Supervisory authority: Ministry of Science, Research and the Arts Baden-Württemberg (MWK), Königstraße 46, 70173 Stuttgart<br />VAT identification number: DE 811 323 197',
       },
       contact: {
         heading: 'Contact',
-        body: 'Email: [contact email]<br />Phone: [phone number]',
+        body: 'Email: info@reutlingen-university.de<br />Phone: +49 7121 271-0',
       },
       responsible: {
         heading: 'Responsible for the content',
-        body: '[Name and address of the person responsible for the content]',
+        body: 'Prof. Dr. Sabine Löbbe, President<br />Hochschule Reutlingen, Alteburgstraße 150, 72762 Reutlingen, Germany',
       },
       note: {
         heading: 'Note',
@@ -325,7 +325,7 @@ export const legalResources: Record<LangCode, LegalBundle> = {
       controller: {
         heading: '1. Responsable du traitement',
         body:
-          '[Nom et adresse du responsable au sens de l’art. 4, point 7, du RGPD — à compléter avant la mise en service pilote], e-mail : [adresse de contact].<br />Délégué(e) à la protection des données : [coordonnées du DPO de l’université].',
+          'Hochschule Reutlingen (Université de Reutlingen), Alteburgstraße 150, 72762 Reutlingen, Allemagne, représentée par sa présidente, Prof. Dr. Sabine Löbbe. Téléphone : +49 7121 271-0, e-mail : info@reutlingen-university.de.<br />Délégué à la protection des données : Maximilian Musch, Deutsche Datenschutzkanzlei, Richard-Wagner-Straße 2, 88094 Oberteuringen, Allemagne, téléphone : +49 7542 949 21-02, e-mail : maximilian.musch@reutlingen-university.de.',
       },
       purpose: {
         heading: '2. Objet de la plateforme',
@@ -406,7 +406,7 @@ export const legalResources: Record<LangCode, LegalBundle> = {
       rights: {
         heading: '7. Vos droits',
         body:
-          'Vous disposez, au titre des art. 15 à 21 du RGPD, d’un droit d’accès, de rectification, d’effacement, de limitation du traitement, de portabilité et d’opposition. Vous pouvez à tout moment modifier ou supprimer vous-même vos annonces sous <em>Mes annonces</em> ; aucun autre compte utilisateur n’existant, tous les contenus enregistrés à votre sujet sont alors supprimés. Pour toute demande, adressez-vous à [adresse de contact]. Vous avez en outre le droit d’introduire une réclamation auprès d’une autorité de contrôle (art. 77 RGPD), par exemple auprès du délégué régional à la protection des données et à la liberté d’information du Bade-Wurtemberg.',
+          'Vous disposez, au titre des art. 15 à 21 du RGPD, d’un droit d’accès, de rectification, d’effacement, de limitation du traitement, de portabilité et d’opposition. Vous pouvez à tout moment modifier ou supprimer vous-même vos annonces sous <em>Mes annonces</em> ; aucun autre compte utilisateur n’existant, tous les contenus enregistrés à votre sujet sont alors supprimés. Pour toute demande, adressez-vous à info@reutlingen-university.de ou au délégué à la protection des données (section 1). Vous avez en outre le droit d’introduire une réclamation auprès d’une autorité de contrôle (art. 77 RGPD), par exemple auprès du délégué régional à la protection des données et à la liberté d’information du Bade-Wurtemberg.',
       },
       imprint_link: 'Mentions légales',
     },
@@ -415,15 +415,15 @@ export const legalResources: Record<LangCode, LegalBundle> = {
       operator: {
         heading: 'Informations selon le § 5 DDG',
         body:
-          '[Nom de l’exploitant / de l’unité organisationnelle responsable]<br />[Rue et numéro]<br />[Code postal et ville]',
+          'Fournisseur et donc responsable de ce service en ligne : Hochschule Reutlingen (Université de Reutlingen), établissement de droit public (Körperschaft des öffentlichen Rechts), représentée par sa présidente, Prof. Dr. Sabine Löbbe.<br />Alteburgstraße 150<br />72762 Reutlingen<br />Allemagne<br /><br />Autorité de tutelle : ministère de la Science, de la Recherche et des Arts du Bade-Wurtemberg (MWK), Königstraße 46, 70173 Stuttgart<br />Numéro d’identification TVA : DE 811 323 197',
       },
       contact: {
         heading: 'Contact',
-        body: 'E-mail : [adresse de contact]<br />Téléphone : [numéro de téléphone]',
+        body: 'E-mail : info@reutlingen-university.de<br />Téléphone : +49 7121 271-0',
       },
       responsible: {
         heading: 'Responsable du contenu',
-        body: '[Nom et adresse de la personne responsable du contenu]',
+        body: 'Prof. Dr. Sabine Löbbe, présidente<br />Hochschule Reutlingen, Alteburgstraße 150, 72762 Reutlingen, Allemagne',
       },
       note: {
         heading: 'Remarque',
@@ -445,7 +445,7 @@ export const legalResources: Record<LangCode, LegalBundle> = {
       controller: {
         heading: '1. Veri sorumlusu',
         body:
-          '[GDPR md. 4/7 kapsamındaki veri sorumlusunun adı ve adresi — pilot işletimden önce doldurulacak], e-posta: [iletişim e-postası].<br />Veri koruma görevlisi: [üniversitenin veri koruma görevlisinin iletişim bilgileri].',
+          'Hochschule Reutlingen (Reutlingen Üniversitesi), Alteburgstraße 150, 72762 Reutlingen, Almanya; temsilcisi: Rektör Prof. Dr. Sabine Löbbe. Telefon: +49 7121 271-0, e-posta: info@reutlingen-university.de.<br />Veri koruma görevlisi: Maximilian Musch, Deutsche Datenschutzkanzlei, Richard-Wagner-Straße 2, 88094 Oberteuringen, Almanya, telefon: +49 7542 949 21-02, e-posta: maximilian.musch@reutlingen-university.de.',
       },
       purpose: {
         heading: '2. Platformun amacı',
@@ -526,7 +526,7 @@ export const legalResources: Record<LangCode, LegalBundle> = {
       rights: {
         heading: '7. Haklarınız',
         body:
-          'GDPR md. 15–21 uyarınca erişim, düzeltme, silme, işlemenin kısıtlanması, veri taşınabilirliği ve itiraz haklarına sahipsiniz. Kendi ilanlarınızı istediğiniz zaman <em>İlanlarım</em> bölümünden düzenleyebilir veya silebilirsiniz; başka bir kullanıcı hesabı bulunmadığından bu işlemle hakkınızda saklanan tüm içerik kaldırılmış olur. Tüm talepleriniz için [iletişim e-postası] adresine yazabilirsiniz. Ayrıca bir denetim makamına şikâyette bulunma hakkınız vardır (GDPR md. 77), örneğin Baden-Württemberg Eyalet Veri Koruma ve Bilgi Edinme Özgürlüğü Görevlisi’ne.',
+          'GDPR md. 15–21 uyarınca erişim, düzeltme, silme, işlemenin kısıtlanması, veri taşınabilirliği ve itiraz haklarına sahipsiniz. Kendi ilanlarınızı istediğiniz zaman <em>İlanlarım</em> bölümünden düzenleyebilir veya silebilirsiniz; başka bir kullanıcı hesabı bulunmadığından bu işlemle hakkınızda saklanan tüm içerik kaldırılmış olur. Tüm talepleriniz için info@reutlingen-university.de adresine veya veri koruma görevlisine (bölüm 1) yazabilirsiniz. Ayrıca bir denetim makamına şikâyette bulunma hakkınız vardır (GDPR md. 77), örneğin Baden-Württemberg Eyalet Veri Koruma ve Bilgi Edinme Özgürlüğü Görevlisi’ne.',
       },
       imprint_link: 'Künye',
     },
@@ -535,15 +535,15 @@ export const legalResources: Record<LangCode, LegalBundle> = {
       operator: {
         heading: '§ 5 DDG uyarınca bilgiler',
         body:
-          '[İşletmecinin / sorumlu organizasyon biriminin adı]<br />[Sokak ve numara]<br />[Posta kodu ve şehir]',
+          'Bu çevrimiçi hizmetin sağlayıcısı ve dolayısıyla sorumlusu, bir kamu hukuku tüzel kişisi (Körperschaft des öffentlichen Rechts) olan Hochschule Reutlingen’dir (Reutlingen Üniversitesi); temsilcisi: Rektör Prof. Dr. Sabine Löbbe.<br />Alteburgstraße 150<br />72762 Reutlingen<br />Almanya<br /><br />Denetim makamı: Baden-Württemberg Bilim, Araştırma ve Sanat Bakanlığı (MWK), Königstraße 46, 70173 Stuttgart<br />KDV kimlik numarası: DE 811 323 197',
       },
       contact: {
         heading: 'İletişim',
-        body: 'E-posta: [iletişim e-postası]<br />Telefon: [telefon numarası]',
+        body: 'E-posta: info@reutlingen-university.de<br />Telefon: +49 7121 271-0',
       },
       responsible: {
         heading: 'İçerikten sorumlu kişi',
-        body: '[İçerikten sorumlu kişinin adı ve adresi]',
+        body: 'Prof. Dr. Sabine Löbbe, Rektör<br />Hochschule Reutlingen, Alteburgstraße 150, 72762 Reutlingen, Almanya',
       },
       note: {
         heading: 'Not',
@@ -565,7 +565,7 @@ export const legalResources: Record<LangCode, LegalBundle> = {
       controller: {
         heading: '1. Responsable del tratamiento',
         body:
-          '[Nombre y dirección del responsable según el art. 4.7 del RGPD — completar antes de la fase piloto], correo: [correo de contacto].<br />Delegado de protección de datos: [datos de contacto del DPO de la universidad].',
+          'Hochschule Reutlingen (Universidad de Reutlingen), Alteburgstraße 150, 72762 Reutlingen, Alemania, representada por su presidenta, Prof. Dr. Sabine Löbbe. Teléfono: +49 7121 271-0, correo: info@reutlingen-university.de.<br />Delegado de protección de datos: Maximilian Musch, Deutsche Datenschutzkanzlei, Richard-Wagner-Straße 2, 88094 Oberteuringen, Alemania, teléfono: +49 7542 949 21-02, correo: maximilian.musch@reutlingen-university.de.',
       },
       purpose: {
         heading: '2. Finalidad de la plataforma',
@@ -646,7 +646,7 @@ export const legalResources: Record<LangCode, LegalBundle> = {
       rights: {
         heading: '7. Tus derechos',
         body:
-          'Conforme a los art. 15 a 21 del RGPD tienes derecho de acceso, rectificación, supresión, limitación del tratamiento, portabilidad y oposición. Puedes editar o eliminar tus propios anuncios en cualquier momento en <em>Mis anuncios</em>; al no existir ninguna otra cuenta de usuario, con ello se elimina todo el contenido almacenado sobre ti. Para cualquier solicitud escribe a [correo de contacto]. Además, tienes derecho a presentar una reclamación ante una autoridad de control (art. 77 RGPD), por ejemplo ante el Comisionado Estatal para la Protección de Datos y la Libertad de Información de Baden-Wurtemberg.',
+          'Conforme a los art. 15 a 21 del RGPD tienes derecho de acceso, rectificación, supresión, limitación del tratamiento, portabilidad y oposición. Puedes editar o eliminar tus propios anuncios en cualquier momento en <em>Mis anuncios</em>; al no existir ninguna otra cuenta de usuario, con ello se elimina todo el contenido almacenado sobre ti. Para cualquier solicitud escribe a info@reutlingen-university.de o al delegado de protección de datos (apartado 1). Además, tienes derecho a presentar una reclamación ante una autoridad de control (art. 77 RGPD), por ejemplo ante el Comisionado Estatal para la Protección de Datos y la Libertad de Información de Baden-Wurtemberg.',
       },
       imprint_link: 'Aviso legal',
     },
@@ -655,15 +655,15 @@ export const legalResources: Record<LangCode, LegalBundle> = {
       operator: {
         heading: 'Datos según el § 5 DDG',
         body:
-          '[Nombre del operador / de la unidad organizativa responsable]<br />[Calle y número]<br />[Código postal y ciudad]',
+          'Proveedor y, por tanto, responsable de este servicio en línea es la Hochschule Reutlingen (Universidad de Reutlingen), corporación de derecho público (Körperschaft des öffentlichen Rechts), representada por su presidenta, Prof. Dr. Sabine Löbbe.<br />Alteburgstraße 150<br />72762 Reutlingen<br />Alemania<br /><br />Autoridad de supervisión: Ministerio de Ciencia, Investigación y Artes de Baden-Wurtemberg (MWK), Königstraße 46, 70173 Stuttgart<br />Número de identificación a efectos del IVA: DE 811 323 197',
       },
       contact: {
         heading: 'Contacto',
-        body: 'Correo: [correo de contacto]<br />Teléfono: [número de teléfono]',
+        body: 'Correo: info@reutlingen-university.de<br />Teléfono: +49 7121 271-0',
       },
       responsible: {
         heading: 'Responsable del contenido',
-        body: '[Nombre y dirección de la persona responsable del contenido]',
+        body: 'Prof. Dr. Sabine Löbbe, presidenta<br />Hochschule Reutlingen, Alteburgstraße 150, 72762 Reutlingen, Alemania',
       },
       note: {
         heading: 'Nota',

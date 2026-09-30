@@ -13,9 +13,10 @@ import {
 } from '@/components/layout/LegalText';
 
 /*
- * Art. 13 GDPR information duties. The [ ] placeholders have to be filled in
- * before the platform goes live — in src/i18n/legalResources.ts, in every language,
- * since the same disclosure is owed to every reader.
+ * Art. 13 GDPR information duties. Controller and data protection officer
+ * are Hochschule Reutlingen's (as on reutlingen-university.de/footer/datenschutz);
+ * the wording is in src/i18n/legalResources.ts, in every language, since the
+ * same disclosure is owed to every reader.
  *
  * The document structure lives here and the wording lives in the `legal`
  * namespace, so all five locales necessarily render the same sections in the
