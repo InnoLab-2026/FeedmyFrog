@@ -89,12 +89,30 @@ describe('legal resources', () => {
     }
   });
 
-  it('keeps the placeholders that still need filling in before launch', () => {
-    // If these ever disappear from one language only, that language is
-    // claiming details the others do not — worth failing over.
-    for (const code of LOCALES) {
-      const text = [...flattened.get(code)!.values()].join('\n');
-      expect(text).toMatch(/\[[^\]]+\]/);
+  it.each(LOCALES)('%s has no unfilled [ ] placeholders left', (code) => {
+    const text = [...flattened.get(code)!.values()].join('\n');
+    expect(text).not.toMatch(/\[[^\]]+\]/);
+  });
+
+  it.each(LOCALES)('%s names the same operator, controller and DPO facts', (code) => {
+    // The facts, not the wording: a language that drops or changes one of
+    // these is telling its readers something different about who is
+    // responsible, which Art. 13 GDPR and § 5 DDG do not allow.
+    const text = [...flattened.get(code)!.values()].join('\n');
+
+    for (const fact of [
+      'Hochschule Reutlingen',
+      'Alteburgstraße 150',
+      '72762 Reutlingen',
+      'Prof. Dr. Sabine Löbbe',
+      'info@reutlingen-university.de',
+      '+49 7121 271-0',
+      'DE 811 323 197',
+      'Königstraße 46, 70173 Stuttgart',
+      'Maximilian Musch',
+      'maximilian.musch@reutlingen-university.de',
+    ]) {
+      expect(text).toContain(fact);
     }
   });
 });
